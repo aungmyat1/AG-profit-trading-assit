@@ -1,0 +1,6710 @@
+{
+ "asw": {
+  "engine_gated_geometry": [
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-07-21",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-07-24",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-07-27",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-07-31",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-03",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-05",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-06",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-10",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-13",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-18",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-20",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-21",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-24",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-26",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-27",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-01",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-02",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-03",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-04",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-09",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-10",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-11",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-16",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-17",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-21",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-22",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-25",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-28",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-30",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-10-01",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-10-02",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-10-08",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-07-24",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-07-28",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-07-31",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-04",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-05",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-06",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-07",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-10",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-12",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-13",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-20",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-25",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-27",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-04",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-09",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-10",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-15",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-16",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-17",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-21",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-23",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-24",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-30",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-10-01",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-10-02",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-10-06",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "EURUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-07-21",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-07-24",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-07-28",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-07-29",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-07-31",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-03",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-04",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-05",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-07",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-11",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-12",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-13",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-17",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-18",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-20",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-26",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-27",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-01",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-02",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-04",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-08",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-09",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-11",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-17",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-21",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-24",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-25",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-10-02",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-07-20",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-07-22",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-07-24",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-03",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-05",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-06",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-10",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-11",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-12",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-13",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-24",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-27",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-31",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-01",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-02",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-03",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-08",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-14",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-15",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-17",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-18",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-21",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-23",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-24",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-25",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-28",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-29",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-10-02",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-10-05",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-10-08",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "GBPUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-07-22",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-07-23",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-07-24",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-07-27",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-07-28",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-04",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-05",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-06",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-11",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-14",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-17",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-18",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-19",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-25",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-27",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-31",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-01",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-04",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-07",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-08",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-09",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-10",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-15",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-16",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-17",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-21",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-22",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-24",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-29",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-10-07",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-10-08",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-10-09",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-07-24",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-03",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-04",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-05",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-06",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-14",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-21",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-10",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-11",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-16",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-17",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-21",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-23",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-25",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-29",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-30",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-10-01",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-10-02",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-10-06",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-10-08",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "USDJPY"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-07-20",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-07-24",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-07-29",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-04",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-10",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-11",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-13",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-19",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-26",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-27",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-04",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-07",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-11",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-14",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-15",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-17",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-18",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-25",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-29",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-30",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-10-02",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-10-05",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-10-06",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-07-20",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-07-21",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-07-27",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-03",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-04",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-06",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-07",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-12",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-17",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-20",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-21",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-24",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-25",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-27",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-31",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-02",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-07",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-11",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-15",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-18",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-21",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-22",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-28",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-30",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-10-02",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-10-05",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-10-08",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   },
+   {
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-10-09",
+    "geometry": {
+     "has_levels": true,
+     "positive_stop": true,
+     "target_order": false
+    },
+    "symbol": "XAUUSD"
+   }
+  ],
+  "fuzz": [
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-07-21",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-07-22",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-07-24",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-07-27",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-07-31",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-08-03",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-08-04",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-08-05",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-08-06",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-08-07",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-08-10",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-08-12",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-08-13",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-08-18",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-08-20",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-08-21",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-08-24",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-08-26",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-08-27",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-08-31",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-09-01",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-09-02",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-09-03",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-09-04",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-09-09",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-09-10",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-09-11",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-09-16",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-09-17",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-09-21",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-09-22",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-09-24",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-09-25",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-09-28",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-09-30",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-10-01",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-10-02",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-10-06",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:ASIAN_LONDON:2026-10-08",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-07-21",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-07-22",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-07-24",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-07-28",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-07-31",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "NOT_APPLICABLE_SIGNAL_BAR_IS_LAST",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-08-04",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-08-05",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-08-06",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-08-07",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-08-10",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-08-11",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-08-12",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-08-13",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-08-20",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-08-21",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-08-25",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-08-27",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-09-02",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-09-03",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-09-04",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-09-09",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-09-10",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-09-15",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-09-16",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-09-17",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-09-21",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-09-23",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-09-24",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-09-28",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-09-30",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-10-01",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "NOT_APPLICABLE_SIGNAL_BAR_IS_LAST",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-10-02",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "EURUSD:LONDON_NEWYORK:2026-10-06",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-07-21",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-07-22",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-07-23",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-07-24",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-07-28",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-07-29",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-07-31",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-08-03",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-08-04",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-08-05",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-08-06",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-08-07",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-08-10",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-08-11",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-08-12",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-08-13",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-08-17",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-08-18",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-08-20",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-08-21",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-08-26",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-08-27",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-08-31",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-09-01",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-09-02",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-09-03",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-09-04",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-09-08",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-09-09",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-09-10",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-09-11",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-09-17",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-09-18",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "NOT_APPLICABLE_SIGNAL_BAR_IS_LAST",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-09-21",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-09-22",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-09-24",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-09-25",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-09-29",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-10-02",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-10-06",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-10-07",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:ASIAN_LONDON:2026-10-08",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-07-20",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-07-22",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-07-24",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-07-29",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-07-31",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-08-03",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-08-05",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-08-06",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-08-10",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-08-11",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-08-12",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-08-13",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-08-18",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-08-21",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-08-24",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-08-25",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-08-27",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-08-31",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-09-01",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-09-02",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-09-03",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-09-08",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-09-11",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-09-14",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-09-15",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-09-17",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-09-18",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-09-21",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-09-23",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-09-24",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "NOT_APPLICABLE_SIGNAL_BAR_IS_LAST",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-09-25",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-09-28",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-09-29",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-10-02",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-10-05",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-10-08",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "GBPUSD:LONDON_NEWYORK:2026-10-09",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-07-22",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-07-23",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-07-24",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-07-27",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-07-28",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-08-04",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-08-05",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-08-06",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-08-11",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-08-14",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-08-17",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-08-18",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-08-19",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-08-21",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-08-25",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-08-27",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-08-31",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-09-01",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-09-04",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-09-07",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-09-08",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-09-09",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-09-10",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-09-15",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-09-16",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-09-17",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-09-21",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-09-22",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-09-24",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-09-29",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-10-06",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-10-07",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-10-08",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:ASIAN_LONDON:2026-10-09",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:LONDON_NEWYORK:2026-07-24",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:LONDON_NEWYORK:2026-08-03",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:LONDON_NEWYORK:2026-08-04",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:LONDON_NEWYORK:2026-08-05",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:LONDON_NEWYORK:2026-08-06",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:LONDON_NEWYORK:2026-08-11",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:LONDON_NEWYORK:2026-08-13",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:LONDON_NEWYORK:2026-08-14",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:LONDON_NEWYORK:2026-08-18",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:LONDON_NEWYORK:2026-08-19",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:LONDON_NEWYORK:2026-08-20",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:LONDON_NEWYORK:2026-08-21",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:LONDON_NEWYORK:2026-08-25",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:LONDON_NEWYORK:2026-08-26",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:LONDON_NEWYORK:2026-09-01",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:LONDON_NEWYORK:2026-09-10",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:LONDON_NEWYORK:2026-09-11",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:LONDON_NEWYORK:2026-09-16",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:LONDON_NEWYORK:2026-09-17",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:LONDON_NEWYORK:2026-09-21",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:LONDON_NEWYORK:2026-09-23",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:LONDON_NEWYORK:2026-09-25",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:LONDON_NEWYORK:2026-09-29",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:LONDON_NEWYORK:2026-09-30",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:LONDON_NEWYORK:2026-10-01",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:LONDON_NEWYORK:2026-10-02",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:LONDON_NEWYORK:2026-10-06",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "USDJPY:LONDON_NEWYORK:2026-10-08",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:ASIAN_LONDON:2026-07-20",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:ASIAN_LONDON:2026-07-24",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:ASIAN_LONDON:2026-07-29",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:ASIAN_LONDON:2026-08-03",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:ASIAN_LONDON:2026-08-04",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:ASIAN_LONDON:2026-08-10",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:ASIAN_LONDON:2026-08-11",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:ASIAN_LONDON:2026-08-12",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:ASIAN_LONDON:2026-08-13",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:ASIAN_LONDON:2026-08-19",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:ASIAN_LONDON:2026-08-26",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:ASIAN_LONDON:2026-08-27",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:ASIAN_LONDON:2026-09-04",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:ASIAN_LONDON:2026-09-07",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "NOT_APPLICABLE_SIGNAL_BAR_IS_LAST",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:ASIAN_LONDON:2026-09-11",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:ASIAN_LONDON:2026-09-14",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:ASIAN_LONDON:2026-09-15",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:ASIAN_LONDON:2026-09-17",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:ASIAN_LONDON:2026-09-18",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:ASIAN_LONDON:2026-09-21",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:ASIAN_LONDON:2026-09-25",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:ASIAN_LONDON:2026-09-29",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:ASIAN_LONDON:2026-09-30",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:ASIAN_LONDON:2026-10-02",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:ASIAN_LONDON:2026-10-05",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:ASIAN_LONDON:2026-10-06",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-07-20",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-07-21",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-07-22",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-07-27",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-07-28",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-08-03",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-08-04",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-08-06",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-08-07",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-08-10",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-08-12",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-08-13",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-08-17",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-08-20",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-08-21",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-08-24",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-08-25",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-08-26",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-08-27",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-08-31",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-09-02",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-09-07",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-09-08",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-09-11",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-09-15",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-09-18",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-09-21",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-09-22",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-09-28",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-09-29",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-09-30",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-10-02",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-10-05",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-10-08",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "case": "XAUUSD:LONDON_NEWYORK:2026-10-09",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   }
+  ],
+  "rows": [
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.14101,
+     "low": 1.13989,
+     "mid": 1.14045
+    },
+    "box_pandas_ta": {
+     "high": 1.14101,
+     "low": 1.13989
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-07-22",
+    "direction": "SHORT",
+    "engine": {
+     "bar": "2026-07-22T13:30:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 1.6296,
+     "mfe_R": 2.2778,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 1.14128,
+    "oracle": {
+     "entry_price": 1.14128,
+     "exit_price": 1.14182,
+     "exit_time": "2026-07-22T13:30:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 1.14182,
+    "symbol": "EURUSD",
+    "tp1": 1.13989
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.1515,
+     "low": 1.15023,
+     "mid": 1.15087
+    },
+    "box_pandas_ta": {
+     "high": 1.1515,
+     "low": 1.15023
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-04",
+    "direction": "SHORT",
+    "engine": {
+     "bar": "2026-08-04T10:30:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 1.0667,
+     "mfe_R": 2.0444,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 1.15126,
+    "oracle": {
+     "entry_price": 1.15126,
+     "exit_price": 1.15171,
+     "exit_time": "2026-08-04T10:30:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 1.15171,
+    "symbol": "EURUSD",
+    "tp1": 1.15023
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.15256,
+     "low": 1.15181,
+     "mid": 1.15219
+    },
+    "box_pandas_ta": {
+     "high": 1.15256,
+     "low": 1.15181
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-07",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-08-07T09:00:00+00:00",
+     "cost_R": null,
+     "gross_R": 0.7727,
+     "mae_R": 0.9318,
+     "mfe_R": 1.5,
+     "net_R": null,
+     "result": "TP1"
+    },
+    "entry": 1.15222,
+    "oracle": {
+     "entry_price": 1.15222,
+     "exit_price": 1.15256,
+     "exit_time": "2026-08-07T09:00:00+00:00",
+     "gross_R": 0.7727,
+     "result": "TP1"
+    },
+    "sl": 1.15178,
+    "symbol": "EURUSD",
+    "tp1": 1.15256
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.15447,
+     "low": 1.15322,
+     "mid": 1.15385
+    },
+    "box_pandas_ta": {
+     "high": 1.15447,
+     "low": 1.15322
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-12",
+    "direction": "SHORT",
+    "engine": {
+     "bar": "2026-08-12T12:30:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 2.8857,
+     "mfe_R": 1.4714,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 1.15428,
+    "oracle": {
+     "entry_price": 1.15428,
+     "exit_price": 1.15498,
+     "exit_time": "2026-08-12T12:30:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 1.15498,
+    "symbol": "EURUSD",
+    "tp1": 1.15322
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.15945,
+     "low": 1.15856,
+     "mid": 1.15901
+    },
+    "box_pandas_ta": {
+     "high": 1.15945,
+     "low": 1.15856
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-31",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-08-31T07:15:00+00:00",
+     "cost_R": null,
+     "gross_R": 1.5526,
+     "mae_R": 0.7368,
+     "mfe_R": 2.0,
+     "net_R": null,
+     "result": "TP1"
+    },
+    "entry": 1.15886,
+    "oracle": {
+     "entry_price": 1.15886,
+     "exit_price": 1.15945,
+     "exit_time": "2026-08-31T07:15:00+00:00",
+     "gross_R": 1.5526,
+     "result": "TP1"
+    },
+    "sl": 1.15848,
+    "symbol": "EURUSD",
+    "tp1": 1.15945
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.13867,
+     "low": 1.13689,
+     "mid": 1.13778
+    },
+    "box_pandas_ta": {
+     "high": 1.13867,
+     "low": 1.13689
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-24",
+    "direction": "SHORT",
+    "engine": {
+     "bar": "2026-09-24T10:15:00+00:00",
+     "cost_R": null,
+     "gross_R": 4.3953,
+     "mae_R": 0.0,
+     "mfe_R": 6.0698,
+     "net_R": null,
+     "result": "TP1"
+    },
+    "entry": 1.13878,
+    "oracle": {
+     "entry_price": 1.13878,
+     "exit_price": 1.13689,
+     "exit_time": "2026-09-24T10:15:00+00:00",
+     "gross_R": 4.3953,
+     "result": "TP1"
+    },
+    "sl": 1.13921,
+    "symbol": "EURUSD",
+    "tp1": 1.13689
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.12311,
+     "low": 1.12117,
+     "mid": 1.12214
+    },
+    "box_pandas_ta": {
+     "high": 1.12311,
+     "low": 1.12117
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-10-06",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-10-06T07:30:00+00:00",
+     "cost_R": null,
+     "gross_R": 2.8493,
+     "mae_R": 0.0,
+     "mfe_R": 2.8767,
+     "net_R": null,
+     "result": "TP1"
+    },
+    "entry": 1.12103,
+    "oracle": {
+     "entry_price": 1.12103,
+     "exit_price": 1.12311,
+     "exit_time": "2026-10-06T07:30:00+00:00",
+     "gross_R": 2.8493,
+     "result": "TP1"
+    },
+    "sl": 1.1203,
+    "symbol": "EURUSD",
+    "tp1": 1.12311
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.14287,
+     "low": 1.14173,
+     "mid": 1.1423
+    },
+    "box_pandas_ta": {
+     "high": 1.14287,
+     "low": 1.14173
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-07-21",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-07-21T14:15:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 1.2881,
+     "mfe_R": 0.2203,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 1.14173,
+    "oracle": {
+     "entry_price": 1.14173,
+     "exit_price": 1.14114,
+     "exit_time": "2026-07-21T14:15:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 1.14114,
+    "symbol": "EURUSD",
+    "tp1": 1.14287
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.14182,
+     "low": 1.14005,
+     "mid": 1.14094
+    },
+    "box_pandas_ta": {
+     "high": 1.14182,
+     "low": 1.14005
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-07-22",
+    "direction": "SHORT",
+    "engine": {
+     "bar": "2026-07-22T14:45:00+00:00",
+     "cost_R": null,
+     "gross_R": 2.3243,
+     "mae_R": 0.1622,
+     "mfe_R": 2.7297,
+     "net_R": null,
+     "result": "EXPIRY"
+    },
+    "entry": 1.14179,
+    "oracle": {
+     "entry_price": 1.14179,
+     "exit_price": 1.14093,
+     "exit_time": "2026-07-22T14:45:00+00:00",
+     "gross_R": 2.3243,
+     "result": "EXPIRY"
+    },
+    "sl": 1.14216,
+    "symbol": "EURUSD",
+    "tp1": 1.14005
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.15435,
+     "low": 1.15314,
+     "mid": 1.15375
+    },
+    "box_pandas_ta": {
+     "high": 1.15435,
+     "low": 1.15314
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-11",
+    "direction": "SHORT",
+    "engine": {
+     "bar": "2026-08-11T13:00:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 1.3333,
+     "mfe_R": 0.037,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 1.15415,
+    "oracle": {
+     "entry_price": 1.15415,
+     "exit_price": 1.15442,
+     "exit_time": "2026-08-11T13:00:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 1.15442,
+    "symbol": "EURUSD",
+    "tp1": 1.15314
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.17114,
+     "low": 1.16868,
+     "mid": 1.16991
+    },
+    "box_pandas_ta": {
+     "high": 1.17114,
+     "low": 1.16868
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-21",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-08-21T13:00:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 1.1915,
+     "mfe_R": 0.2979,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 1.16898,
+    "oracle": {
+     "entry_price": 1.16898,
+     "exit_price": 1.16851,
+     "exit_time": "2026-08-21T13:00:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 1.16851,
+    "symbol": "EURUSD",
+    "tp1": 1.17114
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.1585,
+     "low": 1.15663,
+     "mid": 1.15757
+    },
+    "box_pandas_ta": {
+     "high": 1.1585,
+     "low": 1.15663
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-02",
+    "direction": "SHORT",
+    "engine": {
+     "bar": "2026-09-02T13:15:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 8.4375,
+     "mfe_R": 2.0938,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 1.15823,
+    "oracle": {
+     "entry_price": 1.15823,
+     "exit_price": 1.15855,
+     "exit_time": "2026-09-02T13:15:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 1.15855,
+    "symbol": "EURUSD",
+    "tp1": 1.15663
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.16147,
+     "low": 1.15963,
+     "mid": 1.16055
+    },
+    "box_pandas_ta": {
+     "high": 1.16147,
+     "low": 1.15963
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-03",
+    "direction": "SHORT",
+    "engine": {
+     "bar": "2026-09-03T12:30:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 3.1944,
+     "mfe_R": 1.4167,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 1.16134,
+    "oracle": {
+     "entry_price": 1.16134,
+     "exit_price": 1.1617,
+     "exit_time": "2026-09-03T12:30:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 1.1617,
+    "symbol": "EURUSD",
+    "tp1": 1.15963
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.13907,
+     "low": 1.1366,
+     "mid": 1.13784
+    },
+    "box_pandas_ta": {
+     "high": 1.13907,
+     "low": 1.1366
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-28",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-09-28T13:00:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 2.0,
+     "mfe_R": 0.0952,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 1.137,
+    "oracle": {
+     "entry_price": 1.137,
+     "exit_price": 1.13658,
+     "exit_time": "2026-09-28T13:00:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 1.13658,
+    "symbol": "EURUSD",
+    "tp1": 1.13907
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.33897,
+     "low": 1.33777,
+     "mid": 1.33837
+    },
+    "box_pandas_ta": {
+     "high": 1.33897,
+     "low": 1.33777
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-07-22",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-07-22T07:15:00+00:00",
+     "cost_R": null,
+     "gross_R": 3.1562,
+     "mae_R": 0.0,
+     "mfe_R": 3.4062,
+     "net_R": null,
+     "result": "TP1"
+    },
+    "entry": 1.33796,
+    "oracle": {
+     "entry_price": 1.33796,
+     "exit_price": 1.33897,
+     "exit_time": "2026-07-22T07:15:00+00:00",
+     "gross_R": 3.1562,
+     "result": "TP1"
+    },
+    "sl": 1.33764,
+    "symbol": "GBPUSD",
+    "tp1": 1.33897
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.33932,
+     "low": 1.33732,
+     "mid": 1.33832
+    },
+    "box_pandas_ta": {
+     "high": 1.33932,
+     "low": 1.33732
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-07-23",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-07-23T07:30:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 1.1064,
+     "mfe_R": 0.8085,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 1.33762,
+    "oracle": {
+     "entry_price": 1.33762,
+     "exit_price": 1.33715,
+     "exit_time": "2026-07-23T07:30:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 1.33715,
+    "symbol": "GBPUSD",
+    "tp1": 1.33932
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.34726,
+     "low": 1.34552,
+     "mid": 1.34639
+    },
+    "box_pandas_ta": {
+     "high": 1.34726,
+     "low": 1.34552
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-06",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-08-06T09:30:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 1.7742,
+     "mfe_R": 2.5484,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 1.34582,
+    "oracle": {
+     "entry_price": 1.34582,
+     "exit_price": 1.34551,
+     "exit_time": "2026-08-06T09:30:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 1.34551,
+    "symbol": "GBPUSD",
+    "tp1": 1.34726
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.34944,
+     "low": 1.34832,
+     "mid": 1.34888
+    },
+    "box_pandas_ta": {
+     "high": 1.34944,
+     "low": 1.34832
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-10",
+    "direction": "SHORT",
+    "engine": {
+     "bar": "2026-08-10T07:30:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 1.3571,
+     "mfe_R": 1.1429,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 1.34949,
+    "oracle": {
+     "entry_price": 1.34949,
+     "exit_price": 1.34977,
+     "exit_time": "2026-08-10T07:30:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 1.34977,
+    "symbol": "GBPUSD",
+    "tp1": 1.34832
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.36553,
+     "low": 1.36369,
+     "mid": 1.36461
+    },
+    "box_pandas_ta": {
+     "high": 1.36553,
+     "low": 1.36369
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-21",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-08-21T08:30:00+00:00",
+     "cost_R": null,
+     "gross_R": 2.7358,
+     "mae_R": 0.5094,
+     "mfe_R": 3.3774,
+     "net_R": null,
+     "result": "TP1"
+    },
+    "entry": 1.36408,
+    "oracle": {
+     "entry_price": 1.36408,
+     "exit_price": 1.36553,
+     "exit_time": "2026-08-21T08:30:00+00:00",
+     "gross_R": 2.7358,
+     "result": "TP1"
+    },
+    "sl": 1.36355,
+    "symbol": "GBPUSD",
+    "tp1": 1.36553
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.35472,
+     "low": 1.35337,
+     "mid": 1.35405
+    },
+    "box_pandas_ta": {
+     "high": 1.35472,
+     "low": 1.35337
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-31",
+    "direction": "SHORT",
+    "engine": {
+     "bar": "2026-08-31T08:00:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 4.04,
+     "mfe_R": 1.48,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 1.35456,
+    "oracle": {
+     "entry_price": 1.35456,
+     "exit_price": 1.35481,
+     "exit_time": "2026-08-31T08:00:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 1.35481,
+    "symbol": "GBPUSD",
+    "tp1": 1.35337
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.34985,
+     "low": 1.34805,
+     "mid": 1.34895
+    },
+    "box_pandas_ta": {
+     "high": 1.34985,
+     "low": 1.34805
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-03",
+    "direction": "SHORT",
+    "engine": {
+     "bar": "2026-09-03T07:45:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 1.1667,
+     "mfe_R": 0.3929,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 1.34949,
+    "oracle": {
+     "entry_price": 1.34949,
+     "exit_price": 1.35033,
+     "exit_time": "2026-09-03T07:45:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 1.35033,
+    "symbol": "GBPUSD",
+    "tp1": 1.34805
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.35602,
+     "low": 1.35446,
+     "mid": 1.35524
+    },
+    "box_pandas_ta": {
+     "high": 1.35602,
+     "low": 1.35446
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-10",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-09-10T10:30:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 2.6364,
+     "mfe_R": 2.4242,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 1.35449,
+    "oracle": {
+     "entry_price": 1.35449,
+     "exit_price": 1.35416,
+     "exit_time": "2026-09-10T10:30:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 1.35416,
+    "symbol": "GBPUSD",
+    "tp1": 1.35602
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.33758,
+     "low": 1.33552,
+     "mid": 1.33655
+    },
+    "box_pandas_ta": {
+     "high": 1.33758,
+     "low": 1.33552
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-18",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-09-18T11:30:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 1.9184,
+     "mfe_R": 1.9592,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 1.33547,
+    "oracle": {
+     "entry_price": 1.33547,
+     "exit_price": 1.33498,
+     "exit_time": "2026-09-18T11:30:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 1.33498,
+    "symbol": "GBPUSD",
+    "tp1": 1.33758
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.33872,
+     "low": 1.33623,
+     "mid": 1.33748
+    },
+    "box_pandas_ta": {
+     "high": 1.33872,
+     "low": 1.33623
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-22",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-09-22T07:45:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 1.3944,
+     "mfe_R": 0.2817,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 1.33644,
+    "oracle": {
+     "entry_price": 1.33644,
+     "exit_price": 1.33573,
+     "exit_time": "2026-09-22T07:45:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 1.33573,
+    "symbol": "GBPUSD",
+    "tp1": 1.33872
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.32557,
+     "low": 1.32293,
+     "mid": 1.32425
+    },
+    "box_pandas_ta": {
+     "high": 1.32557,
+     "low": 1.32293
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-29",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-09-29T09:15:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 1.2923,
+     "mfe_R": 1.1846,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 1.32337,
+    "oracle": {
+     "entry_price": 1.32337,
+     "exit_price": 1.32272,
+     "exit_time": "2026-09-29T09:15:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 1.32272,
+    "symbol": "GBPUSD",
+    "tp1": 1.32557
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.32318,
+     "low": 1.32115,
+     "mid": 1.32217
+    },
+    "box_pandas_ta": {
+     "high": 1.32318,
+     "low": 1.32115
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-10-06",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-10-06T07:30:00+00:00",
+     "cost_R": null,
+     "gross_R": 2.4839,
+     "mae_R": 0.0,
+     "mfe_R": 2.9839,
+     "net_R": null,
+     "result": "TP1"
+    },
+    "entry": 1.32164,
+    "oracle": {
+     "entry_price": 1.32164,
+     "exit_price": 1.32318,
+     "exit_time": "2026-10-06T07:30:00+00:00",
+     "gross_R": 2.4839,
+     "result": "TP1"
+    },
+    "sl": 1.32102,
+    "symbol": "GBPUSD",
+    "tp1": 1.32318
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.32683,
+     "low": 1.32453,
+     "mid": 1.32568
+    },
+    "box_pandas_ta": {
+     "high": 1.32683,
+     "low": 1.32453
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-10-07",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-10-07T07:45:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 2.6818,
+     "mfe_R": 0.6818,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 1.32477,
+    "oracle": {
+     "entry_price": 1.32477,
+     "exit_price": 1.32411,
+     "exit_time": "2026-10-07T07:45:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 1.32411,
+    "symbol": "GBPUSD",
+    "tp1": 1.32683
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.32224,
+     "low": 1.31964,
+     "mid": 1.32094
+    },
+    "box_pandas_ta": {
+     "high": 1.32224,
+     "low": 1.31964
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-10-08",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-10-08T09:00:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 1.2651,
+     "mfe_R": 2.0241,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 1.31957,
+    "oracle": {
+     "entry_price": 1.31957,
+     "exit_price": 1.31874,
+     "exit_time": "2026-10-08T09:00:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 1.31874,
+    "symbol": "GBPUSD",
+    "tp1": 1.32224
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.33089,
+     "low": 1.32886,
+     "mid": 1.32988
+    },
+    "box_pandas_ta": {
+     "high": 1.33089,
+     "low": 1.32886
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-07-29",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-07-29T14:45:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 1.1321,
+     "mfe_R": 3.1132,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 1.32878,
+    "oracle": {
+     "entry_price": 1.32878,
+     "exit_price": 1.32825,
+     "exit_time": "2026-07-29T14:45:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 1.32825,
+    "symbol": "GBPUSD",
+    "tp1": 1.33089
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.34679,
+     "low": 1.34353,
+     "mid": 1.34516
+    },
+    "box_pandas_ta": {
+     "high": 1.34679,
+     "low": 1.34353
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-07-31",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-07-31T14:45:00+00:00",
+     "cost_R": null,
+     "gross_R": 1.6535,
+     "mae_R": 0.0,
+     "mfe_R": 1.9921,
+     "net_R": null,
+     "result": "EXPIRY"
+    },
+    "entry": 1.34353,
+    "oracle": {
+     "entry_price": 1.34353,
+     "exit_price": 1.34563,
+     "exit_time": "2026-07-31T14:45:00+00:00",
+     "gross_R": 1.6535,
+     "result": "EXPIRY"
+    },
+    "sl": 1.34226,
+    "symbol": "GBPUSD",
+    "tp1": 1.34679
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.35426,
+     "low": 1.35196,
+     "mid": 1.35311
+    },
+    "box_pandas_ta": {
+     "high": 1.35426,
+     "low": 1.35196
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-18",
+    "direction": "SHORT",
+    "engine": {
+     "bar": "2026-08-18T14:00:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 1.4375,
+     "mfe_R": 1.2708,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 1.35389,
+    "oracle": {
+     "entry_price": 1.35389,
+     "exit_price": 1.35437,
+     "exit_time": "2026-08-18T14:00:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 1.35437,
+    "symbol": "GBPUSD",
+    "tp1": 1.35196
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.36756,
+     "low": 1.36355,
+     "mid": 1.36556
+    },
+    "box_pandas_ta": {
+     "high": 1.36756,
+     "low": 1.36355
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-21",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-08-21T13:15:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 1.0978,
+     "mfe_R": 0.163,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 1.36444,
+    "oracle": {
+     "entry_price": 1.36444,
+     "exit_price": 1.36352,
+     "exit_time": "2026-08-21T13:15:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 1.36352,
+    "symbol": "GBPUSD",
+    "tp1": 1.36756
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.36496,
+     "low": 1.36219,
+     "mid": 1.36358
+    },
+    "box_pandas_ta": {
+     "high": 1.36496,
+     "low": 1.36219
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-25",
+    "direction": "SHORT",
+    "engine": {
+     "bar": "2026-08-25T14:45:00+00:00",
+     "cost_R": null,
+     "gross_R": 2.3279,
+     "mae_R": 0.2951,
+     "mfe_R": 3.1639,
+     "net_R": null,
+     "result": "EXPIRY"
+    },
+    "entry": 1.36469,
+    "oracle": {
+     "entry_price": 1.36469,
+     "exit_price": 1.36327,
+     "exit_time": "2026-08-25T14:45:00+00:00",
+     "gross_R": 2.3279,
+     "result": "EXPIRY"
+    },
+    "sl": 1.3653,
+    "symbol": "GBPUSD",
+    "tp1": 1.36219
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.35266,
+     "low": 1.34978,
+     "mid": 1.35122
+    },
+    "box_pandas_ta": {
+     "high": 1.35266,
+     "low": 1.34978
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-11",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-09-11T13:00:00+00:00",
+     "cost_R": null,
+     "gross_R": 0.6816,
+     "mae_R": 0.0075,
+     "mfe_R": 0.7828,
+     "net_R": null,
+     "result": "TP1"
+    },
+    "entry": 1.35084,
+    "oracle": {
+     "entry_price": 1.35084,
+     "exit_price": 1.35266,
+     "exit_time": "2026-09-11T13:00:00+00:00",
+     "gross_R": 0.6816,
+     "result": "TP1"
+    },
+    "sl": 1.34817,
+    "symbol": "GBPUSD",
+    "tp1": 1.35266
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 1.32472,
+     "low": 1.32223,
+     "mid": 1.32348
+    },
+    "box_pandas_ta": {
+     "high": 1.32472,
+     "low": 1.32223
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-10-09",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-10-09T14:45:00+00:00",
+     "cost_R": null,
+     "gross_R": 0.377,
+     "mae_R": 0.1639,
+     "mfe_R": 1.6885,
+     "net_R": null,
+     "result": "EXPIRY"
+    },
+    "entry": 1.32223,
+    "oracle": {
+     "entry_price": 1.32223,
+     "exit_price": 1.32246,
+     "exit_time": "2026-10-09T14:45:00+00:00",
+     "gross_R": 0.377,
+     "result": "EXPIRY"
+    },
+    "sl": 1.32162,
+    "symbol": "GBPUSD",
+    "tp1": 1.32472
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 159.134,
+     "low": 158.815,
+     "mid": 158.974
+    },
+    "box_pandas_ta": {
+     "high": 159.134,
+     "low": 158.815
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-21",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-08-21T07:45:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 1.3896,
+     "mfe_R": 0.0649,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 158.841,
+    "oracle": {
+     "entry_price": 158.841,
+     "exit_price": 158.764,
+     "exit_time": "2026-08-21T07:45:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 158.764,
+    "symbol": "USDJPY",
+    "tp1": 159.134
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 158.218,
+     "low": 157.77,
+     "mid": 157.994
+    },
+    "box_pandas_ta": {
+     "high": 158.218,
+     "low": 157.77
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-10-06",
+    "direction": "SHORT",
+    "engine": {
+     "bar": "2026-10-06T08:15:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 1.0385,
+     "mfe_R": 1.2564,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 158.154,
+    "oracle": {
+     "entry_price": 158.154,
+     "exit_price": 158.232,
+     "exit_time": "2026-10-06T08:15:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 158.232,
+    "symbol": "USDJPY",
+    "tp1": 157.77
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 159.389,
+     "low": 159.178,
+     "mid": 159.284
+    },
+    "box_pandas_ta": {
+     "high": 159.389,
+     "low": 159.178
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-11",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-08-11T14:45:00+00:00",
+     "cost_R": null,
+     "gross_R": 0.25,
+     "mae_R": 0.7917,
+     "mfe_R": 1.5,
+     "net_R": null,
+     "result": "EXPIRY"
+    },
+    "entry": 159.221,
+    "oracle": {
+     "entry_price": 159.221,
+     "exit_price": 159.233,
+     "exit_time": "2026-08-11T14:45:00+00:00",
+     "gross_R": 0.25,
+     "result": "EXPIRY"
+    },
+    "sl": 159.173,
+    "symbol": "USDJPY",
+    "tp1": 159.389
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 159.445,
+     "low": 159.257,
+     "mid": 159.351
+    },
+    "box_pandas_ta": {
+     "high": 159.445,
+     "low": 159.257
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-13",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-08-13T12:45:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 2.5957,
+     "mfe_R": 0.0426,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 159.296,
+    "oracle": {
+     "entry_price": 159.296,
+     "exit_price": 159.249,
+     "exit_time": "2026-08-13T12:45:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 159.249,
+    "symbol": "USDJPY",
+    "tp1": 159.445
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 159.778,
+     "low": 159.585,
+     "mid": 159.682
+    },
+    "box_pandas_ta": {
+     "high": 159.778,
+     "low": 159.585
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-18",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-08-18T14:00:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 2.4912,
+     "mfe_R": 0.0175,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 159.622,
+    "oracle": {
+     "entry_price": 159.622,
+     "exit_price": 159.565,
+     "exit_time": "2026-08-18T14:00:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 159.565,
+    "symbol": "USDJPY",
+    "tp1": 159.778
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 159.296,
+     "low": 159.0,
+     "mid": 159.148
+    },
+    "box_pandas_ta": {
+     "high": 159.296,
+     "low": 159.0
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-19",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-08-19T12:30:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 7.7611,
+     "mfe_R": 0.0,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 159.039,
+    "oracle": {
+     "entry_price": 159.039,
+     "exit_price": 158.926,
+     "exit_time": "2026-08-19T12:30:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 158.926,
+    "symbol": "USDJPY",
+    "tp1": 159.296
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 158.66,
+     "low": 158.201,
+     "mid": 158.431
+    },
+    "box_pandas_ta": {
+     "high": 158.66,
+     "low": 158.201
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-20",
+    "direction": "SHORT",
+    "engine": {
+     "bar": "2026-08-20T13:45:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 1.4783,
+     "mfe_R": 1.0783,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 158.665,
+    "oracle": {
+     "entry_price": 158.665,
+     "exit_price": 158.78,
+     "exit_time": "2026-08-20T13:45:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 158.78,
+    "symbol": "USDJPY",
+    "tp1": 158.201
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 159.491,
+     "low": 159.224,
+     "mid": 159.358
+    },
+    "box_pandas_ta": {
+     "high": 159.491,
+     "low": 159.224
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-25",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-08-25T13:00:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 2.3962,
+     "mfe_R": 1.0566,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 159.246,
+    "oracle": {
+     "entry_price": 159.246,
+     "exit_price": 159.193,
+     "exit_time": "2026-08-25T13:00:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 159.193,
+    "symbol": "USDJPY",
+    "tp1": 159.491
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 159.123,
+     "low": 158.931,
+     "mid": 159.027
+    },
+    "box_pandas_ta": {
+     "high": 159.123,
+     "low": 158.931
+    },
+    "comparison": {
+     "class": "SPEC_DIFFERENCE",
+     "note": "bar gapped through TP1: backtesting.py fills at the bar open, repo resolver books TP1"
+    },
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-26",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-08-26T12:45:00+00:00",
+     "cost_R": null,
+     "gross_R": 3.2766,
+     "mae_R": 0.0,
+     "mfe_R": 6.0426,
+     "net_R": null,
+     "result": "TP1"
+    },
+    "entry": 158.969,
+    "oracle": {
+     "entry_price": 158.969,
+     "exit_price": 159.142,
+     "exit_time": "2026-08-26T12:45:00+00:00",
+     "gross_R": 3.6809,
+     "result": "EXPIRY"
+    },
+    "sl": 158.922,
+    "symbol": "USDJPY",
+    "tp1": 159.123
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 160.113,
+     "low": 159.865,
+     "mid": 159.989
+    },
+    "box_pandas_ta": {
+     "high": 160.113,
+     "low": 159.865
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-01",
+    "direction": "SHORT",
+    "engine": {
+     "bar": "2026-09-01T14:45:00+00:00",
+     "cost_R": null,
+     "gross_R": 0.6129,
+     "mae_R": 0.8065,
+     "mfe_R": 3.5484,
+     "net_R": null,
+     "result": "EXPIRY"
+    },
+    "entry": 160.113,
+    "oracle": {
+     "entry_price": 160.113,
+     "exit_price": 160.075,
+     "exit_time": "2026-09-01T14:45:00+00:00",
+     "gross_R": 0.6129,
+     "result": "EXPIRY"
+    },
+    "sl": 160.175,
+    "symbol": "USDJPY",
+    "tp1": 159.865
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 4078.92,
+     "low": 4047.3,
+     "mid": 4063.11
+    },
+    "box_pandas_ta": {
+     "high": 4078.92,
+     "low": 4047.3
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-03",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-08-03T10:45:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 1.0787,
+     "mfe_R": 0.9179,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 4052.56,
+    "oracle": {
+     "entry_price": 4052.56,
+     "exit_price": 4046.59,
+     "exit_time": "2026-08-03T10:45:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 4046.59,
+    "symbol": "XAUUSD",
+    "tp1": 4078.92
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 4416.03,
+     "low": 4366.46,
+     "mid": 4391.25
+    },
+    "box_pandas_ta": {
+     "high": 4416.03,
+     "low": 4366.46
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-08-12",
+    "direction": "SHORT",
+    "engine": {
+     "bar": "2026-08-12T12:15:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 1.1374,
+     "mfe_R": 0.7738,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 4413.14,
+    "oracle": {
+     "entry_price": 4413.14,
+     "exit_price": 4424.06,
+     "exit_time": "2026-08-12T12:15:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 4424.06,
+    "symbol": "XAUUSD",
+    "tp1": 4366.46
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 4383.31,
+     "low": 4349.18,
+     "mid": 4366.25
+    },
+    "box_pandas_ta": {
+     "high": 4383.31,
+     "low": 4349.18
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "ASIAN_LONDON",
+    "day": "2026-09-21",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-09-21T07:30:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 1.5374,
+     "mfe_R": 0.3643,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 4353.01,
+    "oracle": {
+     "entry_price": 4353.01,
+     "exit_price": 4345.79,
+     "exit_time": "2026-09-21T07:30:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 4345.79,
+    "symbol": "XAUUSD",
+    "tp1": 4383.31
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 4135.13,
+     "low": 4109.22,
+     "mid": 4122.18
+    },
+    "box_pandas_ta": {
+     "high": 4135.13,
+     "low": 4109.22
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-07-22",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-07-22T13:30:00+00:00",
+     "cost_R": null,
+     "gross_R": 3.6444,
+     "mae_R": 0.0131,
+     "mfe_R": 5.5269,
+     "net_R": null,
+     "result": "TP1"
+    },
+    "entry": 4112.79,
+    "oracle": {
+     "entry_price": 4112.79,
+     "exit_price": 4135.13,
+     "exit_time": "2026-07-22T13:30:00+00:00",
+     "gross_R": 3.6444,
+     "result": "TP1"
+    },
+    "sl": 4106.66,
+    "symbol": "XAUUSD",
+    "tp1": 4135.13
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 4055.17,
+     "low": 4016.92,
+     "mid": 4036.05
+    },
+    "box_pandas_ta": {
+     "high": 4055.17,
+     "low": 4016.92
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-07-28",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-07-28T14:45:00+00:00",
+     "cost_R": null,
+     "gross_R": 0.2107,
+     "mae_R": 0.3221,
+     "mfe_R": 0.6788,
+     "net_R": null,
+     "result": "EXPIRY"
+    },
+    "entry": 4022.2,
+    "oracle": {
+     "entry_price": 4022.2,
+     "exit_price": 4024.45,
+     "exit_time": "2026-07-28T14:45:00+00:00",
+     "gross_R": 0.2107,
+     "result": "EXPIRY"
+    },
+    "sl": 4011.52,
+    "symbol": "XAUUSD",
+    "tp1": 4055.17
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 4361.95,
+     "low": 4335.45,
+     "mid": 4348.7
+    },
+    "box_pandas_ta": {
+     "high": 4361.95,
+     "low": 4335.45
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-10",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-08-10T13:45:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 2.4394,
+     "mfe_R": 1.163,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 4332.38,
+    "oracle": {
+     "entry_price": 4332.38,
+     "exit_price": 4325.94,
+     "exit_time": "2026-08-10T13:45:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 4325.94,
+    "symbol": "XAUUSD",
+    "tp1": 4361.95
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 4393.74,
+     "low": 4364.02,
+     "mid": 4378.88
+    },
+    "box_pandas_ta": {
+     "high": 4393.74,
+     "low": 4364.02
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-13",
+    "direction": "SHORT",
+    "engine": {
+     "bar": "2026-08-13T12:45:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 1.0813,
+     "mfe_R": 0.044,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 4392.01,
+    "oracle": {
+     "entry_price": 4392.01,
+     "exit_price": 4401.11,
+     "exit_time": "2026-08-13T12:45:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 4401.11,
+    "symbol": "XAUUSD",
+    "tp1": 4364.02
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 4641.35,
+     "low": 4613.4,
+     "mid": 4627.38
+    },
+    "box_pandas_ta": {
+     "high": 4641.35,
+     "low": 4613.4
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-08-26",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-08-26T12:45:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 1.1393,
+     "mfe_R": 0.3781,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 4622.48,
+    "oracle": {
+     "entry_price": 4622.48,
+     "exit_price": 4612.43,
+     "exit_time": "2026-08-26T12:45:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 4612.43,
+    "symbol": "XAUUSD",
+    "tp1": 4641.35
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 4420.08,
+     "low": 4387.82,
+     "mid": 4403.95
+    },
+    "box_pandas_ta": {
+     "high": 4420.08,
+     "low": 4387.82
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-08",
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-09-08T14:45:00+00:00",
+     "cost_R": null,
+     "gross_R": 1.0688,
+     "mae_R": 0.4172,
+     "mfe_R": 3.2906,
+     "net_R": null,
+     "result": "EXPIRY"
+    },
+    "entry": 4391.75,
+    "oracle": {
+     "entry_price": 4391.75,
+     "exit_price": 4398.59,
+     "exit_time": "2026-09-08T14:45:00+00:00",
+     "gross_R": 1.0688,
+     "result": "EXPIRY"
+    },
+    "sl": 4385.35,
+    "symbol": "XAUUSD",
+    "tp1": 4420.08
+   },
+   {
+    "box_agree": true,
+    "box_engine": {
+     "high": 4154.67,
+     "low": 4135.92,
+     "mid": 4145.3
+    },
+    "box_pandas_ta": {
+     "high": 4154.67,
+     "low": 4135.92
+    },
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "cycle": "LONDON_NEWYORK",
+    "day": "2026-09-29",
+    "direction": "SHORT",
+    "engine": {
+     "bar": "2026-09-29T12:30:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 1.0076,
+     "mfe_R": 0.9312,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 4153.44,
+    "oracle": {
+     "entry_price": 4153.44,
+     "exit_price": 4158.67,
+     "exit_time": "2026-09-29T12:30:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "sl": 4158.67,
+    "symbol": "XAUUSD",
+    "tp1": 4135.92
+   }
+  ]
+ },
+ "ccfd": {
+  "fuzz": [
+   {
+    "base_result": "ENTRY_VALID",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "signal": "BTCUSD:SHORT:2026-08-27T13:45:00+00:00",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "base_result": "ENTRY_VALID",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "NOT_APPLICABLE_SIGNAL_BAR_IS_LAST",
+    "signal": "BTCUSD:SHORT:2026-10-09T18:40:00+00:00",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "base_result": "ENTRY_VALID",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "signal": "ETHUSD:LONG:2026-08-13T03:20:00+00:00",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "base_result": "ENTRY_VALID",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "NOT_APPLICABLE_SIGNAL_BAR_IS_LAST",
+    "signal": "ETHUSD:LONG:2026-08-28T05:50:00+00:00",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "base_result": "ENTRY_VALID",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "IDENTICAL",
+    "signal": "ETHUSD:SHORT:2026-09-06T07:20:00+00:00",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "base_result": "ENTRY_VALID",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "NOT_APPLICABLE_SIGNAL_BAR_IS_LAST",
+    "signal": "ETHUSD:SHORT:2026-09-09T10:55:00+00:00",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   },
+   {
+    "base_result": "ENTRY_VALID",
+    "future_perturbation_identical": true,
+    "last_bar_perturbation": "NOT_APPLICABLE_SIGNAL_BAR_IS_LAST",
+    "signal": "ETHUSD:LONG:2026-10-05T18:05:00+00:00",
+    "truncation_identical": true,
+    "verdict": "PASS"
+   }
+  ],
+  "rows": [
+   {
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "direction": "SHORT",
+    "engine": {
+     "bar": "2026-08-27T13:55:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 3.0906,
+     "mfe_R": 2.0816,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 79250.39,
+    "oracle": {
+     "entry_price": 79250.39,
+     "exit_price": 79351.33,
+     "exit_time": "2026-08-27T13:55:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "reference_agree": true,
+    "reference_engine": {
+     "high": 79230.81,
+     "low": 77618.31
+    },
+    "reference_pandas_ta": {
+     "high": 79230.81,
+     "low": 77618.31
+    },
+    "retest_time": "2026-08-27T13:45:00+00:00",
+    "sl": 79351.33,
+    "symbol": "BTCUSD",
+    "tp1": 78424.56
+   },
+   {
+    "comparison": {
+     "class": "SPEC_DIFFERENCE",
+     "note": "dataset ends before the horizon: repo resolver refuses, backtesting.py finalizes at last bar"
+    },
+    "direction": "SHORT",
+    "engine": {
+     "reason": "BARS_END_BEFORE_HORIZON",
+     "result": "DATA_INSUFFICIENT"
+    },
+    "entry": 82393.84,
+    "oracle": {
+     "entry_price": 82393.84,
+     "exit_price": 82612.7,
+     "exit_time": "2026-10-09T23:55:00+00:00",
+     "gross_R": -0.1943,
+     "result": "EXPIRY"
+    },
+    "reference_agree": true,
+    "reference_engine": {
+     "high": 83510.69,
+     "low": 80385.58
+    },
+    "reference_pandas_ta": {
+     "high": 83510.69,
+     "low": 80385.58
+    },
+    "retest_time": "2026-10-09T18:40:00+00:00",
+    "sl": 83520.29,
+    "symbol": "BTCUSD",
+    "tp1": 81948.13500000001
+   },
+   {
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-08-13T05:15:00+00:00",
+     "cost_R": null,
+     "gross_R": 1.5106,
+     "mae_R": 0.0663,
+     "mfe_R": 1.5937,
+     "net_R": null,
+     "result": "TP1"
+    },
+    "entry": 1882.36,
+    "oracle": {
+     "entry_price": 1882.36,
+     "exit_price": 1898.085,
+     "exit_time": "2026-08-13T05:15:00+00:00",
+     "gross_R": 1.5106,
+     "result": "TP1"
+    },
+    "reference_agree": true,
+    "reference_engine": {
+     "high": 1923.99,
+     "low": 1872.18
+    },
+    "reference_pandas_ta": {
+     "high": 1923.99,
+     "low": 1872.18
+    },
+    "retest_time": "2026-08-13T03:20:00+00:00",
+    "sl": 1871.95,
+    "symbol": "ETHUSD",
+    "tp1": 1898.085
+   },
+   {
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-08-28T14:00:00+00:00",
+     "cost_R": null,
+     "gross_R": 1.5491,
+     "mae_R": 0.7478,
+     "mfe_R": 1.6157,
+     "net_R": null,
+     "result": "TP1"
+    },
+    "entry": 2494.52,
+    "oracle": {
+     "entry_price": 2494.52,
+     "exit_price": 2522.7749999999996,
+     "exit_time": "2026-08-28T14:00:00+00:00",
+     "gross_R": 1.5491,
+     "result": "TP1"
+    },
+    "reference_agree": true,
+    "reference_engine": {
+     "high": 2565.12,
+     "low": 2480.43
+    },
+    "reference_pandas_ta": {
+     "high": 2565.12,
+     "low": 2480.43
+    },
+    "retest_time": "2026-08-28T05:50:00+00:00",
+    "sl": 2476.28,
+    "symbol": "ETHUSD",
+    "tp1": 2522.7749999999996
+   },
+   {
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "direction": "SHORT",
+    "engine": {
+     "bar": "2026-09-06T12:15:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 1.0198,
+     "mfe_R": 1.1172,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 2497.45,
+    "oracle": {
+     "entry_price": 2497.45,
+     "exit_price": 2503.51,
+     "exit_time": "2026-09-06T12:15:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "reference_agree": true,
+    "reference_engine": {
+     "high": 2491.89,
+     "low": 2443.39
+    },
+    "reference_pandas_ta": {
+     "high": 2491.89,
+     "low": 2443.39
+    },
+    "retest_time": "2026-09-06T07:20:00+00:00",
+    "sl": 2503.51,
+    "symbol": "ETHUSD",
+    "tp1": 2467.64
+   },
+   {
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "direction": "SHORT",
+    "engine": {
+     "bar": "2026-09-09T13:20:00+00:00",
+     "cost_R": null,
+     "gross_R": -1.0,
+     "mae_R": 1.0389,
+     "mfe_R": 0.1593,
+     "net_R": null,
+     "result": "SL"
+    },
+    "entry": 2485.55,
+    "oracle": {
+     "entry_price": 2485.55,
+     "exit_price": 2512.8,
+     "exit_time": "2026-09-09T13:20:00+00:00",
+     "gross_R": -1.0,
+     "result": "SL"
+    },
+    "reference_agree": true,
+    "reference_engine": {
+     "high": 2506.77,
+     "low": 2440.43
+    },
+    "reference_pandas_ta": {
+     "high": 2506.77,
+     "low": 2440.43
+    },
+    "retest_time": "2026-09-09T10:55:00+00:00",
+    "sl": 2512.8,
+    "symbol": "ETHUSD",
+    "tp1": 2473.6
+   },
+   {
+    "comparison": {
+     "class": "AGREE",
+     "note": ""
+    },
+    "direction": "LONG",
+    "engine": {
+     "bar": "2026-10-05T20:30:00+00:00",
+     "cost_R": null,
+     "gross_R": 0.3463,
+     "mae_R": 0.0592,
+     "mfe_R": 0.3573,
+     "net_R": null,
+     "result": "TP1"
+    },
+    "entry": 2704.74,
+    "oracle": {
+     "entry_price": 2704.74,
+     "exit_price": 2711.815,
+     "exit_time": "2026-10-05T20:30:00+00:00",
+     "gross_R": 0.3463,
+     "result": "TP1"
+    },
+    "reference_agree": true,
+    "reference_engine": {
+     "high": 2738.32,
+     "low": 2685.31
+    },
+    "reference_pandas_ta": {
+     "high": 2738.32,
+     "low": 2685.31
+    },
+    "retest_time": "2026-10-05T18:05:00+00:00",
+    "sl": 2684.31,
+    "symbol": "ETHUSD",
+    "tp1": 2711.815
+   }
+  ],
+  "sweeps": [
+   {
+    "mss_class": "AGREE",
+    "mss_swing_in_smc_swings": true,
+    "signal": "BTCUSD:SHORT:2026-08-27T13:45:00+00:00",
+    "smc_broken_flag": true,
+    "sweep_class": "AGREE",
+    "sweep_level_engine": 79230.81,
+    "sweep_level_smc": 79230.8125
+   },
+   {
+    "mss_class": "AGREE",
+    "mss_swing_in_smc_swings": true,
+    "signal": "BTCUSD:SHORT:2026-10-09T18:40:00+00:00",
+    "smc_broken_flag": true,
+    "sweep_class": "AGREE",
+    "sweep_level_engine": 83510.69,
+    "sweep_level_smc": 83510.6875
+   },
+   {
+    "mss_class": "AGREE",
+    "mss_swing_in_smc_swings": true,
+    "signal": "ETHUSD:LONG:2026-08-13T03:20:00+00:00",
+    "smc_broken_flag": true,
+    "sweep_class": "AGREE",
+    "sweep_level_engine": 1872.18,
+    "sweep_level_smc": 1872.1800537109375
+   },
+   {
+    "mss_class": "AGREE",
+    "mss_swing_in_smc_swings": true,
+    "signal": "ETHUSD:LONG:2026-08-28T05:50:00+00:00",
+    "smc_broken_flag": true,
+    "sweep_class": "AGREE",
+    "sweep_level_engine": 2480.43,
+    "sweep_level_smc": 2480.429931640625
+   },
+   {
+    "mss_class": "AGREE",
+    "mss_swing_in_smc_swings": true,
+    "signal": "ETHUSD:SHORT:2026-09-06T07:20:00+00:00",
+    "smc_broken_flag": true,
+    "sweep_class": "AGREE",
+    "sweep_level_engine": 2491.89,
+    "sweep_level_smc": 2491.889892578125
+   },
+   {
+    "mss_class": "AGREE",
+    "mss_swing_in_smc_swings": true,
+    "signal": "ETHUSD:SHORT:2026-09-09T10:55:00+00:00",
+    "smc_broken_flag": true,
+    "sweep_class": "AGREE",
+    "sweep_level_engine": 2506.77,
+    "sweep_level_smc": 2506.77001953125
+   },
+   {
+    "mss_class": "AGREE",
+    "mss_swing_in_smc_swings": true,
+    "signal": "ETHUSD:LONG:2026-10-05T18:05:00+00:00",
+    "smc_broken_flag": true,
+    "sweep_class": "AGREE",
+    "sweep_level_engine": 2685.31,
+    "sweep_level_smc": 2685.31005859375
+   }
+  ]
+ },
+ "oss_versions": {
+  "backtesting": "0.6.5",
+  "pandas": "3.0.5",
+  "pandas-ta": "0.4.71b0",
+  "smartmoneyconcepts": "0.0.27"
+ },
+ "schema": "AGP_C25_OSS_DIFFERENTIAL_V1",
+ "scope": "60 committed recorded days only",
+ "seed": 20261014,
+ "summary": {
+  "data_insufficient_60d": [
+   {
+    "family": "ASW v1.1.3",
+    "scope": "USDJPY x ASIAN_LONDON/LONDON_NEWYORK"
+   },
+   {
+    "family": "ASW v1.1.3",
+    "scope": "XAUUSD x ASIAN_LONDON/LONDON_NEWYORK"
+   },
+   {
+    "family": "CCFD 1.0.0",
+    "scope": "BTCUSD LONG"
+   }
+  ],
+  "l3_fuzz": {
+   "ASW": {
+    "cases": 274,
+    "fail": 0
+   },
+   "CCFD": {
+    "cases": 7,
+    "fail": 0,
+    "not_evaluable": 0
+   }
+  },
+  "outcome_oracle": {
+   "ASW_engine_gated_geometry_excluded": 219,
+   "ASW_v1.1.3": {
+    "agreement_pct": 98.2,
+    "classes": {
+     "AGREE": 54,
+     "SPEC_DIFFERENCE": 1
+    },
+    "signals": 55
+   },
+   "CCFD_1.0.0": {
+    "agreement_pct": 85.7,
+    "classes": {
+     "AGREE": 6,
+     "SPEC_DIFFERENCE": 1
+    },
+    "signals": 7
+   }
+  },
+  "range_crosscheck_pandas_ta": {
+   "ASW_box_agree": 55,
+   "ASW_rows": 55,
+   "CCFD_reference_agree": 7,
+   "CCFD_rows": 7
+  },
+  "sweep_oracle_smc": {
+   "mss_swing_agree_pct": 100.0,
+   "signals": 7,
+   "sweep_level_agree_pct": 100.0
+  }
+ }
+}
