@@ -761,3 +761,4 @@ authoritative machine-readable source.
 - [Fresh analyzer computation (2026-10-10)](status/ANALYZER_FRESH_COMPUTATION_2026-10-10.md) — main byte equivalence and session-zone call trace.
 - [Import-resolution audit (2026-10-10)](status/IMPORT_RESOLUTION_AUDIT_2026-10-10.md) — all 161 locations, guards/history and ledger tech debt.
 - [C25 OSS differential verification (2026-10-14)](status/C25_OSS_DIFFERENTIAL_2026-10-14.md) — backtesting.py / pandas-ta / smartmoneyconcepts oracles and L3 fuzz on 60 recorded days; evidence only.
+- [C25 harness change log (2026-10-14)](status/C25_HARNESS_CHANGE_LOG.md) — first-run divergences and every later harness change with before/after counts.

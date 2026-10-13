@@ -1,0 +1,27 @@
+--- S4.py
++++ S5.py
+@@ -62,11 +62,13 @@
+     rows = [{"time": entry_time - dt.timedelta(seconds=2), "Open": entry, "High": entry, "Low": entry, "Close": entry},
+             {"time": entry_time - dt.timedelta(seconds=1), "Open": entry, "High": entry, "Low": entry, "Close": entry}]
+     rows += [{"time": b.time, "Open": b.open, "High": b.high, "Low": b.low, "Close": b.close} for b in path]
++    if path:   # backtesting.py never processes its final row: a flat terminal row at the horizon lets
++        last_close = path[-1].close   # finalize_trades exit at the last real bar's close (= repo EXPIRY price)
++        rows.append({"time": horizon, "Open": last_close, "High": last_close, "Low": last_close, "Close": last_close})
+     if len(rows) < 3:
+         return {"result": "DATA_INSUFFICIENT"}
+     frame = pd.DataFrame(rows).set_index("time")
+     frame.index = pd.DatetimeIndex(frame.index)
+-    last = frame.index[-1]
+     long = direction == "LONG"
+ 
+     class Once(Strategy):
+@@ -80,8 +82,7 @@
+                     (self.buy if long else self.sell)(size=1, sl=sl, tp=tp)
+                 except ValueError as exc:
+                     self.rejected = str(exc)
+-            elif self.data.index[-1] == last and self.position:
+-                self.position.close()
++            # no manual exit: finalize_trades closes an open trade at the last bar's close (= horizon expiry)
+ 
+     bt = Backtest(frame, Once, cash=1e12, commission=0.0, spread=0.0, trade_on_close=True,
+                   exclusive_orders=True, finalize_trades=True)

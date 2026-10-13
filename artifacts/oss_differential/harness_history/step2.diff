@@ -1,0 +1,16 @@
+--- S1.py
++++ S2.py
+@@ -274,11 +274,11 @@
+     high_sweep = sweep["direction"] == "HIGH_SWEEP"
+     level = float(phl["PreviousHigh" if high_sweep else "PreviousLow"].iloc[i])
+     broken = bool(phl["BrokenHigh" if high_sweep else "BrokenLow"].iloc[i])
+-    level_agree = math.isclose(level, sweep["swept_level"], abs_tol=1e-6)
++    level_agree = math.isclose(level, sweep["swept_level"], rel_tol=1e-6)   # smc returns float32 levels
+     shl = smc.swing_highs_lows(df, swing_length=5)
+     mss_t = dt.datetime.fromisoformat(mss["confirmed_at_utc"])
+     swings = [float(v) for t, v in zip(df.index, shl["Level"]) if not pd.isna(v) and t <= pd.Timestamp(mss_t)]
+-    mss_agree = any(math.isclose(v, mss["broken_swing_price"], abs_tol=1e-6) for v in swings)
++    mss_agree = any(math.isclose(v, mss["broken_swing_price"], rel_tol=1e-6) for v in swings)
+     if level_agree and broken:
+         cls = "AGREE"
+     elif not level_agree:

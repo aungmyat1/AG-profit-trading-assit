@@ -1,0 +1,19 @@
+--- S2.py
++++ S3.py
+@@ -228,6 +228,7 @@
+             continue
+         seen.add(key)
+         out.append({"symbol": tk["symbol"], "direction": tk["direction"], "entry": tk["entry"],
++                    "now": json.loads(line).get("now") or tk.get("evaluated_at"),
+                     "sl": tk["stop_loss"], "tp1": tk["tp1"], "retest_time": ev["retest"]["candle_time_utc"],
+                     "evidence": ev})
+     return sorted(out, key=lambda s: (s["symbol"], s["retest_time"]))
+@@ -298,7 +299,7 @@
+     from strategy_engine.session import Candle
+     cfg = load_market_structure_config()
+     retest = dt.datetime.fromisoformat(s["retest_time"])
+-    now = retest + M5
++    now = dt.datetime.fromisoformat(s["now"])          # the evaluation time that emitted this ticket
+ 
+     def sig(d):
+         x = g["closed_inputs"](d, now, CCFD_COUNTS)
