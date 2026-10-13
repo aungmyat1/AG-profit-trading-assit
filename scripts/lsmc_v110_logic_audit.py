@@ -1142,7 +1142,9 @@ def harness_regression() -> dict:
 # --------------------------------------------------------------------------- report
 
 CANDIDATE_1_1_1_PATH = ROOT / "strategies/ST_LARGE_SMC_V1_1_1_1.yaml"
-CANDIDATE_1_1_2_PATH = ROOT / "strategies/ST_LARGE_SMC_V1_1_1_2.yaml"
+# Preserve the pre-D2 candidate input for the legacy audit and its historical 15-path output.
+# --version 1.1.2 dispatches to the current candidate contract instead.
+CANDIDATE_1_1_2_PATH = ROOT / "tests/fixtures/c21/v112_pre_d2.yaml"
 
 
 def _spec_diff(old, new, path: str = "") -> list:
@@ -1985,11 +1987,15 @@ def build_findings(ident, a, b, c, d_sem, props) -> list:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
+    ap.add_argument("--version", choices=("1.1.0", "1.1.2"), default="1.1.0")
     ap.add_argument("--out", help="write the JSON report here")
     ap.add_argument("--crypto-scans", type=int, default=120, help="full-D1 scans per crypto symbol (lane C)")
     ap.add_argument("--skip-crypto", action="store_true", help="skip lane C (the 60-day recorded crypto replay)")
     ap.add_argument("--lane-b-every", type=int, default=1, help="evaluate every Nth M5 close in lane B")
     args = ap.parse_args(argv)
+    if args.version == "1.1.2":
+        from lsmc_v112_logic_audit import main as candidate_main
+        return candidate_main(args)
     report = build_report(args.crypto_scans, args.skip_crypto, args.lane_b_every)
     text = json.dumps(report, indent=1, sort_keys=True, default=str)
     if args.out:

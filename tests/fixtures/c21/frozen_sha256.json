@@ -1,0 +1,13 @@
+{
+  "config/ag_scheduler_v2.yaml": "6c0a74aa9d1b3dae384d3d44cc325a0ae26e7741897d96e6f6379d650e18dda6",
+  "src/fx_discovery/features.py": "c6ef006348c692bbee13a08ede290c65ce89351aa928fc22dd98eadd1d496731",
+  "src/large_smc_core/c10_stop_policy.py": "383143bc0c3e0687b2a4032652e800111482f7fe9e76b3536d01f1540dc641da",
+  "src/large_smc_core/target_model.py": "bb48b2ba7d3ce42e9871ca8e15509db7ab1f36f66c17d3973f9da67c7599c63c",
+  "src/large_smc_watch/__init__.py": "ebbca3c124487c79a41912b6bbf75688d06529257bdc4ee53d0ffe2df789950f",
+  "src/large_smc_watch/contract.py": "51f9a0d088e750399b7ef4d98c978c6974b0b9ef2814f1c4251bbed79a9a5e1c",
+  "src/large_smc_watch/detect.py": "e3fd5e1fe699046c8b4c552e68d6a19a6f4abc51ea9cec3c4734c02db4e27973",
+  "src/large_smc_watch/watch.py": "86ac9cdcfa864b36a06b795920bd333f8fa9cfdd81efa5eb422e1d746bc2c63d",
+  "src/v1_tickets/lsmc_logic_gate.py": "e3133071f126d744b34cd8feae6379bdd41b9474cf9e9775991d4d75ae3ac799",
+  "strategies/ST_LARGE_SMC_V1_1_1_0.yaml": "78285f9fabcb20af14de327d010e48684dc12205f4435eff886fcc2373a357b4",
+  "strategies/registry.yaml": "80317057a42dc4fb0543ea999f3375efc3c4fde3843ea5dab58250d6c5cfcd94"
+}

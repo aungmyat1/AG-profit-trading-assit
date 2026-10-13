@@ -129,3 +129,9 @@ def observe_events(events, *, now: dt.datetime, price: Optional[float], archive_
         archive_observation(archive_root, FAMILY, canonical)
         out.append(canonical)
     return out
+
+
+def version_selection():
+    """Configured report version; the registered frozen version remains 1.1.0."""
+    from reporting.lsmc_version import selected_version
+    return selected_version()
