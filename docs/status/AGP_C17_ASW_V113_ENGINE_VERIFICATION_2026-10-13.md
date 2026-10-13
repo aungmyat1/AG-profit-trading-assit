@@ -12,8 +12,9 @@ GBPUSD, USDJPY and XAUUSD, both sessions.
 
 **Integration update:** PR #186 was merged as `827faf62938addef215f1318134908aea8bee9c9` before its
 three review findings were resolved. This follow-up carries the resolutions on current main
-`363e5d490233dcf131399fb163d16b6ae0f01f74`; the v1.1.3 implementation bytes are the same as the
-tested source commit `65bc7227f594110182d89202c6a79b0581493cc1`.
+`6ebe5b9d49111768a2f7d7ebbbe0b9ce9845d0bc`, including C18's process-wide read-only MT5 guard (#192).
+The v1.1.3 implementation bytes match tested source commit `65bc7227f594110182d89202c6a79b0581493cc1`;
+the integrated full suite was rerun on merge commit `b731def6321d505258a3e3f2d00d86b7171c0f33` after #192.
 
 **What does not change:** no registry entry, READY, demo, live, runtime-binding or broker change,
 and the v1.1.2 S1 identity `d7a8ebe5…` is unchanged. The candidate contract records the approved
@@ -132,7 +133,7 @@ python scripts/asw_v112_60d_replay.py --date 2026-10-12 --out <dir>/asw_v112_60d
 python -m pytest -q  # final integrated result recorded below
 ```
 
-Final integration checks on the repaired branch: `python -m pytest -q` — **2,751 passed, 6 skipped**;
+Final integration checks on the repaired branch: `python -m pytest -q` — **2,763 passed, 6 skipped**;
 changed-file Ruff — PASS; `npm run lint` — PASS; Node tests — **27 passed**; docs links — PASS;
 authority drift — 0 blocking errors. The docs prose drift scan reports existing advisories only.
 The two old Python dependency/setup gaps were filled with the pinned repository dependencies before
