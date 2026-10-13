@@ -16,7 +16,7 @@ canonical ticket gating (v1_tickets.manual_ticket) is unchanged.
 from __future__ import annotations
 
 import datetime as dt
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from reporting.common import archive_observation, block, observational_canonical
 
@@ -79,7 +79,8 @@ def guard_verdicts(row: Dict[str, Any]) -> List[str]:
     return out
 
 
-def observe_row(row: Dict[str, Any], *, now: dt.datetime, policy=None) -> Dict[str, Any]:
+def observe_row(row: Dict[str, Any], *, now: dt.datetime, policy=None,
+                balance: Optional[float] = None) -> Dict[str, Any]:
     report_class = _class_for(row)
     raw = dict(row)
     if report_class in ("BLOCKED", "OUT_OF_SESSION") and raw.get("decision") == "READY":
@@ -100,17 +101,22 @@ def observe_row(row: Dict[str, Any], *, now: dt.datetime, policy=None) -> Dict[s
         canonical["verification_status"] = canonical.get("scope_verification_status") or "UNVERIFIED"
         if canonical["verification_status"] == "SUSPENDED":
             block(canonical, "SCOPE_SUSPENDED")
-    canonical["sizing_inputs"] = {"commission_R": row.get("commission_R")}
-    return canonical
+    from reporting.sizing_preview import attach_inputs
+    # The row's own read-only spread (ask - bid) and account-bound commission; no bid/ask is re-read here.
+    spread = row.get("spread_R") * abs(row["entry"] - row["stop_loss"]) if (
+        isinstance(row.get("spread_R"), (int, float)) and row.get("entry") is not None
+        and row.get("stop_loss") is not None) else None
+    return attach_inputs(canonical, spread=spread, commission_R=row.get("commission_R"), balance=balance)
 
 
-def run_ccfd_lane(now: dt.datetime, *, feed, archive_root: str, policy=None) -> List[Dict[str, Any]]:
+def run_ccfd_lane(now: dt.datetime, *, feed, archive_root: str, policy=None,
+                  balance: Optional[float] = None) -> List[Dict[str, Any]]:
     """Evaluate both instruments (never silently omitted) and archive one observation per row."""
     from v1_tickets.crypto_cfd import run_crypto_cfd_windows
     out = []
     for row in run_crypto_cfd_windows(now, feed=feed, archive_root=archive_root):
         row = row[0] if isinstance(row, tuple) else row     # (ticket, archive_path)
-        canonical = observe_row(row, now=now, policy=policy)
+        canonical = observe_row(row, now=now, policy=policy, balance=balance)
         archive_observation(archive_root, FAMILY, canonical)
         out.append(canonical)
     return out

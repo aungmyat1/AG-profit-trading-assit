@@ -336,11 +336,13 @@ def format_run_identity(ident: dict) -> str:
     return "RUN_IDENTITY " + " ".join(f"{k}={json.dumps(v)}" for k, v in ident.items())
 
 
-def require_pinned_demo_account(mt5, root=None, terminal_path: str = "") -> "tuple[bool, str]":
+def require_pinned_demo_account(mt5, root=None, terminal_path: str = "",
+                                capture: "dict | None" = None) -> "tuple[bool, str]":
     """OD1012-ACCOUNT: fail closed unless the connected terminal is the pinned DEMO account
     (server, login suffix, trade mode; config/account_pin.yaml) and, when MT5_TERMINAL_PATH /
     --terminal-path names a terminal, the attached terminal is that one. Read-only; the status
-    never carries the login, balance or equity."""
+    never carries the login, balance or equity. `capture` (optional) receives the same account_info
+    object under "account" so a caller reuses this one read instead of issuing another (OD1014 B2)."""
     from host_evidence.account_pin import ACCOUNT_PIN_MISMATCH, check_account, load_pin
 
     requested = requested_terminal_path(terminal_path)
@@ -356,6 +358,8 @@ def require_pinned_demo_account(mt5, root=None, terminal_path: str = "") -> "tup
         account = call_with_timeout(mt5.account_info)
     except Exception as exc:  # noqa: BLE001
         return False, f"{ACCOUNT_PIN_MISMATCH} ACCOUNT_INFO_UNAVAILABLE {type(exc).__name__}"
+    if capture is not None:
+        capture["account"] = account
     pin = load_pin(root) if root is not None else load_pin()
     return check_account(account, pin, getattr(mt5, "ACCOUNT_TRADE_MODE_DEMO", 0))
 

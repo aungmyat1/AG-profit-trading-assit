@@ -3,8 +3,9 @@
 Evaluates the declared FX session scopes read-only with the frozen v1.1.2 candidate contract
 (`fx.SCOPED_CANDIDATE_PATH`) and without the runtime S1 scope block, producing REPORT_ONLY
 observations. S1 (GBPUSD x ASIAN_LONDON) is skipped: its existing canonical READY path is untouched.
-EURUSD x ASIAN_LONDON stays SUSPENDED (L3) and is reported as a BLOCKED diagnostic without evaluation.
-Strategy rules are not modified; nothing here can produce READY.
+OD1014-FAST D3: on this lane only, EURUSD x ASIAN_LONDON is evaluated with the v1.1.3 candidate contract
+(append-only dispatch, PR #186/#193) and stamped NOT_VERIFIED; the registry suspension of the v1.1.2 scope
+and S1 are untouched. Strategy rules are not modified; nothing here can produce READY.
 """
 from __future__ import annotations
 
@@ -24,42 +25,51 @@ from v1_tickets import fx as v1_fx
 
 FAMILY = "session_fx_gold"
 S1_SCOPE = ("GBPUSD", "ASIAN_LONDON")
-SUSPENDED_SCOPES = {("EURUSD", "ASIAN_LONDON"): "SUSPENDED_L3_REPAINT"}
-STRATEGY_PATH = v1_fx.SCOPED_CANDIDATE_PATH          # v1.1.2 candidate; v1.1.3 (PR #186) stays separate
+SUSPENDED_SCOPES: Dict[tuple, str] = {}             # OD1014-FAST D3: EURUSD x ASIAN_LONDON moved to v1.1.3 below
+STRATEGY_PATH = v1_fx.SCOPED_CANDIDATE_PATH          # v1.1.2 candidate (default for every other scope)
+V113_PATH = "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_3.yaml"
+# Report-lane-only per-scope contract (v1.1.3 append-only dispatch via v1_tickets.fx.build_fx_ticket).
+SCOPE_STRATEGY_PATHS = {("EURUSD", "ASIAN_LONDON"): V113_PATH}
+NOT_VERIFIED = "NOT_VERIFIED"
+
+
+def strategy_path_for(symbol: str, cycle: str) -> str:
+    return SCOPE_STRATEGY_PATHS.get((symbol, cycle), STRATEGY_PATH)
 
 
 def evaluate_scope(symbol: str, cycle: str, *, now: dt.datetime, day: dt.date,
                    candle_provider: Callable[..., Any], data_source: str = "MT5_VT_MARKETS_DEMO",
-                   policy=None) -> Optional[Dict[str, Any]]:
+                   policy=None, account: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
     """One observational canonical ticket for (symbol, cycle), or None for S1 (owned by the canonical path)."""
     if (symbol, cycle) == S1_SCOPE:
         return None
-    trade_end = v1_fx.session_windows_utc(day, strategy_path=STRATEGY_PATH)[cycle]["trade"][1]
+    path = strategy_path_for(symbol, cycle)
+    trade_end = v1_fx.session_windows_utc(day, strategy_path=path)[cycle]["trade"][1]
     blocked = SUSPENDED_SCOPES.get((symbol, cycle))
     if blocked:
         raw = v1_fx.build_fx_error_ticket(symbol, cycle, day, evaluated_at=now, reason_code=blocked,
                                           detail="scope suspended for this strategy version; not evaluated",
                                           decision="BLOCKED", data_source=data_source,
-                                          strategy_path=STRATEGY_PATH)
-        return observational_canonical(raw, now=now, window_end=trade_end, report_class="BLOCKED", policy=policy)
+                                          strategy_path=path)
+        return _stamp(observational_canonical(raw, now=now, window_end=trade_end, report_class="BLOCKED", policy=policy), path)
     try:
         bundle = candle_provider(symbol, cycle, day, now)
     except Exception as exc:  # noqa: BLE001 -- data failure is an observation, never a guess
         raw = v1_fx.build_fx_error_ticket(symbol, cycle, day, evaluated_at=now, reason_code=type(exc).__name__,
                                           detail=str(exc)[:300], decision="DATA_ERROR", data_source=data_source,
-                                          strategy_path=STRATEGY_PATH)
-        canonical = observational_canonical(raw, now=now, window_end=trade_end, report_class="DATA_ERROR",
-                                            policy=policy)
+                                          strategy_path=path)
+        canonical = _stamp(observational_canonical(raw, now=now, window_end=trade_end, report_class="DATA_ERROR",
+                                                   policy=policy), path)
         canonical["data_error_diagnostics"] = data_error_diagnostics(exc, symbol=symbol, cycle=cycle, now=now)
         return canonical
     if bundle is None:
         raw = v1_fx.build_fx_error_ticket(symbol, cycle, day, evaluated_at=now, reason_code="NO_CANDLE_DATA",
                                           detail="candle provider returned no data", decision="DATA_ERROR",
-                                          data_source=data_source, strategy_path=STRATEGY_PATH)
-        return observational_canonical(raw, now=now, window_end=trade_end, report_class="DATA_ERROR", policy=policy)
+                                          data_source=data_source, strategy_path=path)
+        return _stamp(observational_canonical(raw, now=now, window_end=trade_end, report_class="DATA_ERROR", policy=policy), path)
     raw = v1_fx.build_fx_ticket(symbol, cycle, day, list(bundle.session_candles), bundle.expected_bar_count,
                                 list(bundle.post_session_candles), data_source=data_source, evaluated_at=now,
-                                data_close=bundle.data_close, spread=bundle.spread, strategy_path=STRATEGY_PATH,
+                                data_close=bundle.data_close, spread=bundle.spread, strategy_path=path,
                                 runtime_scope=False)
     canonical = observational_canonical(raw, now=now, current_price=bundle.current_price, window_end=trade_end,
                                         policy=policy)
@@ -67,7 +77,12 @@ def evaluate_scope(symbol: str, cycle: str, *, now: dt.datetime, day: dt.date,
     canonical["last_m15_bar_utc"] = post[-1].time.isoformat() if post else None     # C22-R2 item 3
     if raw.get("decision") == "SPREAD_TOO_WIDE" and canonical.get("decision") not in UNACTIONABLE_DECISIONS:
         canonical = guard_candidate(canonical, [spread_verdict(raw)])
-    return finalize_candidate(canonical)
+    from reporting.sizing_preview import attach_inputs
+    account = account or {}
+    attach_inputs(canonical, spread=bundle.spread, commission_R=account.get("commission_R"),
+                  balance=account.get("balance"), account_currency=account.get("currency"),
+                  mid=bundle.current_price, quote_time=now.isoformat())   # provider quote is <= 15 min old
+    return finalize_candidate(canonical, path)
 
 
 def spread_verdict(raw: Dict[str, Any]) -> str:
@@ -91,9 +106,18 @@ def data_error_diagnostics(exc: BaseException, *, symbol: str, cycle: str, now: 
             "evaluation_time_utc": extra.get("evaluation_time_utc")}
 
 
-def finalize_candidate(canonical: Dict[str, Any]) -> Dict[str, Any]:
+
+def _stamp(canonical: Dict[str, Any], path: str) -> Dict[str, Any]:
+    """A report-lane-only v1.1.3 scope is NOT_VERIFIED by construction (no registry record is consulted)."""
+    if path == V113_PATH:
+        canonical["verification_status"] = NOT_VERIFIED
+        canonical["scope_verification_status"] = NOT_VERIFIED
+    return canonical
+
+
+def finalize_candidate(canonical: Dict[str, Any], path: str = STRATEGY_PATH) -> Dict[str, Any]:
     """Contract target order first, then: a SUSPENDED scope is never presented as a candidate."""
-    canonical = enforce_target_order(canonical, STRATEGY_PATH)
+    canonical = _stamp(enforce_target_order(canonical, path), path)
     if canonical.get("report_class") == "CANDIDATE" and canonical.get("scope_verification_status") == "SUSPENDED":
         block(canonical, "SCOPE_SUSPENDED")
     return canonical
@@ -122,13 +146,14 @@ def enforce_target_order(canonical: Dict[str, Any], strategy_path: str) -> Dict[
 
 
 def run_asw_lane(*, now: dt.datetime, day: dt.date, cycles: Sequence[str], candle_provider: Callable[..., Any],
-                 archive_root: str, data_source: str = "MT5_VT_MARKETS_DEMO", policy=None) -> List[Dict[str, Any]]:
+                 archive_root: str, data_source: str = "MT5_VT_MARKETS_DEMO", policy=None,
+                 account: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
     """All non-S1 declared scopes of the given cycles, each archived before it is returned."""
     out: List[Dict[str, Any]] = []
     for cycle in cycles:
         for symbol in v1_fx.V1_FX_SYMBOLS:
             canonical = evaluate_scope(symbol, cycle, now=now, day=day, candle_provider=candle_provider,
-                                       data_source=data_source, policy=policy)
+                                       data_source=data_source, policy=policy, account=account)
             if canonical is not None:
                 archive_observation(archive_root, FAMILY, canonical)
                 out.append(canonical)
