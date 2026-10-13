@@ -81,7 +81,7 @@ A ticket is blocked, and routed `REPORT_ONLY` with the block reason, if any of t
 |---|---|---|
 | Risk | `risk_pct` = 0.5 (owner ticket config; no fallback to strategy or `trading.yaml` risk). | OD1009-D2, OD1010-C6-RISK |
 | Cost | Spread + commission ≥ **0.25R** blocks (`cost_block_R`). | OD1009-D2 |
-| Crypto spread | Crypto CFD spread > **20%** blocks. Config key is missing, so the guard **fails closed** until the key is added. | Owner ratification 2026-10-09 as stated by the owner (register `OD1009-CRYPTO-SPREAD`); config key pending (follow-up b) |
+| Crypto spread | Crypto CFD spread > **20%** of the stop/risk distance blocks (exactly 20% warns). | Owner ratification 2026-10-09 as stated by the owner (register `OD1009-CRYPTO-SPREAD`); key exists as `spread_block_pct: 20` (percent) in [`config/v1_tickets/crypto_cfd_ticket_policy.yaml`](../config/v1_tickets/crypto_cfd_ticket_policy.yaml), read by `src/v1_tickets/crypto_cfd_policy.py` |
 | Large-SMC reward | `lsmc_min_remaining_reward_fraction` = 0.5 (≥ 50% of entry-to-target distance remaining). | `config/policy/actionability_policy.yaml` |
 
 Cadence and session guards that apply to the same routing lanes:
@@ -118,9 +118,24 @@ The 2026-10-09 flow in which an owner Confirm places an order (Issue #47 V5 per-
 
 No scope is `LOGIC_VERIFIED` or `EXECUTION_ELIGIBLE` by this section. No runtime routing registry exists, so every ticket is `REPORT_ONLY` with reason `REGISTRY_ENTRY_MISSING` until the separately authorized registry PR lands. Strategy admission, READY, runtime binding and host acceptance are unchanged. This section sets target policy only and is not evidence that any gate has passed.
 
+### OD1014 opportunity tickets (owner-directed, pending ratification, 2026-10-13)
+
+Register entries `OD1014` and `OD1014-FAST` (`OWNER_DIRECTED_PENDING_RATIFICATION`). On the `REPORT_ONLY` lane, verification status no longer suppresses a priced plan: all three families send priced **OPPORTUNITY** tickets stamped with their scope's verification status, fail closed on missing inputs and are never executable. READY, the registry, contracts and demo/live flags are unchanged.
+
+| Item | State | Where |
+|---|---|---|
+| ASW priced CANDIDATE on unverified scopes | IMPLEMENTED | `src/reporting/asw_lane.py` (v1.1.2 `SCOPED_CANDIDATE_PATH`) |
+| CCFD unverified-only row → CANDIDATE (1.0.0 identity stamp) | IMPLEMENTED_NOT_HOST_VERIFIED | PR #200 |
+| LSMC SHORT C10 stop from the read-only MT5 tick | IMPLEMENTED_NOT_HOST_VERIFIED | PR #200 |
+| Display-only lot preview / cost-in-R on CANDIDATE | IMPLEMENTED_NOT_HOST_VERIFIED | PR #200 |
+| `OPPORTUNITY -- REPORT ONLY -- NON-ACTIONABLE (verification: <status>)` headers | IMPLEMENTED_NOT_HOST_VERIFIED | PR #200 |
+| EURUSD × ASIAN_LONDON report lane on v1.1.3, `NOT_VERIFIED` (OD1014-FAST D3) | IMPLEMENTED_NOT_HOST_VERIFIED | PR #200 |
+
+PR #200: https://github.com/aungmyat1/AG-profit-trading-assit/pull/200
+
 ### Follow-ups (not in this PR)
 
-(a) Executor change replacing per-order `user_confirmed` for `EXECUTION_ELIGIBLE` scopes. (b) Config key for the crypto spread >20% block. (c) Runtime scope registry and loader. (d) Read-only all-family Telegram status reports, the next implementation priority.
+(a) Executor change replacing per-order `user_confirmed` for `EXECUTION_ELIGIBLE` scopes. (c) Runtime scope registry and loader. (d) Read-only all-family Telegram status reports, the next implementation priority.
 
 ## Objective
 
