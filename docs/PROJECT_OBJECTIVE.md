@@ -124,7 +124,7 @@ No scope is `LOGIC_VERIFIED` or `EXECUTION_ELIGIBLE` by this section. No runtime
 
 ## Verification-phase opportunity tickets (OD1014, 2026-10-14)
 
-This section is an additive reporting-policy clarification; it does not override any authorization, risk, guard or routing rule above. Register entries `OD1014` and `OD1014-FAST` (`OWNER_DIRECTED_PENDING_RATIFICATION`).
+This section is an additive reporting-policy clarification; it does not override any authorization, risk, guard or routing rule above. Ratification is recorded in the [owner decision register](governance/OWNER_DECISION_REGISTER.md), entries `OD1014` and `OD1014-FAST` (owner Aung, 2026-10-14, `AGP-OD1014-RATIFY-R1`).
 
 A priced OPPORTUNITY contains strategy-generated prices calculated from validated VT Markets MT5 market data. These are observational strategy outputs, not fabricated examples, but their trading correctness has not necessarily been verified. They are non-actionable and carry no execution authority.
 
@@ -164,6 +164,21 @@ On each applicable FX trading day, EURUSD, GBPUSD, USDJPY and XAUUSD are each ev
 Under ratified C14, a strategy with separate, valid, scoped standing DEMO authorization may submit eligible orders automatically after every runtime, READY, host, risk and broker gate passes; no per-order owner confirmation is required for that authorized scope. Confirm/Reject remains optional decision capture and cannot grant or extend authorization. Until `demo_authorized=true` is explicitly established through the governed authorization path, broker execution remains blocked. Live real-money execution is outside this objective.
 
 `LOGIC_VERIFIED`, `ACTIONABLE`, `EDGE_VERIFIED`, `DEMO_AUTHORIZED`, and `LIVE_AUTHORIZED` are independent states. Ticket readiness or logical verification never implies economic edge or execution authority.
+
+## Parallel automatic DEMO execution and proposal-quality reporting (owner directive 2026-10-14)
+
+**Target behavior, not current activation.** After a frozen strategy × instrument × session × branch scope passes L1–L6 (`LOGIC_VERIFIED`) and separately obtains the required standing, revocable owner DEMO authorization, runtime binding, READY, host, risk, broker and send-time guards, **each newly generated eligible proposal is automatically submitted to the designated VT Markets MT5 Demo account without per-order owner confirmation**. No trade is forced: invalid, stale, duplicate, over-limit, blocked or otherwise ineligible proposals are not submitted. A passing verification result never retroactively executes an earlier proposal. Live execution remains prohibited.
+
+**Two concurrent lanes, one authoritative event ledger:**
+
+1. **AUTO_DEMO lane:** Validate the immutable proposal identity and scope, current market data, costs, geometry, 0.5% risk sizing, account identity, exposure and daily limits, notification-delivery policy, broker `order_check`, duplicate/idempotency state and emergency stop. On success, submit through the single canonical execution boundary and reconcile the broker's accepted, rejected or uncertain outcome. On any failure, do not submit and record the precise block reason. An uncertain broker outcome is reconciled before any retry; never blindly resend.
+2. **TELEGRAM + QUALITY lane:** Record and report **every generated proposal**, including REPORT_ONLY / non-verified opportunities, eligible proposals, blocked or rejected proposals, submitted orders and broker-uncertain outcomes. Continue scheduled opportunity alerts, position and close updates, and daily/per-strategy summaries independently of the execution worker. Reports identify strategy/version/contract, scope, timestamp, proposal ID, verification and authorization states, entry/SL/contracted targets, valid sizing and costs (or explicit unavailable reason), execution decision, broker outcome and block reason. Use the approved mobile-friendly ASCII layout. Never describe a proposal as filled until broker reconciliation confirms it.
+
+**Ordering and delivery:** Parallel operation means independent processing and durable correlation, **not** bypassing the existing OD1012-S1-NOTIFY `BLOCK_NEW_ORDERS` policy. A mandatory pre-order Telegram notice must have confirmed delivery before an authorized order is sent. Routine downstream summaries and outcome notifications must not block unrelated scanning or position monitoring. Delivery and order events are deduplicated across retries and restarts.
+
+**Quality measurement:** Maintain proposal-to-execution-to-close provenance and report per exact strategy version/scope: generated, eligible, executed, blocked, expired and missed counts; execution/rejection rate; win rate; gross/net R, expectancy, realized demo P/L, spread/commission/slippage, drawdown and session/instrument breakdown. Distinguish unexecuted proposals from realized trades, and missing economic data from zero costs. Demo results are observational evidence and do not automatically promote `EDGE_VERIFIED`.
+
+**Governance:** This is a product objective amendment only. It grants no new READY or AUTO_DEMO authority, does not alter `demo_authorized=false`, `live_authorized=false`, `enabled: false`, or the current per-order `user_confirmed` runtime invariant. The latter is superseded for standing-authorized scopes only when the separately reviewed canonical executor and matching governance/invariant changes land together. No strategy, scheduler, risk configuration or broker state changes are authorized by this document.
 
 ## Scope
 

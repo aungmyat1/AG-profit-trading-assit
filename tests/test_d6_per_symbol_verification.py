@@ -194,7 +194,7 @@ def test_scheduler_blocks_every_out_of_scope_combo_before_provider(tmp_path, sym
     result = evaluate_fx_pair(symbol, cycle, now=AT, day=DAY,
         candle_provider=lambda *_: pytest.fail("out-of-scope scheduler must not access market data"),
         archive_root=str(tmp_path), ticket_source="LIVE")
-    assert result.canonical["reason_code"] == "LOGIC_SCOPE_NOT_VERIFIED"
+    assert result.canonical["reason_code"] == "SCOPE_NOT_S1"
 
 
 def test_scheduler_s1_identity_mismatch_fails_closed_before_provider(tmp_path, monkeypatch):
@@ -203,7 +203,8 @@ def test_scheduler_s1_identity_mismatch_fails_closed_before_provider(tmp_path, m
     result = daily_evaluator.evaluate_fx_pair("GBPUSD", "ASIAN_LONDON", now=AT, day=DAY,
         candle_provider=lambda *_: pytest.fail("identity mismatch must block before data"),
         archive_root=str(tmp_path), ticket_source="LIVE")
-    assert result.canonical["reason_code"] == "LOGIC_SCOPE_NOT_VERIFIED"
+    assert result.canonical["reason_code"] == "SCOPE_IDENTITY_MISMATCH"
+    assert result.canonical["decision"] == "BLOCKED"
 
 
 def test_apply_ready_authority_passes_ticket_scope(d6_on):

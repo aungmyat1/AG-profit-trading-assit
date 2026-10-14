@@ -1,7 +1,6 @@
-"""C11 import point only; intentionally no concrete broker adapter exists here.
-
-The host's already-reviewed canonical execute_command boundary must supply these
-operations when C11 is imported. This Protocol does not implement, wrap, or call MT5.
+"""The canonical broker interface. Its single implementation is
+:class:`demo_execution.mt5_canonical_adapter.MT5CanonicalAdapter` (B', C14); this Protocol does not
+implement, wrap, or call MT5 itself.
 
 Boundary contract (hardened 2026-10-11): every operation takes the execution-authority
 object *and* the single-use authorization that

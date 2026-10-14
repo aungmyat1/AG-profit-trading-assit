@@ -79,3 +79,28 @@ order, each under an R1 lock:
 2. Gate 4: the guard block-path tests.
 
 Record each gate as PASS or FAIL with its evidence.
+
+
+## Status since this record (as of merge)
+
+Append-only update, 2026-10-14, `CODEX-AGP-PR219-FIX-R1`; integrated main
+`8416817f972d4238674742b26c56c2fc9caac98e`. The dated findings above are retained.
+The verdict remains **BLOCKED**, with no host acceptance or order authority granted.
+
+- **#220 merged:** distinct S1 block reasons and no summary-only S1 cycle address
+  the recorded 07:01Z/07:16Z observation. This is a code correction, not evidence
+  that those historical deliveries occurred or that a host re-run passed.
+- **A' N-scope admission boundary merged** in #220; historical scope findings above
+  remain attributed to their original baseline.
+- **B1 canonical adapter = #225 (merged, inert).** Gate 4 re-run must target
+  `guarded_adapter -> mt5_canonical_adapter`, not the previous adapter path.
+  The adapter's existence does not authorize an order or establish host acceptance.
+- **Runtime risk snapshot builder: MISSING.** `admission.py:319` consumes a supplied
+  snapshot; `scripts/host/s1_readonly_acceptance.py:56` passes `None`. Gate 4 must
+  include the builder once D' lands; an unwired date helper is not that builder.
+- **Host RAM gate: 1200 MB** remains the Gate 3–4 blocker. Managed-sandbox tests
+  do not satisfy the host RAM gate, clock/data checks or host acceptance.
+
+No dated finding above is rewritten. No engine, contract, registry, READY, flag,
+schedule, runtime code, broker or Telegram operation changes in this update.
+Validation is reported on this PR's exact head; unrun host gates remain NOT_RUN.

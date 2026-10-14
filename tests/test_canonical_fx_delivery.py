@@ -144,10 +144,16 @@ def test_suppressed_ready_is_persisted_but_never_alerted(tmp_path):
     results, lines, journal, _, _ = run(tmp_path, send=send)
     assert results and all(r.decision == "INFO_ONLY_SUPPRESSED" for r in results)
     assert all(r.canonical["presentation"] == "INFO_ONLY" for r in results)
-    assert calls == []                                    # no immediate alert for a suppressed signal
-    assert all("delivery=summary_only" in ln for ln in lines)
+    # No immediate ticket alert for a suppressed signal; S1 still gets its compact cycle status (no levels).
+    assert send.delivery_attempts("ticket", [r.ticket_id for r in results]) == []
+    assert len(calls) == 1 and calls[0][1].startswith("S1 CYCLE | GBPUSD ASIAN_LONDON")
+    assert "decision: INFO_ONLY_SUPPRESSED" in calls[0][1]
+    assert not any(k in calls[0][1] for k in ("entry", "sl:", "tp1", "tp2", "lot"))
+    assert all("delivery=summary_only" in ln for ln in lines if " GBPUSD " not in ln)
+    assert any(" GBPUSD " in ln and "delivery=sent" in ln for ln in lines)
     result_events = [e for e in events(journal, NOW.date(), "ASIAN_LONDON") if e["stage"] == "RESULT"]
-    assert {e["delivery_state"] for e in result_events} == {"summary_only"}
+    assert {e["symbol"]: e["delivery_state"] for e in result_events} == {
+        "EURUSD": "summary_only", "GBPUSD": "sent", "USDJPY": "summary_only", "XAUUSD": "summary_only"}
     stored = TicketStore(os.path.join(journal, "ticket_store")).evaluations()
     assert len(stored) == 4 and {r["state"] for r in stored} == {"INFO_ONLY_SUPPRESSED"}
 
@@ -218,12 +224,16 @@ def test_restart_keeps_identity_and_never_resends(tmp_path):
     store = TicketStore(os.path.join(journal, "ticket_store"))
     rows_before = len(store.evaluations())
 
-    again, _, _, _, _ = run(tmp_path, send=send)
+    again, lines, _, _, _ = run(tmp_path, send=send)
     assert [r.ticket_id for r in again] == first_ids          # stable logical identity
     assert all(r.ticket_store_written is False for r in again)
     assert len(store.evaluations()) == rows_before            # no duplicate durable rows
-    assert events(journal, NOW.date(), "ASIAN_LONDON") == first_events   # checksummed events dedupe
-    assert len(calls) == 0                                    # suppressed decisions never alert
+    later = events(journal, NOW.date(), "ASIAN_LONDON")
+    assert later[:len(first_events)] == first_events          # checksummed events dedupe; nothing rewritten
+    assert all(e["symbol"] == "GBPUSD" and e["delivery_state"] in ("pending", "duplicate")
+               for e in later[len(first_events):])            # only the S1 status re-attempt is journaled
+    assert any(" GBPUSD " in ln and "delivery=duplicate" in ln for ln in lines)
+    assert len(calls) == 1                                    # S1 status sent once; never resent
 
 
 def test_watch_ready_equivalent_send_is_deduplicated_across_restart(tmp_path):
@@ -244,7 +254,8 @@ def test_host_prerequisite_failure_records_replay_none_not_live(tmp_path):
     results, lines, journal, _, _ = run(
         tmp_path, send=send, source="REPLAY", data_source="NONE",
         provider=cfd.failure_provider("MT5_PACKAGE_MISSING", "MetaTrader5 package unavailable"))
-    assert len(results) == 4 and calls == []
+    # Only the S1 cycle reports its failure (compact status); the other scopes stay summary-only.
+    assert len(results) == 4 and len(calls) == 1 and "decision: INSUFFICIENT_DATA" in calls[0][1]
     assert all(r.decision == "INSUFFICIENT_DATA" for r in results)
     assert all(r.venue == "NONE" for r in results)
     rows = TicketStore(os.path.join(journal, "ticket_store")).evaluations()
@@ -329,8 +340,8 @@ def test_summary_complete_session_reports_expected_and_recorded(tmp_path):
     assert digest["terminal_counts"] == {"INFO_ONLY_SUPPRESSED": 4}
     assert digest["data_failure_count"] == 0 and digest["persistence_failure_count"] == 0
     assert digest["compatibility_error_count"] == 0
-    assert digest["delivery_counts"]["summary_only"] == 4
-    assert digest["delivery_counts"]["succeeded"] == 0
+    assert digest["delivery_counts"]["summary_only"] == 3       # S1 sends its compact cycle status
+    assert digest["delivery_counts"]["succeeded"] == 1
     assert digest["execution_authorized"] is False
     assert [row["symbol"] for row in digest["per_instrument"]] == list(V1_FX_SYMBOLS)
     assert all(row["ticket_store_status"] == "VERIFIED" for row in digest["per_instrument"])
@@ -736,12 +747,13 @@ def test_disabled_sender_writes_no_journal_and_sends_nothing(tmp_path):
     assert len(results) == 4 and calls == []
     assert not (tmp_path / "delivery.sqlite").exists()
     # Production READY authority is OFF, so every decision is non-alerting before the gate is
-    # even consulted; the digest still records that messaging was disabled for this session.
-    assert all("delivery=summary_only" in ln for ln in lines)
+    # even consulted; the S1 cycle status is attempted and recorded as disabled (never silently dropped).
+    assert all("delivery=summary_only" in ln for ln in lines if " GBPUSD " not in ln)
+    assert any(" GBPUSD " in ln and "delivery=disabled" in ln for ln in lines)
     digest = cfd.build_session_summary(journal, session_date=NOW.date(), session="ASIAN_LONDON", sender=send)
     assert digest["delivery_enabled"] is False
-    assert digest["delivery_counts"] == {"succeeded": 0, "failed": 0, "uncertain": 0, "disabled": 0,
-                                         "blocked": 0, "summary_only": 4, "persistence_failed": 0,
+    assert digest["delivery_counts"] == {"succeeded": 0, "failed": 0, "uncertain": 0, "disabled": 1,
+                                         "blocked": 0, "summary_only": 3, "persistence_failed": 0,
                                          "not_attempted": 0}
 
 

@@ -128,15 +128,18 @@ def test_no_broker_mutation_reachable_from_scheduler_ticket_report_path():
                 assert not node.attr.startswith("TRADE_ACTION_"), f"{path}:{node.lineno}"
 
 
-def test_no_order_send_call_site_anywhere_in_repo():
+def test_exactly_one_order_send_call_site():
+    """Replaces the zero-call-site rule (B1, C14): exactly one order_check and one order_send call site,
+    both in the path-pinned canonical adapter src/demo_execution/mt5_canonical_adapter.py."""
     hits = []
     for base in (ROOT / "src", ROOT / "scripts"):
         for path in base.rglob("*.py"):
             for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
                 if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and \
                         node.func.attr in ("order_send", "order_check"):
-                    hits.append(f"{path}:{node.lineno}")
-    assert hits == []
+                    hits.append((path.relative_to(ROOT).as_posix(), node.func.attr))
+    assert sorted(hits) == [("src/demo_execution/mt5_canonical_adapter.py", "order_check"),
+                            ("src/demo_execution/mt5_canonical_adapter.py", "order_send")]
 
 
 def test_report_counts_data_error_separately_and_not_run(tmp_path):

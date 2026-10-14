@@ -26,6 +26,33 @@ from v1_tickets.canonical_ticket import append_archive, build_canonical_ticket
 from v1_tickets.policy_loader import ActionabilityPolicy, load_policy
 
 STRATEGY_PATH = v1_fx.STRATEGY_PATH
+# Runtime S1 scope block reasons (AGP-S1-BLOCK-REASON-FIX-R1): one distinct code per path, all BLOCKED.
+# Named here, at the evaluator boundary: v1_tickets/fx.py is in the ASW v1.1.3 logic identity set and stays
+# byte-identical, so its shared LOGIC_SCOPE_NOT_VERIFIED is re-coded on the way out (scope_block_reason).
+SCOPE_NOT_S1 = "SCOPE_NOT_S1"                                    # symbol/cycle is not the S1 scope
+SCOPE_IDENTITY_MISMATCH = "SCOPE_IDENTITY_MISMATCH"              # contract/engine identity != registry record
+BRANCH_OUTSIDE_VERIFIED_SCOPE = "BRANCH_OUTSIDE_VERIFIED_SCOPE"  # engine emitted a non RANGE_SWEEP branch
+
+
+def scope_block_reason(ticket: Dict[str, Any]) -> Dict[str, Any]:
+    """Re-code fx.build_fx_ticket's shared runtime-scope block. Its branch path (fx.py:216) carries the
+    engine's regime/setup; its identity path (fx.py:174) does not. Decision stays BLOCKED."""
+    if ticket.get("decision") != "BLOCKED" or ticket.get("reason_code") != "LOGIC_SCOPE_NOT_VERIFIED":
+        return ticket
+    if ticket.get("regime") is not None or ticket.get("setup") is not None:
+        branch = f"{ticket.get('regime')}_{ticket.get('setup')}"
+        code, extra = BRANCH_OUTSIDE_VERIFIED_SCOPE, {"emitted_branch": branch}
+        detail = f"emitted branch {branch} is outside verified S1 scope (RANGE_SWEEP)"
+    else:
+        s1 = (ticket.get("symbol"), ticket.get("cycle")) == ("GBPUSD", "ASIAN_LONDON")
+        code, extra = (SCOPE_IDENTITY_MISMATCH if s1 else SCOPE_NOT_S1), {}
+        detail = ("S1 contract or engine identity does not match the registry record" if s1
+                  else f"{ticket.get('symbol')}/{ticket.get('cycle')} outside S1 (GBPUSD/ASIAN_LONDON)")
+    # Every path rewrites the primary and the full block-reason list: the shared code never survives.
+    return {**ticket, **extra, "reason_code": code, "detail": detail,
+            "primary_block_reason": code, "block_reasons": [code]}
+
+
 SCOPED_CANDIDATE_PATH = v1_fx.SCOPED_CANDIDATE_PATH
 
 FX_PAIRS: List[Tuple[str, str]] = [
@@ -132,7 +159,7 @@ def evaluate_fx_pair(
     strategy_path = strategy_path or _bound_strategy_path(ticket_source)
     if runtime_scope and (symbol, cycle) != ("GBPUSD", "ASIAN_LONDON"):
         blocked = v1_fx.build_fx_error_ticket(symbol, cycle, day, evaluated_at=now,
-            reason_code="LOGIC_SCOPE_NOT_VERIFIED", detail=f"{symbol}/{cycle} outside S1",
+            reason_code=SCOPE_NOT_S1, detail=f"{symbol}/{cycle} outside S1 (GBPUSD/ASIAN_LONDON)",
             decision="BLOCKED", data_source=data_source, strategy_path=strategy_path)
         return _finalize(blocked, now=now, current_price=None, window_end=None, archive_root=archive_root,
                          venue=data_source, policy=policy, ticket_source=ticket_source)
@@ -140,7 +167,8 @@ def evaluate_fx_pair(
     if runtime_scope and (not v1_fx.symbol_scope_verified(strategy.strategy_id, strategy.version, symbol, cycle,
             setup="SWEEP", branch="RANGE_SWEEP", contract_path=strategy.source_path)):
         blocked = v1_fx.build_fx_error_ticket(symbol, cycle, day, evaluated_at=now,
-            reason_code="LOGIC_SCOPE_NOT_VERIFIED", detail="S1 contract or engine identity mismatch",
+            reason_code=SCOPE_IDENTITY_MISMATCH,
+            detail=f"S1 contract or engine identity does not match the registry record ({strategy.version})",
             decision="BLOCKED", data_source=data_source, strategy_path=strategy_path)
         return _finalize(blocked, now=now, current_price=None, window_end=None, archive_root=archive_root,
                          venue=data_source, policy=policy, ticket_source=ticket_source)
@@ -170,13 +198,13 @@ def evaluate_fx_pair(
                          archive_root=archive_root, venue=data_source, policy=policy,
                          ticket_source=ticket_source)
 
-    ticket = v1_fx.build_fx_ticket(
+    ticket = scope_block_reason(v1_fx.build_fx_ticket(
         symbol, cycle, day, list(bundle.session_candles), bundle.expected_bar_count,
         list(bundle.post_session_candles), data_source=data_source,
         evaluated_at=now, data_close=bundle.data_close, spread=bundle.spread,
         strategy_path=strategy_path,
         runtime_scope=(ticket_source == "LIVE"),
-    )
+    ))
     return _finalize(ticket, now=now, current_price=bundle.current_price,
                      window_end=trade_end, archive_root=archive_root, venue=data_source, policy=policy,
                      ticket_source=ticket_source, reference_bars=list(bundle.session_candles),
