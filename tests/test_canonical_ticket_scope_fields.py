@@ -50,8 +50,13 @@ def test_other_version_never_borrows_the_scope_status():
     c = canon(raw(ASW, "1.1.1", "GBPUSD", "ASIAN_LONDON"))
     assert (c["scope_verification_status"], c["scope_reason"]) == ("UNVERIFIED", "VERSION_NOT_IN_SCOPE:1.1.1")
     assert c["verification_identity"] is None
+    # OD1014-FAST D9: v1.1.3 resolves against its own registry entry, never the v1.1.2 suspension
     c = canon(raw(ASW, "1.1.3", "EURUSD", "ASIAN_LONDON"))
-    assert c["scope_reason"] == "VERSION_NOT_IN_SCOPE:1.1.3"
+    assert c["scope_verification_status"] == "LOGIC_VERIFIED" and c["scope_route"] == "REPORT_ONLY"
+    assert c["verification_identity"] == "7e2324296ab6cb56147f6709aae5f8e1633e9c32475ee0f8b3988ea31adfedc9"
+    for symbol in ("USDJPY", "XAUUSD"):
+        assert canon(raw(ASW, "1.1.3", symbol, "ASIAN_LONDON"))["scope_verification_status"] == "UNVERIFIED"
+    assert canon(raw(ASW, "1.1.4", "EURUSD", "ASIAN_LONDON"))["scope_reason"] == "VERSION_NOT_IN_SCOPE:1.1.4"
 
 
 @pytest.mark.parametrize("symbol,cycle,status", [
@@ -83,7 +88,7 @@ def test_suspended_scope_priced_candidate_stays_non_executable(monkeypatch):
 
 
 @pytest.mark.parametrize("direction,status,reason", [
-    ("SHORT", "STALE_IDENTITY", "STALE_IDENTITY"),
+    ("SHORT", "UNVERIFIED", "WINDOW_NOT_IN_SCOPE"),     # D8: verified record, but no window is recorded
     ("LONG", "UNVERIFIED", "DIRECTION_NOT_IN_SCOPE"),
 ])
 def test_ccfd_scope_is_per_direction(direction, status, reason):

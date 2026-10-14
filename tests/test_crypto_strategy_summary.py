@@ -83,7 +83,7 @@ def test_weekday_summary_due_once_after_window_end_plus_grace(tmp_path):
     assert len(calls) == 1
     text = calls[0][1]
     assert "REPORT ONLY -- NON-ACTIONABLE" in text
-    assert "- BTCUSD: STALE_IDENTITY | REPORT_ONLY (STALE_IDENTITY) [branches=SHORT]" in text
+    assert "- BTCUSD: LOGIC_VERIFIED | REPORT_ONLY (READY_AUTHORITY_OFF_D6) [branches=SHORT]" in text
     assert "- BTCUSD RESEARCH ST_LIQUIDITY_SWEEP_RETEST_V1: NO_TRADE (NO_SWEEP)" in text
     assert "- ETHUSD RESEARCH ST_LIQUIDITY_SWEEP_RETEST_V1: NO_RECORD (-)" in text
     assert "No broker order. Execution not authorized." in text

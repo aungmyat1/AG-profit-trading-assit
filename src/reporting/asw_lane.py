@@ -4,8 +4,8 @@ Evaluates the declared FX session scopes read-only with the frozen v1.1.2 candid
 (`fx.SCOPED_CANDIDATE_PATH`) and without the runtime S1 scope block, producing REPORT_ONLY
 observations. S1 (GBPUSD x ASIAN_LONDON) is skipped: its existing canonical READY path is untouched.
 OD1014-FAST D3: on this lane only, EURUSD x ASIAN_LONDON is evaluated with the v1.1.3 candidate contract
-(append-only dispatch, PR #186/#193) and stamped NOT_VERIFIED; the registry suspension of the v1.1.2 scope
-and S1 are untouched. Strategy rules are not modified; nothing here can produce READY.
+(append-only dispatch, PR #186/#193); its stamp follows the registry for v1.1.3 (D9). The registry suspension
+of the v1.1.2 scope and S1 are untouched. Strategy rules are not modified; nothing here can produce READY.
 """
 from __future__ import annotations
 
@@ -30,7 +30,6 @@ STRATEGY_PATH = v1_fx.SCOPED_CANDIDATE_PATH          # v1.1.2 candidate (default
 V113_PATH = "strategies/ST_ASIAN_SWEEP_5R_V1_1_1_3.yaml"
 # Report-lane-only per-scope contract (v1.1.3 append-only dispatch via v1_tickets.fx.build_fx_ticket).
 SCOPE_STRATEGY_PATHS = {("EURUSD", "ASIAN_LONDON"): V113_PATH}
-NOT_VERIFIED = "NOT_VERIFIED"
 
 
 def strategy_path_for(symbol: str, cycle: str) -> str:
@@ -108,10 +107,9 @@ def data_error_diagnostics(exc: BaseException, *, symbol: str, cycle: str, now: 
 
 
 def _stamp(canonical: Dict[str, Any], path: str) -> Dict[str, Any]:
-    """A report-lane-only v1.1.3 scope is NOT_VERIFIED by construction (no registry record is consulted)."""
-    if path == V113_PATH:
-        canonical["verification_status"] = NOT_VERIFIED
-        canonical["scope_verification_status"] = NOT_VERIFIED
+    """The verification stamp always follows the registry for the version the lane ran (resolve_ticket_scope,
+    already on the canonical; OD1014-FAST D9 registers v1.1.3). Fails closed to the resolver's UNVERIFIED."""
+    canonical["verification_status"] = canonical.get("scope_verification_status") or "UNVERIFIED"
     return canonical
 
 

@@ -89,7 +89,8 @@ def test_branch_scoped_logic_verified_record_is_bound_to_identity_and_evidence()
     """AGP-LANE-B3 (owner rulings 2026-10-11): LOGIC_VERIFIED per symbol x branch (OD1011-SCOPE) only where the
     60-day VT run verifies the branch (L1-L4/L6 PASS, L5 PASS per OD1011-L5, 0 event-log mismatches, every rule
     cell VT EXERCISED or SYNTHETIC_PROVEN); the 14-day run must pass too. Nothing else in the entry changes.
-    Owner ruling 2026-10-11: the record is now STALE_IDENTITY and every runtime reader fails closed."""
+    Owner ruling 2026-10-11 made the record STALE_IDENTITY; OD1014-FAST D8 (2026-10-14) re-recorded it from the
+    committed re-replay with identical verdicts."""
     import hashlib
 
     import yaml
@@ -105,12 +106,16 @@ def test_branch_scoped_logic_verified_record_is_bound_to_identity_and_evidence()
     assert entry["active"] is False and entry["research"] is True
     assert entry["demo_authorized"] is False and entry["live_authorized"] is False and "logic_status" not in entry
     version = entry["candidate_versions"]["1.0.0"]
-    # Owner ruling 2026-10-11: the record is STALE_IDENTITY (identity-set files changed on main); the recorded
-    # identity stays as history and the runtime must fail closed on the mismatch.
+    # OD1014-FAST D8: re-recorded identity == current code identity == the committed re-replay's identity; the
+    # previous (stale) identity and evidence stay as history.
     digest = version["logic_verified_identity"]
-    assert version["logic_status"] == "STALE_IDENTITY" and version["logic_status_recorded"] == "LOGIC_VERIFIED"
-    assert logic_identity("ST_CRYPTO_CFD_SWEEP_RETEST_V1", "1.0.0")["digest"] != digest
+    assert version["logic_status"] == "LOGIC_VERIFIED" and version["re_recorded_decision"] == "OD1014-FAST D8"
+    assert logic_identity("ST_CRYPTO_CFD_SWEEP_RETEST_V1", "1.0.0")["digest"] == digest
+    assert version["previous_logic_verified_identity"] != digest
     assert version["edge_verified"] is False
+    rerecord = ROOT / version["logic_verified_symbols"][0]["evidence"]
+    assert hashlib.sha256(rerecord.read_bytes()).hexdigest() == version["logic_verified_symbols"][0]["evidence_sha256"]
+    rep60 = json.loads(rerecord.read_text(encoding="utf-8"))
     listed = {e["symbol"]: e for e in version["logic_verified_symbols"]}
     for sym in ("BTCUSD", "ETHUSD"):
         assert rep14["logic_verification"][sym]["all_checks_pass"] is True
@@ -118,8 +123,9 @@ def test_branch_scoped_logic_verified_record_is_bound_to_identity_and_evidence()
         verified = [b for b in R.BRANCHES if rep60["logic_verification"][sym]["branches"][b]["verified"]]
         assert listed[sym]["branches"] == verified
         assert listed[sym]["logic_identity"] == digest == rep60["logic_verification"][sym]["logic_identity"]["digest"]
-        assert listed[sym]["evidence"] == path60.relative_to(ROOT).as_posix()
-        assert listed[sym]["evidence_sha256"] == hashlib.sha256(path60.read_bytes()).hexdigest()
+        assert listed[sym]["evidence"] == rerecord.relative_to(ROOT).as_posix()
+        assert listed[sym]["evidence_sha256"] == hashlib.sha256(rerecord.read_bytes()).hexdigest()
+        assert version["previous_evidence"] == path60.relative_to(ROOT).as_posix()
         for branch in listed[sym]["branches"]:
             assert symbol_verified("ST_CRYPTO_CFD_SWEEP_RETEST_V1", "1.0.0", sym, branch=branch) is False
         assert symbol_verified("ST_CRYPTO_CFD_SWEEP_RETEST_V1", "1.0.0", sym) is False

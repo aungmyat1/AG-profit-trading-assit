@@ -8,6 +8,8 @@ review_by: 2026-11-07
 
 ## Current snapshot (2026-10-11)
 
+C23 registry apply (2026-10-14, off-host, unit-tested only): OD1014-FAST D8 re-records the CCFD 1.0.0 identity (`b8188dfb…` → `7a0946e4…`, verdicts identical on the same recorded 60d data) and D9 registers ASW v1.1.3 as a candidate (EURUSD/GBPUSD × ASIAN_LONDON/LONDON_NEWYORK LOGIC_VERIFIED; USDJPY/XAUUSD not verified). `registry.yaml` is outside every identity set; no identity moved. Report-lane stamps follow the registry and stay REPORT_ONLY; CCFD per-ticket stamps stay UNVERIFIED (`WINDOW_NOT_IN_SCOPE`, no weekday/weekend window recorded). Ledger: LOGIC_VERIFIED 2 (S1 v1.1.2, EURUSD × ASIAN_LONDON v1.1.3), UNVERIFIED 16. No READY, demo, live or runtime-binding change. [Status](docs/status/C23_REGISTRY_APPLY_2026-10-14.md).
+
 C21 Large-SMC 1.1.2 candidate (2026-10-14, off-host): separate append-only engine and report-version
 selection; D7 selects report engine 1.1.2, failing closed to BLOCKED for missing/unknown configuration.
 D6 confirms minimum RR 2.0; OD1014-FAST D2 derives C10 pip as 10 × validated
@@ -23,7 +25,7 @@ priced plan is reported as a non-executable `OPPORTUNITY` CANDIDATE stamped with
 any other reason stays BLOCKED. LSMC runs pass the fresh read-only MT5 tick (stale/missing -> `MISSING_SPREAD`).
 CANDIDATE reports show a display-only lot preview / cost-in-R (host-captured metadata, balance from the
 account-pin read) or `sizing: n/a (<reason>)`. EURUSD x ASIAN_LONDON is evaluated on the report lane only with
-v1.1.3 (NOT_VERIFIED); its registry suspension and S1 are unchanged. Unchanged: READY,
+v1.1.3; since C23 its stamp follows the v1.1.3 registry record (LOGIC_VERIFIED, D9); its v1.1.2 registry suspension and S1 are unchanged. Unchanged: READY,
 manual/canonical ticket gating, registry, contracts, demo/live flags, order paths. Tests:
 `tests/test_od1014_opportunity_lanes.py`.
 
@@ -337,7 +339,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `9df0c2cf1f86feda7fe34d8df0945bc325e873fd169a92d8ddc0b8165ec70cb4`.
+inputs_sha256: `ddd9eac826a61d3ffd8c2cdc41e61b448af730e549555ba8757158bb8f5e4e0b`.
 <!-- [[[end]]] -->
 
 ### Objective
