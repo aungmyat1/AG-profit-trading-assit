@@ -760,6 +760,7 @@ authoritative machine-readable source.
 
 - [Fresh analyzer computation (2026-10-10)](status/ANALYZER_FRESH_COMPUTATION_2026-10-10.md) — main byte equivalence and session-zone call trace.
 - [Import-resolution audit (2026-10-10)](status/IMPORT_RESOLUTION_AUDIT_2026-10-10.md) — all 161 locations, guards/history and ledger tech debt.
+- [S1 demo readiness (2026-10-14)](status/AGP_S1_DEMO_READINESS_2026-10-14.md) — BLOCKED: Gate 2 (identity, symbol map, sessions, READY) PASS; Gates 3–4 NOT_RUN (R1 resource gate).
 - [C23 registry apply (2026-10-14)](status/C23_REGISTRY_APPLY_2026-10-14.md) — OD1014-FAST D8 CCFD identity re-record, D9 ASW v1.1.3 candidate registration; identity-set proof and ledger.
 - [C25 OSS differential verification (2026-10-14)](status/C25_OSS_DIFFERENTIAL_2026-10-14.md) — backtesting.py / pandas-ta / smartmoneyconcepts oracles and L3 fuzz on 60 recorded days; evidence only.
 - [C25 harness change log (2026-10-14)](status/C25_HARNESS_CHANGE_LOG.md) — first-run divergences and every later harness change with before/after counts.
