@@ -1,0 +1,13 @@
+# DEMO order shape for the canonical MT5 adapter (src/demo_execution/mt5_canonical_adapter.py, B').
+# Ships PROPOSED: the adapter refuses every broker call (ORDER_SHAPE_NOT_APPROVED) until the owner
+# records a decision and sets status: OWNER_APPROVED with that decision id. Proposed (conservative):
+# one market DEAL on the guard-planned volume, SL = ticket stop, TP = leg 1 (the ASW 75%/25% split is
+# NOT automated here; the full volume exits at TP1), filling IOC, GTC, deviation = scope slippage limit,
+# magic = contract magic, comment = "AG " + sha256(ticket_id)[:16].
+schema: AGP_DEMO_ORDER_SHAPE_V1
+status: PROPOSED_PENDING_OWNER
+owner_decision_id: null
+order:
+  action: DEAL
+  take_profit_leg: 1
+  filling: IOC

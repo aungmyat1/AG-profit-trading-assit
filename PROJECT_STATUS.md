@@ -8,6 +8,8 @@ review_by: 2026-11-07
 
 ## Current snapshot (2026-10-11)
 
+Canonical DEMO broker adapter (2026-10-14, unit-tested with a fake terminal only, never host-run; B', C14): `src/demo_execution/mt5_canonical_adapter.py` is the single `order_check`/`order_send` call site, behind the guarded adapter; it re-validates the guard's single-use step authorization, the enabled scope, the live pinned DEMO account and an OWNER_APPROVED order shape immediately before each call (unknown send outcome -> HALT/reconcile, never resubmitted). Inert as committed: every scope `enabled: false`, `per_order_confirm_required: true`, order shape `PROPOSED_PENDING_OWNER`, no standing authorization in the repo. `AGENTS.md` authority point 3 rewritten in the same change; the zero-call-site test is replaced by an exactly-one-call-site test. Live disabled.
+
 N-scope DEMO admission (2026-10-14, unit-tested only; A'): `config/demo_execution_scopes.yaml` lists one scope config per admitted scope (today only S1's unchanged `config/demo_execution_s1.yaml`); admission and the guarded adapter select the scope by the ticket/authority identity tuple (no match -> first scope, whose checks report the exact mismatch), so S1 behaviour is byte-identical. The host-local standing authorization may also be a container of exact per-scope/direction records (none -> scope mismatch, several -> invalid). Scopes must share one DEMO account. No scope added, no flag, READY, registry or order path change. Tests: `tests/test_demo_execution_n_scopes.py`.
 
 S1 block reasons (2026-10-14, unit-tested only, not host-verified; AGP-S1-BLOCK-REASON-FIX-R1): the shared `LOGIC_SCOPE_NOT_VERIFIED` code on the runtime S1 path is split into `SCOPE_NOT_S1` (symbol/session outside GBPUSD x ASIAN_LONDON), `SCOPE_IDENTITY_MISMATCH` (S1 contract/engine identity != registry record) and `BRANCH_OUTSIDE_VERIFIED_SCOPE` (engine emitted a non RANGE_SWEEP branch; `emitted_branch` recorded); all stay BLOCKED. The split is applied at the evaluator boundary (`daily_evaluator.scope_block_reason`); `src/v1_tickets/fx.py` stays byte-identical because it is in the ASW v1.1.3 logic identity set. Every scheduled S1 cycle that produces no alert now sends one compact ASCII cycle status (decision, reason, detail, engine regime/setup; existing dedupe) instead of ending summary-only; the canonical archive carries `engine_detail`. Demo-execution admission keeps its own `LOGIC_SCOPE_NOT_VERIFIED`. No READY, registry, contract or flag change. Tests: `tests/test_s1_block_reasons.py`.
@@ -343,7 +345,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `ddd9eac826a61d3ffd8c2cdc41e61b448af730e549555ba8757158bb8f5e4e0b`.
+inputs_sha256: `981c8e301d875686268979c2c12281651434daefa6f23ecf17595ab39fbafa0e`.
 <!-- [[[end]]] -->
 
 ### Objective

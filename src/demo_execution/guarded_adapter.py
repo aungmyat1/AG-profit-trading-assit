@@ -1,9 +1,9 @@
 """Authority-guarded boundary in front of the host's canonical C11 execution adapter.
 
-This module owns refusal, not submission. It contains no MT5 import and no order call site
-(``tests/test_manual_ticket_report_and_boundary.py::test_no_order_send_call_site_anywhere_in_repo``
-scans for them): the host supplies both the read-only live account read and the already-reviewed
-canonical adapter that performs the broker operations
+This module owns refusal, not submission. It contains no MT5 import and no order call site: the
+only order_check/order_send call sites are in :mod:`demo_execution.mt5_canonical_adapter`
+(``tests/test_demo_execution_canonical_adapter.py`` enforces exactly one each), which re-validates
+this guard's single-use step authorization again before it touches the broker
 (:class:`demo_execution.broker_adapter.CanonicalBrokerAdapter`).
 
 Every call takes an :class:`~demo_execution.authority.ExecutionAuthority` and re-validates it
