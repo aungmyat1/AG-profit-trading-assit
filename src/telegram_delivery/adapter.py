@@ -258,8 +258,30 @@ BLOCK_EXPLANATIONS = {
     "SCOPE_SUSPENDED": "scope suspended in the registry for this strategy version; observation only",
     "STALE": "market data or signal older than 15 minutes",
     "LOGIC_SCOPE_NOT_VERIFIED": "scope not logic-verified for this strategy version",
+    "SCOPE_NOT_S1": "symbol/session is outside the S1 runtime scope (GBPUSD ASIAN_LONDON)",
+    "SCOPE_IDENTITY_MISMATCH": "S1 contract or engine identity does not match the registry record",
+    "BRANCH_OUTSIDE_VERIFIED_SCOPE": "engine emitted a branch outside the verified S1 RANGE_SWEEP scope",
     "SPREAD_NOT_EVALUATED": "no live spread available",
 }
+
+
+def render_cycle_status(c):
+    """Compact ASCII S1 cycle status (AGP-S1-BLOCK-REASON-FIX-R1): decision, reason + detail, engine branch."""
+    detail = c.get("engine_detail") or {}
+    reason = str(c.get("reason_code") or "UNSPECIFIED")
+    lines = [f"S1 CYCLE | {c.get('instrument')} {c.get('session')} | {c.get('session_date')}",
+             f"decision: {c.get('decision')}",
+             f"reason: {reason}" + (f" -- {BLOCK_EXPLANATIONS[reason]}" if reason in BLOCK_EXPLANATIONS else "")]
+    source = detail.get("reason_code")
+    if source and source != reason:
+        lines.append(f"source reason: {source}"
+                     + (f" -- {BLOCK_EXPLANATIONS[source]}" if source in BLOCK_EXPLANATIONS else ""))
+    if detail.get("detail"):
+        lines.append(f"detail: {detail['detail']}")
+    if detail.get("regime") or detail.get("setup"):
+        lines.append(f"engine: regime={detail.get('regime')} setup={detail.get('setup')}")
+    lines += [f"evaluated: {c.get('created_at')}", "INFORMATIONAL -- NOT A BROKER ORDER | EXECUTION: DISABLED"]
+    return "\n".join(lines).encode("ascii", "replace").decode("ascii")
 
 
 def _blocked_lines(c):
@@ -810,6 +832,19 @@ class Sender:
         if not self.config.watch_info_scope:
             return "summary_only"
         return self._send("ticket", ticket["ticket_id"], ticket["decision"], render_ticket(ticket))
+
+    def send_cycle_status(self, ticket):
+        """AGP-S1-BLOCK-REASON-FIX-R1: one compact ASCII status per scheduled S1 cycle that produced no
+        alert (BLOCKED / NO_TRADE / any non-alert decision), so no S1 session is ever summary-only.
+        Informational only; deduped per (ticket, decision, reason) by `_send`."""
+        if not _known_decision(ticket.get("decision")):
+            return self._record_compatibility_error(ticket)
+        validate(ticket)
+        if self.config.scope_error:
+            LOG.error("Telegram scope rejected: %s", self.config.scope_error)
+            return "blocked"
+        status = f"{ticket['decision']}|{ticket.get('reason_code')}"
+        return self._send("cycle", ticket["ticket_id"], status, render_cycle_status(ticket))
 
     def send_summary(self, tickets):
         tickets = list(tickets)
