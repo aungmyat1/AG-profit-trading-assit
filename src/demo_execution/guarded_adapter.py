@@ -73,7 +73,11 @@ from demo_execution.lifecycle import (
 )
 from demo_execution.notification import notification_gate
 from demo_execution.risk import RiskSnapshot
-from demo_execution.scope import ScopePolicy, ScopePolicyError, load_scope_policy
+from demo_execution.scope import (
+    ScopePolicy,
+    ScopePolicyError,
+    resolve_ticket_scope_policy,
+)
 from ticket_store.store import TicketStore
 
 LiveAccountReader = Callable[[], Mapping[str, Any]]
@@ -177,10 +181,13 @@ class GuardedCanonicalAdapter:
         }
 
     # ------------------------------------------------------------------ re-validation
-    def _load_scope(self) -> tuple[Optional[ScopePolicy], Optional[str]]:
-        """The scope is re-read from the committed config on every call, never taken on trust."""
+    def _load_scope(self, authority: Any = None) -> tuple[Optional[ScopePolicy], Optional[str]]:
+        """The scope is re-read from the committed config on every call, never taken on trust; with
+        several configured scopes it is selected by the authority's own identity tuple (A')."""
+        paths = dict(self._scope_paths)
+        binding = {k: getattr(authority, k, None) for k in ("strategy_id", "strategy_version", "symbol", "session")}
         try:
-            return load_scope_policy(**self._scope_paths), None
+            return resolve_ticket_scope_policy(binding, config_path=paths.pop("config_path"), **paths), None
         except ScopePolicyError as exc:
             return None, exc.reason_code
 
@@ -218,7 +225,7 @@ class GuardedCanonicalAdapter:
             return list(shape), details, None, LifecycleTrail(())
         assert isinstance(authority, ExecutionAuthority)
         details["ticket_id"] = authority.ticket_id
-        scope, scope_reason = self._load_scope()
+        scope, scope_reason = self._load_scope(authority)
         if scope is None or scope_reason is not None:
             return [scope_reason or "EXECUTION_SCOPE_INVALID"], details, None, LifecycleTrail(())
         details["scope_enabled"] = scope.enabled
