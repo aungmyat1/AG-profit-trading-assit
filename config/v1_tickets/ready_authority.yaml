@@ -19,3 +19,6 @@ strategies:
   ST_ASIAN_SWEEP_5R_V1:
     ready: ON
     reason: OD1012-S1-READY
+  ST_CRYPTO_CFD_SWEEP_RETEST_V1:
+    ready: ON
+    reason: OD1015-CCFD100-READY
