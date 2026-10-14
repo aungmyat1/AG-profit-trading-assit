@@ -1,0 +1,2373 @@
+{
+  "FX": "PENDING_D1",
+  "active_history_scans": {
+    "evaluated_checks": {
+      "L1.closed_bars_only": 2741,
+      "L1.replay_hash": 2741,
+      "L1.truncation_invariance": 2741,
+      "L2.alert_mapping": 2741,
+      "L2.c10_stop": 881,
+      "L2.c11_creation_anchor": 881,
+      "L2.c11_target": 881,
+      "L2.day_boundary": 2741,
+      "L2.delivery_gate_preserves_detection": 881,
+      "L2.direction_matches_bias": 881,
+      "L2.entry_by_reference": 881,
+      "L2.expiry_session_end": 881,
+      "L2.identity": 2741,
+      "L2.instruments_vt_only": 2741,
+      "L2.near_poi_band": 2741,
+      "L2.no_authority": 2741,
+      "L2.pip_source": 881,
+      "L2.poi_max_age": 2741,
+      "L2.point_source": 2741,
+      "L2.point_source_declared": 2741,
+      "L2.sweep_choch_window": 2741,
+      "L2.sweep_window_measured": 881,
+      "L2.swing_k": 2741,
+      "L2.tie_tolerance": 2741,
+      "L2.timeframes": 2741,
+      "L3.entry_in_choch_bar": 881,
+      "L3.stop_beyond_sweep": 358,
+      "L3.stop_side": 358,
+      "L3.sweep_extreme_side": 881,
+      "L3.target_direction": 881,
+      "L4.evaluated": 2741,
+      "L4.history": 2741,
+      "L4.m5_fresh": 2741,
+      "L4.stale_state_consistent": 2741,
+      "L5.cost_gate_applied": 358,
+      "L6.invalid_if": 881,
+      "L6.stale_if": 881,
+      "L6.valid_until": 881
+    },
+    "gate_verdicts": {
+      "L1": "PASS",
+      "L2": "PASS",
+      "L3": "FAIL",
+      "L4": "PASS",
+      "L5": "PASS",
+      "L6": "PASS"
+    },
+    "gates": {
+      "L1": {
+        "PASS": 2741
+      },
+      "L2": {
+        "PASS": 2741
+      },
+      "L3": {
+        "FAIL": 48,
+        "PASS": 2693
+      },
+      "L4": {
+        "PASS": 2741
+      },
+      "L5": {
+        "NOT_APPLICABLE": 2383,
+        "PASS": 358
+      },
+      "L6": {
+        "PASS": 2741
+      }
+    },
+    "not_applicable_checks": {
+      "L2.c10_stop": 1860,
+      "L2.c11_creation_anchor": 1860,
+      "L2.c11_target": 1860,
+      "L2.direction_matches_bias": 1860,
+      "L2.entry_by_reference": 1860,
+      "L2.expiry_session_end": 1860,
+      "L2.sweep_window_measured": 1860,
+      "L3.geometry": 1860,
+      "L3.stop_geometry": 523,
+      "L5.cost": 2383,
+      "L6.freshness": 1860
+    },
+    "opportunity_scans": 881,
+    "priced_opportunity_scans": 358,
+    "qualifies_for_proposal": false,
+    "rr_eligible_scans": 187,
+    "scans": 2741,
+    "states": {
+      "DEVELOPING": 1046,
+      "NEAR_POI": 814,
+      "OPPORTUNITY": 881
+    },
+    "terminal_reasons": {
+      "D30_BADGE_ECONOMICS_NOT_EVALUATED": 881,
+      "FAIL_CLOSED_RR_BELOW_SPEC_MINIMUM": 171,
+      "FAIL_CLOSED_RR_UNDEFINED": 523,
+      "MISSING_SPREAD": 523,
+      "REJECT_NO_STOP": 523,
+      "REJECT_STALE": 358
+    },
+    "verdict": "FAIL",
+    "verification_status": "NOT_VERIFIED"
+  },
+  "boundary_reference": {
+    "checks": [
+      {
+        "at": "2026-08-20T23:05:00+00:00",
+        "equal": true,
+        "m5_row": 2664,
+        "opportunity_id": null,
+        "reference_sha256": "4b7e8845a55b430cd7d809979bbe37627ddb86dd9bea4247bd979067db51fbb3",
+        "shard_sha256": "4b7e8845a55b430cd7d809979bbe37627ddb86dd9bea4247bd979067db51fbb3"
+      },
+      {
+        "at": "2026-08-20T23:10:00+00:00",
+        "equal": true,
+        "m5_row": 2665,
+        "opportunity_id": null,
+        "reference_sha256": "130f08acbbe49ff59110912a499a612c0436743f5f66cc1e58f30d45001723a6",
+        "shard_sha256": "130f08acbbe49ff59110912a499a612c0436743f5f66cc1e58f30d45001723a6"
+      },
+      {
+        "at": "2026-08-20T23:15:00+00:00",
+        "equal": true,
+        "m5_row": 2666,
+        "opportunity_id": null,
+        "reference_sha256": "982d0edaea0d7c3ff3e773109cdf7a10f49c6df923269a2d90327a64b54541af",
+        "shard_sha256": "982d0edaea0d7c3ff3e773109cdf7a10f49c6df923269a2d90327a64b54541af"
+      },
+      {
+        "at": "2026-08-20T23:20:00+00:00",
+        "equal": true,
+        "m5_row": 2667,
+        "opportunity_id": null,
+        "reference_sha256": "b56f2221ff315e6b964a3c174bb8a1127acfe76e94d560f46776fc6b53895a8f",
+        "shard_sha256": "b56f2221ff315e6b964a3c174bb8a1127acfe76e94d560f46776fc6b53895a8f"
+      },
+      {
+        "at": "2026-08-20T23:25:00+00:00",
+        "equal": true,
+        "m5_row": 2668,
+        "opportunity_id": null,
+        "reference_sha256": "29c17b23d8cb4455bfadfcc065eac8de532b1d2378318de422f8128fd8b41a7b",
+        "shard_sha256": "29c17b23d8cb4455bfadfcc065eac8de532b1d2378318de422f8128fd8b41a7b"
+      },
+      {
+        "at": "2026-08-20T23:30:00+00:00",
+        "equal": true,
+        "m5_row": 2669,
+        "opportunity_id": null,
+        "reference_sha256": "effa54350cfa1aa7012713bd3adf5a75ac20b937efdb5396d49e82cfd474e7aa",
+        "shard_sha256": "effa54350cfa1aa7012713bd3adf5a75ac20b937efdb5396d49e82cfd474e7aa"
+      },
+      {
+        "at": "2026-08-20T23:35:00+00:00",
+        "equal": true,
+        "m5_row": 2670,
+        "opportunity_id": null,
+        "reference_sha256": "f2ae950de558ddeb95da36aca3a875e5bd0da53d71cffdf00c45245637b019bb",
+        "shard_sha256": "f2ae950de558ddeb95da36aca3a875e5bd0da53d71cffdf00c45245637b019bb"
+      },
+      {
+        "at": "2026-08-20T23:40:00+00:00",
+        "equal": true,
+        "m5_row": 2671,
+        "opportunity_id": null,
+        "reference_sha256": "cdd1fb6b5436752255781fabaa28fe462096b6ba539ffb00550d5f56f08d6d01",
+        "shard_sha256": "cdd1fb6b5436752255781fabaa28fe462096b6ba539ffb00550d5f56f08d6d01"
+      },
+      {
+        "at": "2026-08-20T23:45:00+00:00",
+        "equal": true,
+        "m5_row": 2672,
+        "opportunity_id": null,
+        "reference_sha256": "7a3df3335fbf4fd3b7e14caad585427942f06d61890d73162101cfe16db26480",
+        "shard_sha256": "7a3df3335fbf4fd3b7e14caad585427942f06d61890d73162101cfe16db26480"
+      },
+      {
+        "at": "2026-08-20T23:50:00+00:00",
+        "equal": true,
+        "m5_row": 2673,
+        "opportunity_id": null,
+        "reference_sha256": "0ae16b5f5a948cbdd62ecdeb6c6c55ba327e6b15dd1c3f2b8093750f6551eefa",
+        "shard_sha256": "0ae16b5f5a948cbdd62ecdeb6c6c55ba327e6b15dd1c3f2b8093750f6551eefa"
+      },
+      {
+        "at": "2026-08-20T23:55:00+00:00",
+        "equal": true,
+        "m5_row": 2674,
+        "opportunity_id": null,
+        "reference_sha256": "62a3f39f12def5555ba9d7cdd257afe98d33037d39d83d1224b0ddf447ed3efc",
+        "shard_sha256": "62a3f39f12def5555ba9d7cdd257afe98d33037d39d83d1224b0ddf447ed3efc"
+      },
+      {
+        "at": "2026-08-21T00:00:00+00:00",
+        "equal": true,
+        "m5_row": 2675,
+        "opportunity_id": null,
+        "reference_sha256": "c417e5004ebe0b1efcfd5bc3b18c03d0f807b91f3da16d6f3007a2768ec5f618",
+        "shard_sha256": "c417e5004ebe0b1efcfd5bc3b18c03d0f807b91f3da16d6f3007a2768ec5f618"
+      },
+      {
+        "at": "2026-08-21T00:05:00+00:00",
+        "equal": true,
+        "m5_row": 2676,
+        "opportunity_id": null,
+        "reference_sha256": "c9e1516936381b783520a6aa6fd9e31352614056ce0b5dd1287542577424b0f1",
+        "shard_sha256": "c9e1516936381b783520a6aa6fd9e31352614056ce0b5dd1287542577424b0f1"
+      },
+      {
+        "at": "2026-08-21T00:10:00+00:00",
+        "equal": true,
+        "m5_row": 2677,
+        "opportunity_id": null,
+        "reference_sha256": "699b6637dca512a82ac36cde0038b52c1c45975920221dc500b955d95790d621",
+        "shard_sha256": "699b6637dca512a82ac36cde0038b52c1c45975920221dc500b955d95790d621"
+      },
+      {
+        "at": "2026-08-21T00:15:00+00:00",
+        "equal": true,
+        "m5_row": 2678,
+        "opportunity_id": null,
+        "reference_sha256": "895d138f50381a9c18a3f3e4824fc805eb52d644083a4f77687ef3d9ab06ab9a",
+        "shard_sha256": "895d138f50381a9c18a3f3e4824fc805eb52d644083a4f77687ef3d9ab06ab9a"
+      },
+      {
+        "at": "2026-08-21T00:20:00+00:00",
+        "equal": true,
+        "m5_row": 2679,
+        "opportunity_id": null,
+        "reference_sha256": "8bc0f82d1b55f29c4e26636d77217aefe58eb5acc942022e0528440facdb51e0",
+        "shard_sha256": "8bc0f82d1b55f29c4e26636d77217aefe58eb5acc942022e0528440facdb51e0"
+      },
+      {
+        "at": "2026-08-21T00:25:00+00:00",
+        "equal": true,
+        "m5_row": 2680,
+        "opportunity_id": null,
+        "reference_sha256": "9f222fd3d7e652237931a782e8395cabed86b750ff54ccf6f6fca824b16f67f6",
+        "shard_sha256": "9f222fd3d7e652237931a782e8395cabed86b750ff54ccf6f6fca824b16f67f6"
+      },
+      {
+        "at": "2026-08-21T00:30:00+00:00",
+        "equal": true,
+        "m5_row": 2681,
+        "opportunity_id": null,
+        "reference_sha256": "c90f64d47b159d075881cb4f5ab4ed130d6dc6622f89c48e0957b7cdffb60fd3",
+        "shard_sha256": "c90f64d47b159d075881cb4f5ab4ed130d6dc6622f89c48e0957b7cdffb60fd3"
+      },
+      {
+        "at": "2026-08-21T00:35:00+00:00",
+        "equal": true,
+        "m5_row": 2682,
+        "opportunity_id": null,
+        "reference_sha256": "7378ad34d3c22d4a84cb14d797e792c425f81bc6243740b2570fbd35eed10354",
+        "shard_sha256": "7378ad34d3c22d4a84cb14d797e792c425f81bc6243740b2570fbd35eed10354"
+      },
+      {
+        "at": "2026-08-21T00:40:00+00:00",
+        "equal": true,
+        "m5_row": 2683,
+        "opportunity_id": null,
+        "reference_sha256": "446abc44c12629c5090c8eb4dc7c2fa2c3514983c8f367f40387d9c7eab60deb",
+        "shard_sha256": "446abc44c12629c5090c8eb4dc7c2fa2c3514983c8f367f40387d9c7eab60deb"
+      },
+      {
+        "at": "2026-08-21T00:45:00+00:00",
+        "equal": true,
+        "m5_row": 2684,
+        "opportunity_id": null,
+        "reference_sha256": "5a0780aeb0d8b18abbb6d1b96b06f426060cbda7cb38696cdef798ce892bc9ef",
+        "shard_sha256": "5a0780aeb0d8b18abbb6d1b96b06f426060cbda7cb38696cdef798ce892bc9ef"
+      },
+      {
+        "at": "2026-08-21T00:50:00+00:00",
+        "equal": true,
+        "m5_row": 2685,
+        "opportunity_id": null,
+        "reference_sha256": "e7f60d3379b98622a4b3d5060802c98729beddb735e8ff2250650d011466b988",
+        "shard_sha256": "e7f60d3379b98622a4b3d5060802c98729beddb735e8ff2250650d011466b988"
+      },
+      {
+        "at": "2026-08-21T00:55:00+00:00",
+        "equal": true,
+        "m5_row": 2686,
+        "opportunity_id": null,
+        "reference_sha256": "94ea2bc612327aecea5e5587368a1fb10b3c481fb3c8b6774a49bf8c068c8351",
+        "shard_sha256": "94ea2bc612327aecea5e5587368a1fb10b3c481fb3c8b6774a49bf8c068c8351"
+      },
+      {
+        "at": "2026-08-21T01:00:00+00:00",
+        "equal": true,
+        "m5_row": 2687,
+        "opportunity_id": null,
+        "reference_sha256": "fef296a423c1d535ee8a91d2299b577ca1da86d6c7cbd2b0187a4962f6200067",
+        "shard_sha256": "fef296a423c1d535ee8a91d2299b577ca1da86d6c7cbd2b0187a4962f6200067"
+      },
+      {
+        "at": "2026-08-30T23:05:00+00:00",
+        "equal": true,
+        "m5_row": 5405,
+        "opportunity_id": null,
+        "reference_sha256": "a1a149aec095be4e0dfc53ccc0583bf7e278d7b56577119e8ce65744d0c4901d",
+        "shard_sha256": "a1a149aec095be4e0dfc53ccc0583bf7e278d7b56577119e8ce65744d0c4901d"
+      },
+      {
+        "at": "2026-08-30T23:10:00+00:00",
+        "equal": true,
+        "m5_row": 5406,
+        "opportunity_id": null,
+        "reference_sha256": "e12cf652d7bc6df2c6ddc2fbaf0fe1b6c25922f5701b3ec8deff7cccb7e1af4d",
+        "shard_sha256": "e12cf652d7bc6df2c6ddc2fbaf0fe1b6c25922f5701b3ec8deff7cccb7e1af4d"
+      },
+      {
+        "at": "2026-08-30T23:15:00+00:00",
+        "equal": true,
+        "m5_row": 5407,
+        "opportunity_id": null,
+        "reference_sha256": "39ce2dcf5c982da4d3ea04652b457b0d167ab199c8a2f6cf64644457e920d352",
+        "shard_sha256": "39ce2dcf5c982da4d3ea04652b457b0d167ab199c8a2f6cf64644457e920d352"
+      },
+      {
+        "at": "2026-08-30T23:20:00+00:00",
+        "equal": true,
+        "m5_row": 5408,
+        "opportunity_id": null,
+        "reference_sha256": "cd5b91909ec51090e003d83c814dc1d0edd1018e1c069d6c4720e92fe2b458ac",
+        "shard_sha256": "cd5b91909ec51090e003d83c814dc1d0edd1018e1c069d6c4720e92fe2b458ac"
+      },
+      {
+        "at": "2026-08-30T23:25:00+00:00",
+        "equal": true,
+        "m5_row": 5409,
+        "opportunity_id": null,
+        "reference_sha256": "29a0852680f1d1313bb86ce4b40d29c41eadfa35f79079db2b3136fe9b1aa794",
+        "shard_sha256": "29a0852680f1d1313bb86ce4b40d29c41eadfa35f79079db2b3136fe9b1aa794"
+      },
+      {
+        "at": "2026-08-30T23:30:00+00:00",
+        "equal": true,
+        "m5_row": 5410,
+        "opportunity_id": null,
+        "reference_sha256": "d856f0c9eab51a1f8d23030f90de959b456a3234c7ce7bb01ef561a74ebd4909",
+        "shard_sha256": "d856f0c9eab51a1f8d23030f90de959b456a3234c7ce7bb01ef561a74ebd4909"
+      },
+      {
+        "at": "2026-08-30T23:35:00+00:00",
+        "equal": true,
+        "m5_row": 5411,
+        "opportunity_id": null,
+        "reference_sha256": "162f999acff51dae139009d2e5b41ac1113d5b50876db118b5a237fdfcc5e1f7",
+        "shard_sha256": "162f999acff51dae139009d2e5b41ac1113d5b50876db118b5a237fdfcc5e1f7"
+      },
+      {
+        "at": "2026-08-30T23:40:00+00:00",
+        "equal": true,
+        "m5_row": 5412,
+        "opportunity_id": null,
+        "reference_sha256": "81d4b1fa992106a251d2e957d8995be7db310cb3cceb7bb2b7b2755f29aba5e9",
+        "shard_sha256": "81d4b1fa992106a251d2e957d8995be7db310cb3cceb7bb2b7b2755f29aba5e9"
+      },
+      {
+        "at": "2026-08-30T23:45:00+00:00",
+        "equal": true,
+        "m5_row": 5413,
+        "opportunity_id": null,
+        "reference_sha256": "4ab1f396a5b18dff0e5f45ebdada3ac220db56a10d4bb896327091c4128d76ec",
+        "shard_sha256": "4ab1f396a5b18dff0e5f45ebdada3ac220db56a10d4bb896327091c4128d76ec"
+      },
+      {
+        "at": "2026-08-30T23:50:00+00:00",
+        "equal": true,
+        "m5_row": 5414,
+        "opportunity_id": null,
+        "reference_sha256": "6bd745c9669ecf03f75fd84731bc197185b8db11a120dc73dcd25787102b713b",
+        "shard_sha256": "6bd745c9669ecf03f75fd84731bc197185b8db11a120dc73dcd25787102b713b"
+      },
+      {
+        "at": "2026-08-30T23:55:00+00:00",
+        "equal": true,
+        "m5_row": 5415,
+        "opportunity_id": null,
+        "reference_sha256": "c37688f295967216403751ab18f80068c030fcd34572ee9ed77abb4f59a51d64",
+        "shard_sha256": "c37688f295967216403751ab18f80068c030fcd34572ee9ed77abb4f59a51d64"
+      },
+      {
+        "at": "2026-08-31T00:00:00+00:00",
+        "equal": true,
+        "m5_row": 5416,
+        "opportunity_id": null,
+        "reference_sha256": "c4d74f9b43bb85e72e880abf46f58fc0811b6c21f33d68bc63644ba6f48e01c7",
+        "shard_sha256": "c4d74f9b43bb85e72e880abf46f58fc0811b6c21f33d68bc63644ba6f48e01c7"
+      },
+      {
+        "at": "2026-08-31T00:05:00+00:00",
+        "equal": true,
+        "m5_row": 5417,
+        "opportunity_id": null,
+        "reference_sha256": "c4928f7542926e920e814649871963ba9840dbd77843479919a63f5be366e09a",
+        "shard_sha256": "c4928f7542926e920e814649871963ba9840dbd77843479919a63f5be366e09a"
+      },
+      {
+        "at": "2026-08-31T00:10:00+00:00",
+        "equal": true,
+        "m5_row": 5418,
+        "opportunity_id": null,
+        "reference_sha256": "7288e8878cf6f60aa62b8b65529fb78ce8372088ac0ec586083566a6bab69692",
+        "shard_sha256": "7288e8878cf6f60aa62b8b65529fb78ce8372088ac0ec586083566a6bab69692"
+      },
+      {
+        "at": "2026-08-31T00:15:00+00:00",
+        "equal": true,
+        "m5_row": 5419,
+        "opportunity_id": null,
+        "reference_sha256": "3e2815c787a3790dde7c0c1f4dbb9d648ff773b744e051296c71c5ca35bc4de0",
+        "shard_sha256": "3e2815c787a3790dde7c0c1f4dbb9d648ff773b744e051296c71c5ca35bc4de0"
+      },
+      {
+        "at": "2026-08-31T00:20:00+00:00",
+        "equal": true,
+        "m5_row": 5420,
+        "opportunity_id": null,
+        "reference_sha256": "642c761d72a319aea370ca5060a7f14d452766f9ba66a92bbf1a25a7d35b4a75",
+        "shard_sha256": "642c761d72a319aea370ca5060a7f14d452766f9ba66a92bbf1a25a7d35b4a75"
+      },
+      {
+        "at": "2026-08-31T00:25:00+00:00",
+        "equal": true,
+        "m5_row": 5421,
+        "opportunity_id": null,
+        "reference_sha256": "f89c0ee5b9279a32e3b7dc088eb9fc0fe8bf3477560a3d698e3c68abdc558594",
+        "shard_sha256": "f89c0ee5b9279a32e3b7dc088eb9fc0fe8bf3477560a3d698e3c68abdc558594"
+      },
+      {
+        "at": "2026-08-31T00:30:00+00:00",
+        "equal": true,
+        "m5_row": 5422,
+        "opportunity_id": null,
+        "reference_sha256": "3be90643796f0f5a02914a5c906a2e8aa912747b1fb9b4d354b4d6062cbe449b",
+        "shard_sha256": "3be90643796f0f5a02914a5c906a2e8aa912747b1fb9b4d354b4d6062cbe449b"
+      },
+      {
+        "at": "2026-08-31T00:35:00+00:00",
+        "equal": true,
+        "m5_row": 5423,
+        "opportunity_id": null,
+        "reference_sha256": "5fe91d8619b2d0b6cf70cfe31a76fdafe14eaa9ab4c0f49880dca35cc13c9114",
+        "shard_sha256": "5fe91d8619b2d0b6cf70cfe31a76fdafe14eaa9ab4c0f49880dca35cc13c9114"
+      },
+      {
+        "at": "2026-08-31T00:40:00+00:00",
+        "equal": true,
+        "m5_row": 5424,
+        "opportunity_id": null,
+        "reference_sha256": "2fc30fb58ff0085e9bc737284790f07f213f7eebc9b3d33878902be9e7719472",
+        "shard_sha256": "2fc30fb58ff0085e9bc737284790f07f213f7eebc9b3d33878902be9e7719472"
+      },
+      {
+        "at": "2026-08-31T00:45:00+00:00",
+        "equal": true,
+        "m5_row": 5425,
+        "opportunity_id": null,
+        "reference_sha256": "60b28b101835d1c82b55907a7ec3bdc397d3d0664673dd7cb00546affa2f1faa",
+        "shard_sha256": "60b28b101835d1c82b55907a7ec3bdc397d3d0664673dd7cb00546affa2f1faa"
+      },
+      {
+        "at": "2026-08-31T00:50:00+00:00",
+        "equal": true,
+        "m5_row": 5426,
+        "opportunity_id": null,
+        "reference_sha256": "0126ce1c574625a2be5bf21610955dd4540c0d2fc0efaf8e9826c885ffbfd264",
+        "shard_sha256": "0126ce1c574625a2be5bf21610955dd4540c0d2fc0efaf8e9826c885ffbfd264"
+      },
+      {
+        "at": "2026-08-31T00:55:00+00:00",
+        "equal": true,
+        "m5_row": 5427,
+        "opportunity_id": null,
+        "reference_sha256": "7201f8814978370299500ed9e5065ae7aa3218543bae3a14dad64164e9eac9f2",
+        "shard_sha256": "7201f8814978370299500ed9e5065ae7aa3218543bae3a14dad64164e9eac9f2"
+      },
+      {
+        "at": "2026-08-31T01:00:00+00:00",
+        "equal": true,
+        "m5_row": 5428,
+        "opportunity_id": null,
+        "reference_sha256": "6c78b14cf2623fc50fc09ad915fc95fc6bfd42ae046cfc90f43579058b2ed030",
+        "shard_sha256": "6c78b14cf2623fc50fc09ad915fc95fc6bfd42ae046cfc90f43579058b2ed030"
+      }
+    ],
+    "method": "Unmodified evaluator on overlapping boundary rows; warmed shard inputs vs independent full-recorded-history reference inputs; compare complete snapshot, not only signal id.",
+    "overlapping_reference_shard_rows": [
+      2664,
+      2665,
+      2666,
+      2667,
+      2668,
+      2669,
+      2670,
+      2671,
+      2672,
+      2673,
+      2674,
+      2675,
+      2676,
+      2677,
+      2678,
+      2679,
+      2680,
+      2681,
+      2682,
+      2683,
+      2684,
+      2685,
+      2686,
+      2687,
+      5405,
+      5406,
+      5407,
+      5408,
+      5409,
+      5410,
+      5411,
+      5412,
+      5413,
+      5414,
+      5415,
+      5416,
+      5417,
+      5418,
+      5419,
+      5420,
+      5421,
+      5422,
+      5423,
+      5424,
+      5425,
+      5426,
+      5427,
+      5428
+    ],
+    "verdict": "PASS"
+  },
+  "branch_matrix": {
+    "SHORT_D1|LONG|FVG|PRIMARY_EXTERNAL_LIQUIDITY": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 271,
+        "L1.replay_hash": 271,
+        "L1.truncation_invariance": 271,
+        "L2.alert_mapping": 271,
+        "L2.c10_stop": 271,
+        "L2.c11_creation_anchor": 271,
+        "L2.c11_target": 271,
+        "L2.day_boundary": 271,
+        "L2.delivery_gate_preserves_detection": 271,
+        "L2.direction_matches_bias": 271,
+        "L2.entry_by_reference": 271,
+        "L2.expiry_session_end": 271,
+        "L2.identity": 271,
+        "L2.instruments_vt_only": 271,
+        "L2.near_poi_band": 271,
+        "L2.no_authority": 271,
+        "L2.pip_source": 271,
+        "L2.poi_max_age": 271,
+        "L2.point_source": 271,
+        "L2.point_source_declared": 271,
+        "L2.sweep_choch_window": 271,
+        "L2.sweep_window_measured": 271,
+        "L2.swing_k": 271,
+        "L2.tie_tolerance": 271,
+        "L2.timeframes": 271,
+        "L3.entry_in_choch_bar": 271,
+        "L3.stop_beyond_sweep": 271,
+        "L3.stop_side": 271,
+        "L3.sweep_extreme_side": 271,
+        "L3.target_direction": 271,
+        "L4.evaluated": 271,
+        "L4.history": 271,
+        "L4.m5_fresh": 271,
+        "L4.stale_state_consistent": 271,
+        "L5.cost_gate_applied": 271,
+        "L6.invalid_if": 271,
+        "L6.stale_if": 271,
+        "L6.valid_until": 271
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "FAIL",
+        "L4": "PASS",
+        "L5": "PASS",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 271
+        },
+        "L2": {
+          "PASS": 271
+        },
+        "L3": {
+          "FAIL": 48,
+          "PASS": 223
+        },
+        "L4": {
+          "PASS": 271
+        },
+        "L5": {
+          "PASS": 271
+        },
+        "L6": {
+          "PASS": 271
+        }
+      },
+      "not_applicable_checks": {},
+      "opportunity_scans": 271,
+      "priced_opportunity_scans": 271,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 187,
+      "scans": 271,
+      "states": {
+        "OPPORTUNITY": 271
+      },
+      "terminal_reasons": {
+        "D30_BADGE_ECONOMICS_NOT_EVALUATED": 271,
+        "FAIL_CLOSED_RR_BELOW_SPEC_MINIMUM": 84,
+        "REJECT_STALE": 271
+      },
+      "verdict": "FAIL",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "SHORT_D1|LONG|OB_PIVOT|CONFIRMED_OPPOSING_H1_SWING": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 52,
+        "L1.replay_hash": 52,
+        "L1.truncation_invariance": 52,
+        "L2.alert_mapping": 52,
+        "L2.c10_stop": 52,
+        "L2.c11_creation_anchor": 52,
+        "L2.c11_target": 52,
+        "L2.day_boundary": 52,
+        "L2.delivery_gate_preserves_detection": 52,
+        "L2.direction_matches_bias": 52,
+        "L2.entry_by_reference": 52,
+        "L2.expiry_session_end": 52,
+        "L2.identity": 52,
+        "L2.instruments_vt_only": 52,
+        "L2.near_poi_band": 52,
+        "L2.no_authority": 52,
+        "L2.pip_source": 52,
+        "L2.poi_max_age": 52,
+        "L2.point_source": 52,
+        "L2.point_source_declared": 52,
+        "L2.sweep_choch_window": 52,
+        "L2.sweep_window_measured": 52,
+        "L2.swing_k": 52,
+        "L2.tie_tolerance": 52,
+        "L2.timeframes": 52,
+        "L3.entry_in_choch_bar": 52,
+        "L3.stop_beyond_sweep": 52,
+        "L3.stop_side": 52,
+        "L3.sweep_extreme_side": 52,
+        "L3.target_direction": 52,
+        "L4.evaluated": 52,
+        "L4.history": 52,
+        "L4.m5_fresh": 52,
+        "L4.stale_state_consistent": 52,
+        "L5.cost_gate_applied": 52,
+        "L6.invalid_if": 52,
+        "L6.stale_if": 52,
+        "L6.valid_until": 52
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "PASS",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 52
+        },
+        "L2": {
+          "PASS": 52
+        },
+        "L3": {
+          "PASS": 52
+        },
+        "L4": {
+          "PASS": 52
+        },
+        "L5": {
+          "PASS": 52
+        },
+        "L6": {
+          "PASS": 52
+        }
+      },
+      "not_applicable_checks": {},
+      "opportunity_scans": 52,
+      "priced_opportunity_scans": 52,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 52,
+      "states": {
+        "OPPORTUNITY": 52
+      },
+      "terminal_reasons": {
+        "D30_BADGE_ECONOMICS_NOT_EVALUATED": 52,
+        "FAIL_CLOSED_RR_BELOW_SPEC_MINIMUM": 52,
+        "REJECT_STALE": 52
+      },
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "SHORT_D1|LONG|OB_PIVOT|PRIMARY_EXTERNAL_LIQUIDITY": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 23,
+        "L1.replay_hash": 23,
+        "L1.truncation_invariance": 23,
+        "L2.alert_mapping": 23,
+        "L2.c10_stop": 23,
+        "L2.c11_creation_anchor": 23,
+        "L2.c11_target": 23,
+        "L2.day_boundary": 23,
+        "L2.delivery_gate_preserves_detection": 23,
+        "L2.direction_matches_bias": 23,
+        "L2.entry_by_reference": 23,
+        "L2.expiry_session_end": 23,
+        "L2.identity": 23,
+        "L2.instruments_vt_only": 23,
+        "L2.near_poi_band": 23,
+        "L2.no_authority": 23,
+        "L2.pip_source": 23,
+        "L2.poi_max_age": 23,
+        "L2.point_source": 23,
+        "L2.point_source_declared": 23,
+        "L2.sweep_choch_window": 23,
+        "L2.sweep_window_measured": 23,
+        "L2.swing_k": 23,
+        "L2.tie_tolerance": 23,
+        "L2.timeframes": 23,
+        "L3.entry_in_choch_bar": 23,
+        "L3.stop_beyond_sweep": 23,
+        "L3.stop_side": 23,
+        "L3.sweep_extreme_side": 23,
+        "L3.target_direction": 23,
+        "L4.evaluated": 23,
+        "L4.history": 23,
+        "L4.m5_fresh": 23,
+        "L4.stale_state_consistent": 23,
+        "L5.cost_gate_applied": 23,
+        "L6.invalid_if": 23,
+        "L6.stale_if": 23,
+        "L6.valid_until": 23
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "PASS",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 23
+        },
+        "L2": {
+          "PASS": 23
+        },
+        "L3": {
+          "PASS": 23
+        },
+        "L4": {
+          "PASS": 23
+        },
+        "L5": {
+          "PASS": 23
+        },
+        "L6": {
+          "PASS": 23
+        }
+      },
+      "not_applicable_checks": {},
+      "opportunity_scans": 23,
+      "priced_opportunity_scans": 23,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 23,
+      "states": {
+        "OPPORTUNITY": 23
+      },
+      "terminal_reasons": {
+        "D30_BADGE_ECONOMICS_NOT_EVALUATED": 23,
+        "FAIL_CLOSED_RR_BELOW_SPEC_MINIMUM": 23,
+        "REJECT_STALE": 23
+      },
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "SHORT_D1|LONG|OB_SHADOW|CONFIRMED_OPPOSING_H1_SWING": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 12,
+        "L1.replay_hash": 12,
+        "L1.truncation_invariance": 12,
+        "L2.alert_mapping": 12,
+        "L2.c10_stop": 12,
+        "L2.c11_creation_anchor": 12,
+        "L2.c11_target": 12,
+        "L2.day_boundary": 12,
+        "L2.delivery_gate_preserves_detection": 12,
+        "L2.direction_matches_bias": 12,
+        "L2.entry_by_reference": 12,
+        "L2.expiry_session_end": 12,
+        "L2.identity": 12,
+        "L2.instruments_vt_only": 12,
+        "L2.near_poi_band": 12,
+        "L2.no_authority": 12,
+        "L2.pip_source": 12,
+        "L2.poi_max_age": 12,
+        "L2.point_source": 12,
+        "L2.point_source_declared": 12,
+        "L2.sweep_choch_window": 12,
+        "L2.sweep_window_measured": 12,
+        "L2.swing_k": 12,
+        "L2.tie_tolerance": 12,
+        "L2.timeframes": 12,
+        "L3.entry_in_choch_bar": 12,
+        "L3.stop_beyond_sweep": 12,
+        "L3.stop_side": 12,
+        "L3.sweep_extreme_side": 12,
+        "L3.target_direction": 12,
+        "L4.evaluated": 12,
+        "L4.history": 12,
+        "L4.m5_fresh": 12,
+        "L4.stale_state_consistent": 12,
+        "L5.cost_gate_applied": 12,
+        "L6.invalid_if": 12,
+        "L6.stale_if": 12,
+        "L6.valid_until": 12
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "PASS",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 12
+        },
+        "L2": {
+          "PASS": 12
+        },
+        "L3": {
+          "PASS": 12
+        },
+        "L4": {
+          "PASS": 12
+        },
+        "L5": {
+          "PASS": 12
+        },
+        "L6": {
+          "PASS": 12
+        }
+      },
+      "not_applicable_checks": {},
+      "opportunity_scans": 12,
+      "priced_opportunity_scans": 12,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 12,
+      "states": {
+        "OPPORTUNITY": 12
+      },
+      "terminal_reasons": {
+        "D30_BADGE_ECONOMICS_NOT_EVALUATED": 12,
+        "FAIL_CLOSED_RR_BELOW_SPEC_MINIMUM": 12,
+        "REJECT_STALE": 12
+      },
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "SHORT_D1|NONE|FVG|NO_TARGET_OR_NO_OPPORTUNITY": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 1548,
+        "L1.replay_hash": 1548,
+        "L1.truncation_invariance": 1548,
+        "L2.alert_mapping": 1548,
+        "L2.day_boundary": 1548,
+        "L2.identity": 1548,
+        "L2.instruments_vt_only": 1548,
+        "L2.near_poi_band": 1548,
+        "L2.no_authority": 1548,
+        "L2.poi_max_age": 1548,
+        "L2.point_source": 1548,
+        "L2.point_source_declared": 1548,
+        "L2.sweep_choch_window": 1548,
+        "L2.swing_k": 1548,
+        "L2.tie_tolerance": 1548,
+        "L2.timeframes": 1548,
+        "L4.evaluated": 1548,
+        "L4.history": 1548,
+        "L4.m5_fresh": 1548,
+        "L4.stale_state_consistent": 1548
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "NOT_RUN",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 1548
+        },
+        "L2": {
+          "PASS": 1548
+        },
+        "L3": {
+          "PASS": 1548
+        },
+        "L4": {
+          "PASS": 1548
+        },
+        "L5": {
+          "NOT_APPLICABLE": 1548
+        },
+        "L6": {
+          "PASS": 1548
+        }
+      },
+      "not_applicable_checks": {
+        "L2.c10_stop": 1548,
+        "L2.c11_creation_anchor": 1548,
+        "L2.c11_target": 1548,
+        "L2.direction_matches_bias": 1548,
+        "L2.entry_by_reference": 1548,
+        "L2.expiry_session_end": 1548,
+        "L2.sweep_window_measured": 1548,
+        "L3.geometry": 1548,
+        "L5.cost": 1548,
+        "L6.freshness": 1548
+      },
+      "opportunity_scans": 0,
+      "priced_opportunity_scans": 0,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 1548,
+      "states": {
+        "DEVELOPING": 966,
+        "NEAR_POI": 582
+      },
+      "terminal_reasons": {},
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "SHORT_D1|NONE|OB_PIVOT|NO_TARGET_OR_NO_OPPORTUNITY": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 218,
+        "L1.replay_hash": 218,
+        "L1.truncation_invariance": 218,
+        "L2.alert_mapping": 218,
+        "L2.day_boundary": 218,
+        "L2.identity": 218,
+        "L2.instruments_vt_only": 218,
+        "L2.near_poi_band": 218,
+        "L2.no_authority": 218,
+        "L2.poi_max_age": 218,
+        "L2.point_source": 218,
+        "L2.point_source_declared": 218,
+        "L2.sweep_choch_window": 218,
+        "L2.swing_k": 218,
+        "L2.tie_tolerance": 218,
+        "L2.timeframes": 218,
+        "L4.evaluated": 218,
+        "L4.history": 218,
+        "L4.m5_fresh": 218,
+        "L4.stale_state_consistent": 218
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "NOT_RUN",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 218
+        },
+        "L2": {
+          "PASS": 218
+        },
+        "L3": {
+          "PASS": 218
+        },
+        "L4": {
+          "PASS": 218
+        },
+        "L5": {
+          "NOT_APPLICABLE": 218
+        },
+        "L6": {
+          "PASS": 218
+        }
+      },
+      "not_applicable_checks": {
+        "L2.c10_stop": 218,
+        "L2.c11_creation_anchor": 218,
+        "L2.c11_target": 218,
+        "L2.direction_matches_bias": 218,
+        "L2.entry_by_reference": 218,
+        "L2.expiry_session_end": 218,
+        "L2.sweep_window_measured": 218,
+        "L3.geometry": 218,
+        "L5.cost": 218,
+        "L6.freshness": 218
+      },
+      "opportunity_scans": 0,
+      "priced_opportunity_scans": 0,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 218,
+      "states": {
+        "NEAR_POI": 218
+      },
+      "terminal_reasons": {},
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "SHORT_D1|NONE|OB_SHADOW|NO_TARGET_OR_NO_OPPORTUNITY": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 94,
+        "L1.replay_hash": 94,
+        "L1.truncation_invariance": 94,
+        "L2.alert_mapping": 94,
+        "L2.day_boundary": 94,
+        "L2.identity": 94,
+        "L2.instruments_vt_only": 94,
+        "L2.near_poi_band": 94,
+        "L2.no_authority": 94,
+        "L2.poi_max_age": 94,
+        "L2.point_source": 94,
+        "L2.point_source_declared": 94,
+        "L2.sweep_choch_window": 94,
+        "L2.swing_k": 94,
+        "L2.tie_tolerance": 94,
+        "L2.timeframes": 94,
+        "L4.evaluated": 94,
+        "L4.history": 94,
+        "L4.m5_fresh": 94,
+        "L4.stale_state_consistent": 94
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "NOT_RUN",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 94
+        },
+        "L2": {
+          "PASS": 94
+        },
+        "L3": {
+          "PASS": 94
+        },
+        "L4": {
+          "PASS": 94
+        },
+        "L5": {
+          "NOT_APPLICABLE": 94
+        },
+        "L6": {
+          "PASS": 94
+        }
+      },
+      "not_applicable_checks": {
+        "L2.c10_stop": 94,
+        "L2.c11_creation_anchor": 94,
+        "L2.c11_target": 94,
+        "L2.direction_matches_bias": 94,
+        "L2.entry_by_reference": 94,
+        "L2.expiry_session_end": 94,
+        "L2.sweep_window_measured": 94,
+        "L3.geometry": 94,
+        "L5.cost": 94,
+        "L6.freshness": 94
+      },
+      "opportunity_scans": 0,
+      "priced_opportunity_scans": 0,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 94,
+      "states": {
+        "DEVELOPING": 80,
+        "NEAR_POI": 14
+      },
+      "terminal_reasons": {},
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "SHORT_D1|SHORT|FVG|CONFIRMED_OPPOSING_H1_SWING": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 215,
+        "L1.replay_hash": 215,
+        "L1.truncation_invariance": 215,
+        "L2.alert_mapping": 215,
+        "L2.c10_stop": 215,
+        "L2.c11_creation_anchor": 215,
+        "L2.c11_target": 215,
+        "L2.day_boundary": 215,
+        "L2.delivery_gate_preserves_detection": 215,
+        "L2.direction_matches_bias": 215,
+        "L2.entry_by_reference": 215,
+        "L2.expiry_session_end": 215,
+        "L2.identity": 215,
+        "L2.instruments_vt_only": 215,
+        "L2.near_poi_band": 215,
+        "L2.no_authority": 215,
+        "L2.pip_source": 215,
+        "L2.poi_max_age": 215,
+        "L2.point_source": 215,
+        "L2.point_source_declared": 215,
+        "L2.sweep_choch_window": 215,
+        "L2.sweep_window_measured": 215,
+        "L2.swing_k": 215,
+        "L2.tie_tolerance": 215,
+        "L2.timeframes": 215,
+        "L3.entry_in_choch_bar": 215,
+        "L3.sweep_extreme_side": 215,
+        "L3.target_direction": 215,
+        "L4.evaluated": 215,
+        "L4.history": 215,
+        "L4.m5_fresh": 215,
+        "L4.stale_state_consistent": 215,
+        "L6.invalid_if": 215,
+        "L6.stale_if": 215,
+        "L6.valid_until": 215
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "NOT_RUN",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 215
+        },
+        "L2": {
+          "PASS": 215
+        },
+        "L3": {
+          "PASS": 215
+        },
+        "L4": {
+          "PASS": 215
+        },
+        "L5": {
+          "NOT_APPLICABLE": 215
+        },
+        "L6": {
+          "PASS": 215
+        }
+      },
+      "not_applicable_checks": {
+        "L3.stop_geometry": 215,
+        "L5.cost": 215
+      },
+      "opportunity_scans": 215,
+      "priced_opportunity_scans": 0,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 215,
+      "states": {
+        "OPPORTUNITY": 215
+      },
+      "terminal_reasons": {
+        "D30_BADGE_ECONOMICS_NOT_EVALUATED": 215,
+        "FAIL_CLOSED_RR_UNDEFINED": 215,
+        "MISSING_SPREAD": 215,
+        "REJECT_NO_STOP": 215
+      },
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "SHORT_D1|SHORT|OB_PIVOT|CONFIRMED_OPPOSING_H1_SWING": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 165,
+        "L1.replay_hash": 165,
+        "L1.truncation_invariance": 165,
+        "L2.alert_mapping": 165,
+        "L2.c10_stop": 165,
+        "L2.c11_creation_anchor": 165,
+        "L2.c11_target": 165,
+        "L2.day_boundary": 165,
+        "L2.delivery_gate_preserves_detection": 165,
+        "L2.direction_matches_bias": 165,
+        "L2.entry_by_reference": 165,
+        "L2.expiry_session_end": 165,
+        "L2.identity": 165,
+        "L2.instruments_vt_only": 165,
+        "L2.near_poi_band": 165,
+        "L2.no_authority": 165,
+        "L2.pip_source": 165,
+        "L2.poi_max_age": 165,
+        "L2.point_source": 165,
+        "L2.point_source_declared": 165,
+        "L2.sweep_choch_window": 165,
+        "L2.sweep_window_measured": 165,
+        "L2.swing_k": 165,
+        "L2.tie_tolerance": 165,
+        "L2.timeframes": 165,
+        "L3.entry_in_choch_bar": 165,
+        "L3.sweep_extreme_side": 165,
+        "L3.target_direction": 165,
+        "L4.evaluated": 165,
+        "L4.history": 165,
+        "L4.m5_fresh": 165,
+        "L4.stale_state_consistent": 165,
+        "L6.invalid_if": 165,
+        "L6.stale_if": 165,
+        "L6.valid_until": 165
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "NOT_RUN",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 165
+        },
+        "L2": {
+          "PASS": 165
+        },
+        "L3": {
+          "PASS": 165
+        },
+        "L4": {
+          "PASS": 165
+        },
+        "L5": {
+          "NOT_APPLICABLE": 165
+        },
+        "L6": {
+          "PASS": 165
+        }
+      },
+      "not_applicable_checks": {
+        "L3.stop_geometry": 165,
+        "L5.cost": 165
+      },
+      "opportunity_scans": 165,
+      "priced_opportunity_scans": 0,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 165,
+      "states": {
+        "OPPORTUNITY": 165
+      },
+      "terminal_reasons": {
+        "D30_BADGE_ECONOMICS_NOT_EVALUATED": 165,
+        "FAIL_CLOSED_RR_UNDEFINED": 165,
+        "MISSING_SPREAD": 165,
+        "REJECT_NO_STOP": 165
+      },
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "SHORT_D1|SHORT|OB_PIVOT|PRIMARY_EXTERNAL_LIQUIDITY": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 143,
+        "L1.replay_hash": 143,
+        "L1.truncation_invariance": 143,
+        "L2.alert_mapping": 143,
+        "L2.c10_stop": 143,
+        "L2.c11_creation_anchor": 143,
+        "L2.c11_target": 143,
+        "L2.day_boundary": 143,
+        "L2.delivery_gate_preserves_detection": 143,
+        "L2.direction_matches_bias": 143,
+        "L2.entry_by_reference": 143,
+        "L2.expiry_session_end": 143,
+        "L2.identity": 143,
+        "L2.instruments_vt_only": 143,
+        "L2.near_poi_band": 143,
+        "L2.no_authority": 143,
+        "L2.pip_source": 143,
+        "L2.poi_max_age": 143,
+        "L2.point_source": 143,
+        "L2.point_source_declared": 143,
+        "L2.sweep_choch_window": 143,
+        "L2.sweep_window_measured": 143,
+        "L2.swing_k": 143,
+        "L2.tie_tolerance": 143,
+        "L2.timeframes": 143,
+        "L3.entry_in_choch_bar": 143,
+        "L3.sweep_extreme_side": 143,
+        "L3.target_direction": 143,
+        "L4.evaluated": 143,
+        "L4.history": 143,
+        "L4.m5_fresh": 143,
+        "L4.stale_state_consistent": 143,
+        "L6.invalid_if": 143,
+        "L6.stale_if": 143,
+        "L6.valid_until": 143
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "NOT_RUN",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 143
+        },
+        "L2": {
+          "PASS": 143
+        },
+        "L3": {
+          "PASS": 143
+        },
+        "L4": {
+          "PASS": 143
+        },
+        "L5": {
+          "NOT_APPLICABLE": 143
+        },
+        "L6": {
+          "PASS": 143
+        }
+      },
+      "not_applicable_checks": {
+        "L3.stop_geometry": 143,
+        "L5.cost": 143
+      },
+      "opportunity_scans": 143,
+      "priced_opportunity_scans": 0,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 143,
+      "states": {
+        "OPPORTUNITY": 143
+      },
+      "terminal_reasons": {
+        "D30_BADGE_ECONOMICS_NOT_EVALUATED": 143,
+        "FAIL_CLOSED_RR_UNDEFINED": 143,
+        "MISSING_SPREAD": 143,
+        "REJECT_NO_STOP": 143
+      },
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    }
+  },
+  "completed": true,
+  "completed_scans": 2741,
+  "data_audit": {
+    "bars": {
+      "D1": 60,
+      "H1": 1412,
+      "M5": 16932
+    },
+    "captured_at_utc": "2026-10-10T17:20:37.180406+00:00",
+    "days": [
+      "2026-08-11",
+      "2026-08-12",
+      "2026-08-13",
+      "2026-08-14",
+      "2026-08-15",
+      "2026-08-16",
+      "2026-08-17",
+      "2026-08-18",
+      "2026-08-19",
+      "2026-08-20",
+      "2026-08-21",
+      "2026-08-22",
+      "2026-08-23",
+      "2026-08-24",
+      "2026-08-25",
+      "2026-08-26",
+      "2026-08-27",
+      "2026-08-28",
+      "2026-08-29",
+      "2026-08-30",
+      "2026-08-31",
+      "2026-09-01",
+      "2026-09-02",
+      "2026-09-03",
+      "2026-09-04",
+      "2026-09-05",
+      "2026-09-06",
+      "2026-09-07",
+      "2026-09-08",
+      "2026-09-09",
+      "2026-09-10",
+      "2026-09-11",
+      "2026-09-12",
+      "2026-09-13",
+      "2026-09-14",
+      "2026-09-15",
+      "2026-09-16",
+      "2026-09-17",
+      "2026-09-18",
+      "2026-09-19",
+      "2026-09-20",
+      "2026-09-21",
+      "2026-09-22",
+      "2026-09-23",
+      "2026-09-24",
+      "2026-09-25",
+      "2026-09-26",
+      "2026-09-27",
+      "2026-09-28",
+      "2026-09-29",
+      "2026-09-30",
+      "2026-10-01",
+      "2026-10-02",
+      "2026-10-03",
+      "2026-10-04",
+      "2026-10-05",
+      "2026-10-06",
+      "2026-10-07",
+      "2026-10-08",
+      "2026-10-09"
+    ],
+    "gap_policy": "Kept exactly as recorded; no fill, interpolation or replacement.",
+    "issues": [],
+    "missing_files": [],
+    "period_end_utc": "2026-10-10T00:00:00+00:00",
+    "period_start_utc": "2026-08-11T00:00:00+00:00",
+    "quote_policy": "MqlRates spread is bar metadata, not an evidenced contemporaneous bid/ask. No quote is invented.",
+    "recorded_gaps": [
+      {
+        "after": "2026-08-14T20:55:00+00:00",
+        "before": "2026-08-15T14:00:00+00:00",
+        "missing_bars": 204
+      },
+      {
+        "after": "2026-08-28T14:25:00+00:00",
+        "before": "2026-08-28T14:40:00+00:00",
+        "missing_bars": 2
+      },
+      {
+        "after": "2026-08-29T04:55:00+00:00",
+        "before": "2026-08-29T16:00:00+00:00",
+        "missing_bars": 132
+      },
+      {
+        "after": "2026-08-30T02:05:00+00:00",
+        "before": "2026-08-30T02:35:00+00:00",
+        "missing_bars": 5
+      },
+      {
+        "after": "2026-09-06T01:25:00+00:00",
+        "before": "2026-09-06T01:35:00+00:00",
+        "missing_bars": 1
+      },
+      {
+        "after": "2026-09-18T21:30:00+00:00",
+        "before": "2026-09-18T21:45:00+00:00",
+        "missing_bars": 2
+      },
+      {
+        "after": "2026-09-25T21:35:00+00:00",
+        "before": "2026-09-25T21:45:00+00:00",
+        "missing_bars": 1
+      },
+      {
+        "after": "2026-09-26T02:00:00+00:00",
+        "before": "2026-09-26T02:10:00+00:00",
+        "missing_bars": 1
+      }
+    ],
+    "runtime_windows": {
+      "D1": 30,
+      "H1": 200,
+      "M5": 300
+    },
+    "server": "VTMarkets-Demo",
+    "sha256": {
+      "tests/fixtures/ccfd_v100/recorded_60d/BTCUSD_d1.csv": "85110e81326dba871db5c935c5b352c53a1dc1ebf220f544ad7d295a56546559",
+      "tests/fixtures/ccfd_v100/recorded_60d/BTCUSD_h1.csv": "f1d7ba4b6abfe949288bde914969daac61657a33e0b2b832c0596d2418e63127",
+      "tests/fixtures/ccfd_v100/recorded_60d/BTCUSD_m5.csv": "60a9b5a485d9b70ddf507e8fa27e206236fb14ed836cd20618b7b39377d505bb",
+      "tests/fixtures/ccfd_v100/recorded_60d/BTCUSD_provenance.json": "c3b21053e52f0078c598fc0139e3b1790b4c6bf3c082834a0631e3dab1941903"
+    },
+    "source": "MT5_VT_MARKETS_DEMO",
+    "time_policy": "UTC bar-open labels; evaluate each recorded M5 close; forming bars are passed through and independently checked by canonical L1.",
+    "verdict": "PASS_WITH_DECLARED_GAPS"
+  },
+  "elapsed_seconds": 501.71,
+  "engine_defects": [],
+  "evaluator": {
+    "creation_fact_cache_hits": 4387,
+    "creation_fact_cache_misses": 18,
+    "engine_globals_modified": false,
+    "h1_fact_cache_hits": 13474,
+    "h1_fact_cache_misses": 231,
+    "native_reference_schedule": "Every closed H1 window change and new opportunity/C11/eligibility plan; C10 is always recomputed, never memoized.",
+    "reference_parity": "PASS",
+    "snapshot_or_check_cache": false,
+    "uncached_snapshot_reference_checks": 252
+  },
+  "identity": {
+    "code_sha": "59d7e5b1bf541c48204d388c68b04ec0e3b4f9b2",
+    "contract_sha256": "e5f04912695967fdc95178e0f862d9c2af47f56529f8c97b1a8a104198f1aa7b",
+    "engine_sha256": "279ef511e6e94cb4ea571c28bc30146a7c49c205282d6eb2883007ac66e34bfe",
+    "frozen_file_sha256": {
+      "config/lsmc_report_lane.yaml": "ac9ce5b42d3c399d44f091fba0193fd5ce7a167472da89f475c4b3c0714a3628",
+      "src/large_smc_v112/__init__.py": "5c2e9e5205d83618e7bf2b4783d818c19c98dbf50c9deede2b5ee43e4816a228",
+      "src/large_smc_v112/contract.py": "85e61615b4c64b3bf9d3f0eb5d3941bbb89d22070cf674b97797b6a9f9249820",
+      "src/large_smc_v112/detect.py": "b336f1c4958caefc33fcf4a73dbd3b60b730870f76366a7faec37c5012779161",
+      "src/large_smc_v112/metadata.py": "b0437ae640ccc19a28740f79e83a4ad3eec55f0f81fae54b2db38c7f16a74ca7",
+      "src/large_smc_v112/targets.py": "a047891b188e00c7db429db3ee1b1e1cbfae5cbc78226f4039ed9290fdfe0e4c",
+      "src/large_smc_v112/watch.py": "8aef629782c928e40bb754c750af34c5daac8fcb6691cd7704630e20437196f5",
+      "src/large_smc_v112/windows.py": "7dcfeef1486ca8f1c8f8fa258df9cb47b7e25549b1c82c89ef67d8015db64c05",
+      "src/large_smc_watch/__init__.py": "ebbca3c124487c79a41912b6bbf75688d06529257bdc4ee53d0ffe2df789950f",
+      "src/large_smc_watch/contract.py": "51f9a0d088e750399b7ef4d98c978c6974b0b9ef2814f1c4251bbed79a9a5e1c",
+      "src/large_smc_watch/detect.py": "e3fd5e1fe699046c8b4c552e68d6a19a6f4abc51ea9cec3c4734c02db4e27973",
+      "src/large_smc_watch/watch.py": "86ac9cdcfa864b36a06b795920bd333f8fa9cfdd81efa5eb422e1d746bc2c63d",
+      "strategies/ST_LARGE_SMC_V1_1_1_0.yaml": "78285f9fabcb20af14de327d010e48684dc12205f4435eff886fcc2373a357b4",
+      "strategies/ST_LARGE_SMC_V1_1_1_2.yaml": "1f9b6cace2e1be33e5b3572e2c13e3e526b992478f91c8f09955b0f44b73024f"
+    },
+    "runner_sha256": "e963d7209b5639ef5a7e26bff3785967af2dc745622d4d4e506c4f57957c8599"
+  },
+  "l5_cost_source": "VT recorded M5 spread_price of the last closed bar (tests/fixtures/ccfd_v100/recorded_60d/<SYM>_m5_meta.csv) + OD1011-COMMISSION binding (scripts/ccfd_sweep_retest_replay.commission_binding), the accepted source of the CCFD 1.0.0 L5 PASS on the same recorded 60d data",
+  "layout": {
+    "boundary_overlap_bars_each_side": 12,
+    "core_end_row_exclusive": 5417,
+    "core_scans": 2741,
+    "core_start_row": 2676,
+    "days": [
+      "2026-08-21",
+      "2026-08-22",
+      "2026-08-23",
+      "2026-08-24",
+      "2026-08-25",
+      "2026-08-26",
+      "2026-08-27",
+      "2026-08-28",
+      "2026-08-29",
+      "2026-08-30"
+    ],
+    "oldest_possible_creation_close": "2026-08-19T22:15:00+00:00",
+    "warmup_policy": "Current host windows plus the complete declared creation lookback before the oldest possible active creation bar; original capture start retained; no synthetic overlap.",
+    "warmup_start_row": {
+      "D1": 0,
+      "H1": 0,
+      "M5": 2067
+    }
+  },
+  "mismatch_categories": {
+    "UNEXPECTED_L3": 48
+  },
+  "mission": "AGP-C24-R3",
+  "protected_bytes_unchanged": true,
+  "raw_all_scans": {
+    "evaluated_checks": {
+      "L1.closed_bars_only": 2741,
+      "L1.replay_hash": 2741,
+      "L1.truncation_invariance": 2741,
+      "L2.alert_mapping": 2741,
+      "L2.c10_stop": 881,
+      "L2.c11_creation_anchor": 881,
+      "L2.c11_target": 881,
+      "L2.day_boundary": 2741,
+      "L2.delivery_gate_preserves_detection": 881,
+      "L2.direction_matches_bias": 881,
+      "L2.entry_by_reference": 881,
+      "L2.expiry_session_end": 881,
+      "L2.identity": 2741,
+      "L2.instruments_vt_only": 2741,
+      "L2.near_poi_band": 2741,
+      "L2.no_authority": 2741,
+      "L2.pip_source": 881,
+      "L2.poi_max_age": 2741,
+      "L2.point_source": 2741,
+      "L2.point_source_declared": 2741,
+      "L2.sweep_choch_window": 2741,
+      "L2.sweep_window_measured": 881,
+      "L2.swing_k": 2741,
+      "L2.tie_tolerance": 2741,
+      "L2.timeframes": 2741,
+      "L3.entry_in_choch_bar": 881,
+      "L3.stop_beyond_sweep": 358,
+      "L3.stop_side": 358,
+      "L3.sweep_extreme_side": 881,
+      "L3.target_direction": 881,
+      "L4.evaluated": 2741,
+      "L4.history": 2741,
+      "L4.m5_fresh": 2741,
+      "L4.stale_state_consistent": 2741,
+      "L5.cost_gate_applied": 358,
+      "L6.invalid_if": 881,
+      "L6.stale_if": 881,
+      "L6.valid_until": 881
+    },
+    "gate_verdicts": {
+      "L1": "PASS",
+      "L2": "PASS",
+      "L3": "FAIL",
+      "L4": "PASS",
+      "L5": "PASS",
+      "L6": "PASS"
+    },
+    "gates": {
+      "L1": {
+        "PASS": 2741
+      },
+      "L2": {
+        "PASS": 2741
+      },
+      "L3": {
+        "FAIL": 48,
+        "PASS": 2693
+      },
+      "L4": {
+        "PASS": 2741
+      },
+      "L5": {
+        "NOT_APPLICABLE": 2383,
+        "PASS": 358
+      },
+      "L6": {
+        "PASS": 2741
+      }
+    },
+    "not_applicable_checks": {
+      "L2.c10_stop": 1860,
+      "L2.c11_creation_anchor": 1860,
+      "L2.c11_target": 1860,
+      "L2.direction_matches_bias": 1860,
+      "L2.entry_by_reference": 1860,
+      "L2.expiry_session_end": 1860,
+      "L2.sweep_window_measured": 1860,
+      "L3.geometry": 1860,
+      "L3.stop_geometry": 523,
+      "L5.cost": 2383,
+      "L6.freshness": 1860
+    },
+    "opportunity_scans": 881,
+    "priced_opportunity_scans": 358,
+    "qualifies_for_proposal": false,
+    "rr_eligible_scans": 187,
+    "scans": 2741,
+    "states": {
+      "DEVELOPING": 1046,
+      "NEAR_POI": 814,
+      "OPPORTUNITY": 881
+    },
+    "terminal_reasons": {
+      "D30_BADGE_ECONOMICS_NOT_EVALUATED": 881,
+      "FAIL_CLOSED_RR_BELOW_SPEC_MINIMUM": 171,
+      "FAIL_CLOSED_RR_UNDEFINED": 523,
+      "MISSING_SPREAD": 523,
+      "REJECT_NO_STOP": 523,
+      "REJECT_STALE": 358
+    },
+    "verdict": "FAIL",
+    "verification_status": "NOT_VERIFIED"
+  },
+  "resource_class": "R1",
+  "resource_lock_released": true,
+  "rule_diff": {
+    "computed": [
+      "based_on",
+      "based_on_sha256",
+      "candidate_created_local_date",
+      "candidate_provenance.rule_change_mission",
+      "candidate_provenance.source_main_commit",
+      "candidate_rule_changes.changes",
+      "candidate_rule_changes.declared_diff_paths",
+      "candidate_rule_changes.diff_scope",
+      "candidate_rule_changes.frozen_versions_untouched",
+      "candidate_rule_changes.mission",
+      "implementation",
+      "rules.targets.creation_window",
+      "rules.targets.fallback.condition",
+      "version"
+    ],
+    "declared": [
+      "based_on",
+      "based_on_sha256",
+      "candidate_created_local_date",
+      "candidate_provenance.rule_change_mission",
+      "candidate_provenance.source_main_commit",
+      "candidate_rule_changes.changes",
+      "candidate_rule_changes.declared_diff_paths",
+      "candidate_rule_changes.diff_scope",
+      "candidate_rule_changes.frozen_versions_untouched",
+      "candidate_rule_changes.mission",
+      "implementation",
+      "rules.targets.creation_window",
+      "rules.targets.fallback.condition",
+      "version"
+    ],
+    "verdict": "PASS"
+  },
+  "scope_days": 60,
+  "selections": {
+    "BTCUSD:H1:FVG:LONG:2026-08-21T07:00:00+00:00|2026-08-21T13:35:00+00:00|2026-08-21T13:40:00+00:00": {
+      "m5_row": 2866,
+      "target": {
+        "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+        "target_c11": 79510.15,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "core_selector_reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "core_selector_source": "liquidity.hierarchy.external_swing_liquidity",
+          "core_selector_source_id": "BTCUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:79510.15000000",
+          "core_selector_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "creation_bar_close_utc": "2026-08-21T13:45:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-12T12:00:00+00:00",
+            "M5": "2026-08-20T12:45:00+00:00"
+          },
+          "evidence_timestamp": "2026-08-21T08:55:00+00:00",
+          "price": 79510.15,
+          "reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "liquidity.hierarchy.external_swing_liquidity",
+          "source_id": "BTCUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:79510.15000000",
+          "status_at_selection": "UNSWEPT",
+          "structure_note": null,
+          "tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "728a3c8be93cbe55b02ba48c358cb0840dc1d2e75f495039305d082cdc2e7533"
+    },
+    "BTCUSD:H1:FVG:LONG:2026-08-21T07:00:00+00:00|2026-08-23T08:00:00+00:00|2026-08-23T08:05:00+00:00": {
+      "m5_row": 3503,
+      "target": {
+        "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+        "target_c11": 77395.6,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "core_selector_reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "core_selector_source": "liquidity.hierarchy.external_swing_liquidity",
+          "core_selector_source_id": "BTCUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:77395.60000000",
+          "core_selector_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "creation_bar_close_utc": "2026-08-23T08:10:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-14T07:00:00+00:00",
+            "M5": "2026-08-22T07:10:00+00:00"
+          },
+          "evidence_timestamp": "2026-08-23T01:15:00+00:00",
+          "price": 77395.6,
+          "reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "liquidity.hierarchy.external_swing_liquidity",
+          "source_id": "BTCUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:77395.60000000",
+          "status_at_selection": "UNSWEPT",
+          "structure_note": null,
+          "tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "880b660dc0c6f3fea66bfa2c177798e52fef42652c8e1cf89f6991028186f2bc"
+    },
+    "BTCUSD:H1:FVG:LONG:2026-08-21T21:00:00+00:00|2026-08-22T02:00:00+00:00|2026-08-22T02:25:00+00:00": {
+      "m5_row": 3025,
+      "target": {
+        "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+        "target_c11": 78751.78,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "core_selector_reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "core_selector_source": "liquidity.hierarchy.external_swing_liquidity",
+          "core_selector_source_id": "BTCUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:78751.78000000",
+          "core_selector_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "creation_bar_close_utc": "2026-08-22T02:30:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-13T01:00:00+00:00",
+            "M5": "2026-08-21T01:30:00+00:00"
+          },
+          "evidence_timestamp": "2026-08-21T22:05:00+00:00",
+          "price": 78751.78,
+          "reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "liquidity.hierarchy.external_swing_liquidity",
+          "source_id": "BTCUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:78751.78000000",
+          "status_at_selection": "UNSWEPT",
+          "structure_note": null,
+          "tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "4389c3af26104ea51ee2046f0df91bfd91fcc902b8d048eced49d96fba5d2492"
+    },
+    "BTCUSD:H1:FVG:LONG:2026-08-24T06:00:00+00:00|2026-08-24T08:00:00+00:00|2026-08-24T09:00:00+00:00": {
+      "m5_row": 3730,
+      "target": {
+        "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+        "target_c11": 78038.99,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "core_selector_reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "core_selector_source": "liquidity.hierarchy.external_swing_liquidity",
+          "core_selector_source_id": "BTCUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:78038.99000000",
+          "core_selector_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "creation_bar_close_utc": "2026-08-24T09:05:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-16T01:00:00+00:00",
+            "M5": "2026-08-23T08:05:00+00:00"
+          },
+          "evidence_timestamp": "2026-08-23T21:25:00+00:00",
+          "price": 78038.99,
+          "reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "liquidity.hierarchy.external_swing_liquidity",
+          "source_id": "BTCUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:78038.99000000",
+          "status_at_selection": "UNSWEPT",
+          "structure_note": null,
+          "tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "89f683990067685f0e773af32ba2dced4a97c2ea1f872cf16f2dfb9178477f58"
+    },
+    "BTCUSD:H1:FVG:LONG:2026-08-27T08:00:00+00:00|2026-08-27T13:50:00+00:00|2026-08-27T13:55:00+00:00": {
+      "m5_row": 4594,
+      "target": {
+        "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+        "target_c11": 80521.84,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "core_selector_reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "core_selector_source": "liquidity.hierarchy.external_swing_liquidity",
+          "core_selector_source_id": "BTCUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:80521.84000000",
+          "core_selector_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "creation_bar_close_utc": "2026-08-27T14:00:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-19T06:00:00+00:00",
+            "M5": "2026-08-26T13:00:00+00:00"
+          },
+          "evidence_timestamp": "2026-08-27T09:30:00+00:00",
+          "price": 80521.84,
+          "reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "liquidity.hierarchy.external_swing_liquidity",
+          "source_id": "BTCUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:80521.84000000",
+          "status_at_selection": "UNSWEPT",
+          "structure_note": null,
+          "tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "8a3d01357eba535b3d7269d58c5f4ec4fe3f9b47aba475a84eb14fe4348c9eba"
+    },
+    "BTCUSD:H1:FVG:LONG:2026-08-27T14:00:00+00:00|2026-08-27T21:40:00+00:00|2026-08-27T21:55:00+00:00": {
+      "m5_row": 4720,
+      "target": {
+        "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+        "target_c11": 80843.42,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "core_selector_reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "core_selector_source": "liquidity.hierarchy.external_swing_liquidity",
+          "core_selector_source_id": "BTCUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:80843.42000000",
+          "core_selector_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "creation_bar_close_utc": "2026-08-27T22:00:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-19T14:00:00+00:00",
+            "M5": "2026-08-26T21:00:00+00:00"
+          },
+          "evidence_timestamp": "2026-08-27T17:15:00+00:00",
+          "price": 80843.42,
+          "reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "liquidity.hierarchy.external_swing_liquidity",
+          "source_id": "BTCUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:80843.42000000",
+          "status_at_selection": "UNSWEPT",
+          "structure_note": null,
+          "tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "134d11f864f617e6f94dfafda696235690b6019c2197d708c246ca45c315af8e"
+    },
+    "BTCUSD:H1:FVG:SHORT:2026-08-22T05:00:00+00:00|2026-08-24T01:05:00+00:00|2026-08-24T01:55:00+00:00": {
+      "m5_row": 3625,
+      "target": {
+        "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+        "target_c11": 76870.3,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+          "core_m5_fallback_ignored": false,
+          "core_selector_reason": "REJECT_NO_TARGET",
+          "core_selector_source": null,
+          "core_selector_source_id": null,
+          "core_selector_tier": null,
+          "creation_bar_close_utc": "2026-08-24T02:00:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-15T18:00:00+00:00",
+            "M5": "2026-08-23T01:00:00+00:00"
+          },
+          "kind": "low",
+          "known_at_index": 167,
+          "price": 76870.3,
+          "reason": "PRIMARY_UNAVAILABLE_H1_FALLBACK",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "fx_discovery.features.swings",
+          "structure_note": null,
+          "swing_index": 165,
+          "tier": "FALLBACK_H1_SWING",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "265306fca6f2bb0db8d7dc91732fe6e0dbfb0f6e449ef39e14a045861f25cb5e"
+    },
+    "BTCUSD:H1:FVG:SHORT:2026-08-25T09:00:00+00:00|2026-08-25T16:05:00+00:00|2026-08-25T16:10:00+00:00": {
+      "m5_row": 4300,
+      "target": {
+        "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+        "target_c11": 78875.94,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+          "core_m5_fallback_ignored": false,
+          "core_selector_reason": "REJECT_NO_TARGET",
+          "core_selector_source": null,
+          "core_selector_source_id": null,
+          "core_selector_tier": null,
+          "creation_bar_close_utc": "2026-08-25T16:15:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-17T08:00:00+00:00",
+            "M5": "2026-08-24T15:15:00+00:00"
+          },
+          "kind": "low",
+          "known_at_index": 195,
+          "price": 78875.94,
+          "reason": "PRIMARY_UNAVAILABLE_H1_FALLBACK",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "fx_discovery.features.swings",
+          "structure_note": null,
+          "swing_index": 193,
+          "tier": "FALLBACK_H1_SWING",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "576018360dfeb6a81ee8eb4e9075ae6a24e7086e7bf0976f7e495991e3702914"
+    },
+    "BTCUSD:H1:OB_PIVOT:LONG:2026-08-22T21:00:00+00:00|2026-08-23T20:05:00+00:00|2026-08-23T21:00:00+00:00": {
+      "m5_row": 3526,
+      "target": {
+        "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+        "target_c11": 77756.18,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "core_selector_reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "core_selector_source": "liquidity.hierarchy.external_swing_liquidity",
+          "core_selector_source_id": "BTCUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:77756.18000000",
+          "core_selector_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "creation_bar_close_utc": "2026-08-23T21:05:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-14T20:00:00+00:00",
+            "M5": "2026-08-22T20:05:00+00:00"
+          },
+          "evidence_timestamp": "2026-08-23T13:15:00+00:00",
+          "price": 77756.18,
+          "reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "liquidity.hierarchy.external_swing_liquidity",
+          "source_id": "BTCUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:77756.18000000",
+          "status_at_selection": "UNSWEPT",
+          "structure_note": null,
+          "tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "fc1b6b6c269d357bf7dc500c44da073d9248eab62d7a97000c9f7605fec85fed"
+    },
+    "BTCUSD:H1:OB_PIVOT:LONG:2026-08-27T12:00:00+00:00|2026-08-29T17:40:00+00:00|2026-08-29T18:35:00+00:00": {
+      "m5_row": 5120,
+      "target": {
+        "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+        "target_c11": 78645.64,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+          "core_m5_fallback_ignored": true,
+          "core_selector_reason": "FALLBACK_TIER_CONFIRMED_M5_SWING_EXTREMUM",
+          "core_selector_source": "market_structure.tiers.StructureTier.swings",
+          "core_selector_source_id": "BTCUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:79825.25000000",
+          "core_selector_tier": "FALLBACK_M5_SWING",
+          "creation_bar_close_utc": "2026-08-29T18:40:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-20T23:00:00+00:00",
+            "M5": "2026-08-28T06:30:00+00:00"
+          },
+          "kind": "high",
+          "known_at_index": 141,
+          "price": 78645.64,
+          "reason": "PRIMARY_UNAVAILABLE_H1_FALLBACK",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "fx_discovery.features.swings",
+          "structure_note": null,
+          "swing_index": 139,
+          "tier": "FALLBACK_H1_SWING",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "0cbbc1a4e70a7a94563e10f5659998a2ded6f27331268b43757660458f36c852"
+    },
+    "BTCUSD:H1:OB_PIVOT:SHORT:2026-08-21T08:00:00+00:00|2026-08-22T09:20:00+00:00|2026-08-22T09:45:00+00:00": {
+      "m5_row": 3122,
+      "target": {
+        "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+        "target_c11": 76491.13,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "core_selector_reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "core_selector_source": "liquidity.hierarchy.external_swing_liquidity",
+          "core_selector_source_id": "BTCUSD:M5:SELL_SIDE:EXTERNAL_SWING_LOW:76491.13000000",
+          "core_selector_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "creation_bar_close_utc": "2026-08-22T09:50:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-13T08:00:00+00:00",
+            "M5": "2026-08-21T08:50:00+00:00"
+          },
+          "evidence_timestamp": "2026-08-22T05:10:00+00:00",
+          "price": 76491.13,
+          "reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "liquidity.hierarchy.external_swing_liquidity",
+          "source_id": "BTCUSD:M5:SELL_SIDE:EXTERNAL_SWING_LOW:76491.13000000",
+          "status_at_selection": "UNSWEPT",
+          "structure_note": null,
+          "tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "4a3a6610c132f3140839a8d39dc00f99db5d61e0690f40a1244a005674a7cf29"
+    },
+    "BTCUSD:H1:OB_PIVOT:SHORT:2026-08-21T08:00:00+00:00|2026-08-22T12:55:00+00:00|2026-08-22T13:15:00+00:00": {
+      "m5_row": 3163,
+      "target": {
+        "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+        "target_c11": 76491.13,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "core_selector_reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "core_selector_source": "liquidity.hierarchy.external_swing_liquidity",
+          "core_selector_source_id": "BTCUSD:M5:SELL_SIDE:EXTERNAL_SWING_LOW:76491.13000000",
+          "core_selector_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "creation_bar_close_utc": "2026-08-22T13:20:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-13T12:00:00+00:00",
+            "M5": "2026-08-21T12:20:00+00:00"
+          },
+          "evidence_timestamp": "2026-08-22T05:10:00+00:00",
+          "price": 76491.13,
+          "reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "liquidity.hierarchy.external_swing_liquidity",
+          "source_id": "BTCUSD:M5:SELL_SIDE:EXTERNAL_SWING_LOW:76491.13000000",
+          "status_at_selection": "UNSWEPT",
+          "structure_note": null,
+          "tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "30d466ab59cd1a08f270dd89808cc62089a9e210a4f51d93513e49e950902dbc"
+    },
+    "BTCUSD:H1:OB_PIVOT:SHORT:2026-08-21T08:00:00+00:00|2026-08-22T19:30:00+00:00|2026-08-22T20:15:00+00:00": {
+      "m5_row": 3210,
+      "target": {
+        "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+        "target_c11": 76491.13,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "core_selector_reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "core_selector_source": "liquidity.hierarchy.external_swing_liquidity",
+          "core_selector_source_id": "BTCUSD:M5:SELL_SIDE:EXTERNAL_SWING_LOW:76491.13000000",
+          "core_selector_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "creation_bar_close_utc": "2026-08-22T20:20:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-13T19:00:00+00:00",
+            "M5": "2026-08-21T19:20:00+00:00"
+          },
+          "evidence_timestamp": "2026-08-22T05:10:00+00:00",
+          "price": 76491.13,
+          "reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "liquidity.hierarchy.external_swing_liquidity",
+          "source_id": "BTCUSD:M5:SELL_SIDE:EXTERNAL_SWING_LOW:76491.13000000",
+          "status_at_selection": "UNSWEPT",
+          "structure_note": null,
+          "tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "c8bfcc7e9da2c28a94818ffbb509efb1dddc8c237e2e22b4c9c53e395114a987"
+    },
+    "BTCUSD:H1:OB_PIVOT:SHORT:2026-08-21T08:00:00+00:00|2026-08-23T04:25:00+00:00|2026-08-23T04:45:00+00:00": {
+      "m5_row": 3387,
+      "target": {
+        "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+        "target_c11": 76622.96,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+          "core_m5_fallback_ignored": false,
+          "core_selector_reason": "REJECT_NO_TARGET",
+          "core_selector_source": null,
+          "core_selector_source_id": null,
+          "core_selector_tier": null,
+          "creation_bar_close_utc": "2026-08-23T04:50:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-14T03:00:00+00:00",
+            "M5": "2026-08-22T03:50:00+00:00"
+          },
+          "kind": "low",
+          "known_at_index": 168,
+          "price": 76622.96,
+          "reason": "PRIMARY_UNAVAILABLE_H1_FALLBACK",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "fx_discovery.features.swings",
+          "structure_note": null,
+          "swing_index": 166,
+          "tier": "FALLBACK_H1_SWING",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "a45ba2cf7604803cba9476d01f30894c3f92c93be26d96a12d35f15de82ef912"
+    },
+    "BTCUSD:H1:OB_PIVOT:SHORT:2026-08-21T08:00:00+00:00|2026-08-24T02:45:00+00:00|2026-08-24T03:10:00+00:00": {
+      "m5_row": 3620,
+      "target": {
+        "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+        "target_c11": 77100.88,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+          "core_m5_fallback_ignored": false,
+          "core_selector_reason": "REJECT_NO_TARGET",
+          "core_selector_source": null,
+          "core_selector_source_id": null,
+          "core_selector_tier": null,
+          "creation_bar_close_utc": "2026-08-24T03:15:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-15T19:00:00+00:00",
+            "M5": "2026-08-23T02:15:00+00:00"
+          },
+          "kind": "low",
+          "known_at_index": 193,
+          "price": 77100.88,
+          "reason": "PRIMARY_UNAVAILABLE_H1_FALLBACK",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "fx_discovery.features.swings",
+          "structure_note": null,
+          "swing_index": 191,
+          "tier": "FALLBACK_H1_SWING",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "25773ea279cfe04092517e0bd3c0b6292f884d4c55fca56c9443d257cd8fb18f"
+    },
+    "BTCUSD:H1:OB_PIVOT:SHORT:2026-08-22T19:00:00+00:00|2026-08-23T01:15:00+00:00|2026-08-23T02:00:00+00:00": {
+      "m5_row": 3410,
+      "target": {
+        "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+        "target_c11": 76522.09,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "core_selector_reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "core_selector_source": "liquidity.hierarchy.external_swing_liquidity",
+          "core_selector_source_id": "BTCUSD:M5:SELL_SIDE:EXTERNAL_SWING_LOW:76522.09000000",
+          "core_selector_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "creation_bar_close_utc": "2026-08-23T02:05:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-14T01:00:00+00:00",
+            "M5": "2026-08-22T01:05:00+00:00"
+          },
+          "evidence_timestamp": "2026-08-22T10:20:00+00:00",
+          "price": 76522.09,
+          "reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "liquidity.hierarchy.external_swing_liquidity",
+          "source_id": "BTCUSD:M5:SELL_SIDE:EXTERNAL_SWING_LOW:76522.09000000",
+          "status_at_selection": "UNSWEPT",
+          "structure_note": null,
+          "tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "bce4a723534f64ef7f1556676b792dc266561e802e1da0a0c3f91f6545d18ff0"
+    },
+    "BTCUSD:H1:OB_PIVOT:SHORT:2026-08-28T06:00:00+00:00|2026-08-28T11:30:00+00:00|2026-08-28T12:10:00+00:00": {
+      "m5_row": 4880,
+      "target": {
+        "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+        "target_c11": 78906.43,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+          "core_m5_fallback_ignored": false,
+          "core_selector_reason": "REJECT_NO_TARGET",
+          "core_selector_source": null,
+          "core_selector_source_id": null,
+          "core_selector_tier": null,
+          "creation_bar_close_utc": "2026-08-28T12:15:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-20T04:00:00+00:00",
+            "M5": "2026-08-27T11:15:00+00:00"
+          },
+          "kind": "low",
+          "known_at_index": 179,
+          "price": 78906.43,
+          "reason": "PRIMARY_UNAVAILABLE_H1_FALLBACK",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "fx_discovery.features.swings",
+          "structure_note": null,
+          "swing_index": 177,
+          "tier": "FALLBACK_H1_SWING",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "dd601fe7abb1633524070266a567e31b099e8b32b8fa33155ad939658c2dde1b"
+    },
+    "BTCUSD:H1:OB_SHADOW:LONG:2026-08-23T19:00:00+00:00|2026-08-24T00:45:00+00:00|2026-08-24T00:55:00+00:00": {
+      "m5_row": 3562,
+      "target": {
+        "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+        "target_c11": 77756.18,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+          "core_m5_fallback_ignored": false,
+          "core_selector_reason": "REJECT_NO_TARGET",
+          "core_selector_source": null,
+          "core_selector_source_id": null,
+          "core_selector_tier": null,
+          "creation_bar_close_utc": "2026-08-24T01:00:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-15T17:00:00+00:00",
+            "M5": "2026-08-23T00:00:00+00:00"
+          },
+          "kind": "high",
+          "known_at_index": 190,
+          "price": 77756.18,
+          "reason": "PRIMARY_UNAVAILABLE_H1_FALLBACK",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "fx_discovery.features.swings",
+          "structure_note": null,
+          "swing_index": 188,
+          "tier": "FALLBACK_H1_SWING",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "1fc02cf8eb4b36ea1013ac145361a6ecbd8dbc0682004bdadb0e60c187fe035e"
+    }
+  },
+  "shard": 1,
+  "shard_days": 10,
+  "strategy": "ST_LARGE_SMC_V1@1.1.3",
+  "symbol": "BTCUSD",
+  "verdict": "FAIL",
+  "verification_status": "NOT_VERIFIED",
+  "workers": 1
+}

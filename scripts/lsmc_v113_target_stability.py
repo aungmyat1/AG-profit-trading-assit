@@ -15,15 +15,21 @@ import csv
 import json
 from pathlib import Path
 
-SYMBOLS = ("BTCUSD", "ETHUSD")
-SHARDS = 6
+SYMBOLS = ("BTCUSD", "ETHUSD", "EURUSD", "GBPUSD", "USDJPY", "XAUUSD")
+SHARDS = 6  # every symbol's recorded window is 6 shards of <= 10 days (audit.json `shard_count` when present)
 
 
 def check(root: Path) -> dict:
     out = {"schema": "AGP_C24_LSMC_V113_TARGET_STABILITY_V1", "symbols": {}}
     for symbol in SYMBOLS:
         rows, missing = [], []
-        for shard in range(SHARDS):
+        if not (root / symbol).is_dir():
+            out["symbols"][symbol] = {"verdict": "NOT_RUN", "missing_shards": list(range(SHARDS)), "watches": 0,
+                                      "watch_scans": 0, "multi_scan_watches": 0, "drift_cases": []}
+            continue
+        audits = sorted((root / symbol).glob("shard_*/audit.json"))
+        shards = json.loads(audits[0].read_text()).get("shard_count", SHARDS) if audits else SHARDS
+        for shard in range(shards):
             path = root / symbol / f"shard_{shard:02d}" / "scans.csv"
             if not path.is_file():
                 missing.append(shard)

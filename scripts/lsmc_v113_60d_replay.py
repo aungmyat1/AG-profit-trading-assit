@@ -20,6 +20,14 @@ from large_smc_v113 import targets as T
 A, C, G, RG = audit.A, audit.C, audit.G, audit.RG
 ROOT = audit.ROOT
 DATASET = A.CRYPTO_DATASET
+# AGP-C24-CLOSEOUT-R2: the #215 recorded 60d VT FX/gold capture (own provenance schema, 10-trading-date warm-up).
+FX_DATASET = ROOT / 'tests/fixtures/vt_recorded_60d_fx'
+FX_SYMBOLS = ('EURUSD', 'GBPUSD', 'USDJPY', 'XAUUSD')
+SYMBOLS = tuple(sorted(C.CRYPTO_SYMBOLS)) + FX_SYMBOLS
+
+
+def dataset(symbol):
+    return FX_DATASET if symbol in FX_SYMBOLS else DATASET
 GATES = ('L1', 'L2', 'L3', 'L4', 'L5', 'L6')
 MISSION = 'AGP-C24-R3'
 # OD1011-L5: L5 is PASS / INSUFFICIENT (cost-blocked = actionability outcome); no declared WARN is accepted.
@@ -33,9 +41,9 @@ def cost_source(symbol):
     """Spread by M5 bar open time + commission binding, loaded once per symbol (read-only)."""
     if symbol not in _COST:
         import ccfd_sweep_retest_replay as ccfd
-        with (DATASET/f'{symbol}_m5_meta.csv').open() as stream:
+        with (dataset(symbol)/f'{symbol}_m5_meta.csv').open() as stream:
             spread = {dt.datetime.fromisoformat(r['timestamp_utc']): float(r['spread_price']) for r in csv.DictReader(stream)}
-        provenance = json.loads((DATASET/f'{symbol}_provenance.json').read_text())
+        provenance = json.loads((dataset(symbol)/f'{symbol}_provenance.json').read_text())
         _COST[symbol] = {'spread': spread, 'binding': ccfd.commission_binding(provenance)}
     return _COST[symbol]
 
@@ -50,6 +58,8 @@ def protected_identity():
 
 
 def inventory(symbol):
+    if symbol in FX_SYMBOLS:
+        return fx_inventory(symbol)
     paths = {tf: DATASET/f'{symbol}_{tf.lower()}.csv' for tf in ('D1', 'H1', 'M5')}
     required = list(paths.values()) + [DATASET/f'{symbol}_provenance.json']
     missing = [str(p.relative_to(ROOT)) for p in required if not p.is_file()]
@@ -102,6 +112,71 @@ def inventory(symbol):
             'time_policy': 'UTC bar-open labels; evaluate each recorded M5 close; forming bars are passed through and independently checked by canonical L1.',
             'runtime_windows': A.HOST_COUNTS}
     return info, data
+
+
+def _read_bars(path, tf, issues):
+    with path.open() as stream:
+        rows = list(csv.DictReader(stream))
+    bars = []
+    for row in rows:
+        at = dt.datetime.fromisoformat(row['timestamp_utc'])
+        prices = [float(row[k]) for k in ('open', 'high', 'low', 'close')]
+        if at.tzinfo is None or at.utcoffset() != dt.timedelta(0):
+            issues.append(f'{tf}:TIMESTAMP_NOT_UTC')
+        op, hi, lo, close = prices
+        if not all(math.isfinite(x) and x > 0 for x in prices) or not lo <= min(op, close) <= max(op, close) <= hi:
+            issues.append(f'{tf}:INVALID_OHLC')
+        bars.append(A.Candle(at, *prices, None))
+    if not bars or any(a.time >= b.time for a,b in zip(bars,bars[1:])):
+        issues.append(f'{tf}:UNSORTED_OR_DUPLICATE_OR_EMPTY')
+    return bars
+
+
+def fx_inventory(symbol):
+    """#215 schema: per-file sha256 under `files`, 60-day window after a declared warm-up. Window days are the
+    UTC dates of recorded M5 bars at/after window_start_utc; warm-up bars are history only, never scanned."""
+    paths = {tf: FX_DATASET/f'{symbol}_{tf.lower()}.csv' for tf in ('D1', 'H1', 'M5')}
+    prov_path = FX_DATASET/f'{symbol}_provenance.json'
+    required = list(paths.values()) + [FX_DATASET/f'{symbol}_m5_meta.csv', prov_path]
+    missing = [str(p.relative_to(ROOT)) for p in required if not p.is_file()]
+    if missing:
+        return {'verdict': 'DATA_INSUFFICIENT', 'missing_files': missing}, None
+    provenance = json.loads(prov_path.read_text())
+    issues, data, identity = [], {}, {}
+    if (provenance.get('source') != 'MT5_VT_MARKETS_DEMO' or provenance.get('server') != 'VTMarkets-Demo'
+            or provenance.get('symbol') != symbol or provenance.get('recorded') is not True):
+        issues.append('VT_PROVENANCE_NOT_EVIDENCED')
+    if provenance.get('window_days') != 60:
+        issues.append('60_DAY_WINDOW_NOT_EVIDENCED')
+    for path in required[:-1]:
+        identity[str(path.relative_to(ROOT))] = digest(path)
+        if identity[str(path.relative_to(ROOT))] != provenance.get('files', {}).get(path.name):
+            issues.append(f'{path.name}:HASH_MISMATCH')
+    for tf, path in paths.items():
+        data[tf] = _read_bars(path, tf, issues)
+    identity[str(prov_path.relative_to(ROOT))] = digest(prov_path)
+    start = dt.datetime.fromisoformat(provenance['window_start_utc'])
+    end = dt.datetime.fromisoformat(provenance['window_end_utc'])
+    days = sorted({b.time.date().isoformat() for b in data['M5'] if start <= b.time < end})
+    expected = dt.timedelta(minutes=5)
+    gaps = [{'after': a.time.isoformat(), 'before': b.time.isoformat(), 'missing_bars': int((b.time-a.time)/expected)-1}
+            for a,b in zip(data['M5'], data['M5'][1:]) if b.time-a.time > expected]
+    info = {'verdict': 'FAIL' if issues else 'PASS_WITH_DECLARED_GAPS', 'issues': sorted(set(issues)),
+            'missing_files': [], 'source': provenance.get('source'), 'server': provenance.get('server'),
+            'broker_symbol': provenance.get('broker_symbol'), 'login_suffix': provenance.get('login_suffix'),
+            'captured_at_utc': provenance.get('captured_at_utc'), 'days': days,
+            'window_start_utc': start.isoformat(), 'window_end_utc': end.isoformat(),
+            'warmup_start_utc': provenance.get('warmup_start_utc'), 'warmup_end_utc': provenance.get('warmup_end_utc'),
+            'bars': {tf: len(v) for tf,v in data.items()}, 'sha256': identity, 'recorded_gaps': gaps,
+            'gap_policy': 'Kept exactly as recorded (weekend closures included); no fill, interpolation or replacement.',
+            'quote_policy': provenance.get('spread_source'),
+            'time_policy': 'UTC bar-open labels; evaluate each recorded M5 close inside the window; warm-up is history only.',
+            'runtime_windows': A.HOST_COUNTS}
+    return info, data
+
+
+def shard_count(info):
+    return math.ceil(len(info['days'])/SHARD_DAYS)
 
 
 def branch_key(snap, case):
@@ -260,8 +335,8 @@ BOUNDARY_BARS = 12
 
 
 def layout(info, bars, shard):
-    if shard not in range(6):
-        raise ValueError('60 recorded days require shards 0..5')
+    if shard not in range(shard_count(info)):
+        raise ValueError(f'recorded days require shards 0..{shard_count(info)-1}')
     days = info['days'][shard*SHARD_DAYS:(shard+1)*SHARD_DAYS]
     indices = [i for i,b in enumerate(bars['M5']) if b.time.date().isoformat() in days]
     start, end = min(indices),max(indices)+1
@@ -298,7 +373,7 @@ def make_case(symbol, bars, row, starts=None):
     return {'cost_evidence':{'spread':cost['spread'].get(last.time),
                              'spread_bar_close_utc':(last.time+dt.timedelta(minutes=5)).isoformat(),
                              'commission_binding':cost['binding']},'case_id':f'{symbol}:{now.isoformat()}','symbol':symbol,'now':now,
-            'fixture':str(DATASET.relative_to(ROOT)),'classification':'VT_RECORDED',
+            'fixture':str(dataset(symbol).relative_to(ROOT)),'classification':'VT_RECORDED',
             'target_history':history,**windows}
 
 
@@ -326,14 +401,14 @@ def boundary_reference(symbol,bars,plan):
 
 
 def run_shard(path,symbol,shard):
-    if symbol not in C.CRYPTO_SYMBOLS:
-        raise ValueError('FX stays PENDING_D1; this mission replays crypto only')
+    if symbol not in SYMBOLS:
+        raise ValueError(f'unknown symbol {symbol}')
     path=Path(path);path.parent.mkdir(parents=True,exist_ok=True)
     report={'mission':MISSION,'strategy':'ST_LARGE_SMC_V1@1.1.3','symbol':symbol,'shard':shard,
             'scope_days':60,'shard_days':SHARD_DAYS,'verdict':'NOT_RUN_RESOURCE','completed':False,
             'verification_status':'NOT_VERIFIED','resource_class':'R1','workers':1,
             'l5_cost_source':COST_SOURCE,'boundary_reference':{'verdict':'NOT_RUN'},
-            'engine_defects':[],'FX':'PENDING_D1'}
+            'engine_defects':[]}
     write_report(path,report)
     owner={'agent':'CODEX_LOCAL','mission':MISSION,'pid':os.getpid()};lock=RG.canonical_lock_path()
     acquired=RG.acquire(lock,**owner,resource_class='R1',command_summary=f'C24-R3 {symbol} 10-day shard {shard}; one worker')
@@ -352,6 +427,7 @@ def run_shard(path,symbol,shard):
         info,bars=inventory(symbol);report['data_audit']=info
         if bars is None or info['verdict']=='FAIL':
             report['verdict']=info['verdict'];write_report(path,report);return 1
+        report['shard_count']=shard_count(info)
         plan=layout(info,bars,shard);report['layout']=plan;write_report(path,report)
         evaluator=EvidenceEvaluator();total,active=new_counts(),new_counts();branches={};previous=None
         selections={};mismatch_counts=Counter();last_checkpoint=time.monotonic()
@@ -418,10 +494,14 @@ def accumulate(counts,row):
 
 def merge_shards(root,out):
     root=Path(root);report={'mission':MISSION,'strategy':'ST_LARGE_SMC_V1@1.1.3','scope_days':60,
-                          'verification_status':'NOT_VERIFIED','FX':'PENDING_D1','symbols':{},'proposal':'NO_QUALIFYING_SCOPE','rule_diff':audit.rule_diff()}
-    for symbol in sorted(C.CRYPTO_SYMBOLS):
+                          'verification_status':'NOT_VERIFIED','symbols':{},'proposal':'NO_QUALIFYING_SCOPE','rule_diff':audit.rule_diff()}
+    for symbol in SYMBOLS:
+        if not (root/symbol).is_dir():
+            report['symbols'][symbol]={'verdict':'NOT_RUN','completed':False,'qualifies_for_r3_proposal':False};continue
         active=new_counts();raw=new_counts();branches={};seen={};cross=[];shards=[];identities=set()
-        for shard in range(6):
+        first=sorted((root/symbol).glob('shard_*/audit.json'))
+        count=json.loads(first[0].read_text()).get('shard_count',6) if first else 6
+        for shard in range(count):
             path=root/symbol/f'shard_{shard:02d}'/'audit.json'
             if not path.exists():
                 shards.append({'shard':shard,'verdict':'NOT_RUN'});continue
@@ -456,7 +536,7 @@ def merge_shards(root,out):
 def cli(argv=None):
     import argparse
     parser=argparse.ArgumentParser()
-    parser.add_argument('--symbol',choices=sorted(C.CRYPTO_SYMBOLS));parser.add_argument('--shard',type=int)
+    parser.add_argument('--symbol',choices=SYMBOLS);parser.add_argument('--shard',type=int)
     parser.add_argument('--out',required=True);parser.add_argument('--merge-root')
     args=parser.parse_args(argv)
     if args.merge_root:
