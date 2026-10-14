@@ -28,6 +28,7 @@ from _demo_execution_boundary_fixtures import (  # noqa: E402
     boundary,
     mark_confirmation_consumed,
     new_authority_id,
+    ok_risk_builder,
 )
 
 from demo_execution.admission import check_account_mode
@@ -280,8 +281,9 @@ def test_a_missing_gate_input_is_a_refusal_not_a_default(tmp_path):
     assert decision.admitted is False
     assert {"RISK_EVIDENCE_ID_MISMATCH", "FRESHNESS_EVIDENCE_ID_MISMATCH"} <= set(decision.reason_codes)
     assert decision.reason_code == "RISK_EVIDENCE_ID_MISMATCH"
-    # The guard's own gate run reports every gate it could evaluate, not just the first.
-    assert "RISK_SNAPSHOT_MISSING" in decision.details["gate_block_reasons"]
+    # The guard's own gate run reports every gate it could evaluate, not just the first. The gates
+    # admit on the risk snapshot the guard builds itself, so the caller's missing snapshot is refused
+    # through its evidence binding above (a missing build: test_demo_execution_risk_snapshot.py).
     assert "COST_EVIDENCE_MISSING" in decision.details["gate_block_reasons"]
 
 
@@ -1007,8 +1009,10 @@ def test_the_demo_execution_package_never_calls_a_broker_api():
     # B' (C14): the single canonical adapter may make exactly its sanctioned broker calls -- one
     # order_check, one order_send, the live account_info re-read and the read-only reconcile lookup.
     # Every other module of the package stays broker-free; nothing imports MetaTrader5 (injected).
+    # The C14 risk snapshot builder makes exactly three read-only reads (no order call of any kind).
     sanctioned = {"mt5_canonical_adapter.py": {"order_check": 1, "order_send": 1, "account_info": 1,
-                                               "history_deals_get": 1}}
+                                               "history_deals_get": 1},
+                  "risk_snapshot.py": {"account_info": 1, "history_deals_get": 1, "positions_get": 1}}
     for path in sorted((REPO / "src" / "demo_execution").glob("*.py")):
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         allowed, seen = sanctioned.get(path.name, {}), {}
@@ -1025,3 +1029,74 @@ def test_the_demo_execution_package_never_calls_a_broker_api():
             if isinstance(node, ast.ImportFrom) and node.module:
                 assert node.module.split(".")[0] != "MetaTrader5", path.name
         assert seen == allowed, f"{path.name}: sanctioned broker calls {seen} != {allowed}"
+
+
+# ------------------------------------------------------------------ C14 risk snapshot wiring (#227)
+
+
+class _SwitchableRisk:
+    """Host builder stand-in: OK build by default; `blocked` or `updates` change the next builds."""
+
+    def __init__(self, scope):
+        self.scope, self.blocked, self.updates, self.calls = scope, False, {}, []
+
+    def __call__(self, now):
+        from demo_execution.risk_snapshot import BLOCKED, RiskSnapshotBuild
+        self.calls.append(now)
+        if self.blocked:
+            return RiskSnapshotBuild(BLOCKED, "RISK_BROKER_DEALS_UNAVAILABLE")
+        return ok_risk_builder(self.scope, **self.updates)(now)
+
+
+def _wired(tmp_path):
+    fixture = boundary(tmp_path, risk_builder=None)
+    risk = _SwitchableRisk(fixture["scope"])
+    fixture["guard"]._risk_builder = risk
+    return fixture, risk
+
+
+def test_admission_never_receives_a_none_snapshot_on_the_canonical_path(tmp_path, monkeypatch):
+    import demo_execution.guarded_adapter as guarded
+
+    seen = []
+    real = guarded.evaluate_pre_send_gates
+
+    def spy(ticket, market, risk_snapshot, **kwargs):
+        seen.append(risk_snapshot)
+        return real(ticket, market, risk_snapshot, **kwargs)
+
+    monkeypatch.setattr(guarded, "evaluate_pre_send_gates", spy)
+    fixture, risk = _wired(tmp_path)
+    risk.blocked = True
+    refused = _check(fixture, authority=authority_for(fixture))
+    assert refused.admitted is False and refused.reason_code == "RISK_SNAPSHOT_MISSING"
+    assert seen == [] and len(risk.calls) == 1          # built once, immediately before admission
+    risk.blocked = False
+    admitted = _check(fixture, authority=authority_for(fixture))
+    assert admitted.admitted, admitted.reason_codes
+    assert len(seen) == 1 and seen[0] is not None and seen[0].observed_at_utc <= NOW
+
+
+def test_a_guard_without_a_risk_builder_refuses(tmp_path):
+    fixture = boundary(tmp_path, risk_builder=None)
+    decision = _check(fixture, authority=authority_for(fixture))
+    assert decision.admitted is False and decision.reason_code == "RISK_SNAPSHOT_MISSING"
+
+
+@pytest.mark.parametrize("change, reason", [
+    ({"blocked": True}, "RISK_SNAPSHOT_MISSING"),
+    ({"updates": {"strategy_trades_today": 5}}, "STRATEGY_DAILY_TRADE_LIMIT"),
+])
+def test_send_rebuilds_the_snapshot_and_blocks_on_fresh_risk(tmp_path, change, reason):
+    fixture, risk = _wired(tmp_path)
+    guard, ticket = fixture["guard"], fixture["ticket"]
+    assert _check(fixture, authority=authority_for(fixture)).admitted
+    assert guard.record_order_checked(authority=authority_for(fixture, now=_seconds(1)), ticket=ticket,
+                                      checked_order=CHECKED_ORDER, now_utc=_seconds(1)).admitted
+    for key, value in change.items():
+        setattr(risk, key, value)
+    sent = guard.authorize_order_send(authority=authority_for(fixture, now=_seconds(2)), ticket=ticket,
+                                      checked_order=CHECKED_ORDER, now_utc=_seconds(2))
+    assert sent.admitted is False and reason in sent.reason_codes
+    assert risk.calls[-1] == _seconds(2)                 # rebuilt at send time
+    assert fixture["guard"]._ledger().inspect(fixture["ticket"]["ticket_id"]).available  # nothing claimed

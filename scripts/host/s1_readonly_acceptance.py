@@ -50,6 +50,8 @@ def evaluate_preview(bundle, *, now, market, policy=None, data_source="MT5_VT_MA
                              spread=bundle.spread, runtime_scope=True)
     canonical = build_canonical_ticket(ticket, now=now, current_price=bundle.current_price,
                                         policy=policy, policy_root=str(ROOT))
+    # Read-only acceptance, never an execution path: no broker reads, so no risk snapshot (None); the
+    # canonical order path builds one via risk_snapshot.build_risk_snapshots inside the guard.
     decision = evaluate_pre_send_gates(ticket, market, None, now_utc=now, scope=scope)
     cost, cost_details = check_cost_gate(ticket, market, scope)
     freshness, freshness_details = check_freshness(ticket, market, scope, now_utc=now)

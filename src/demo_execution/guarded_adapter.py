@@ -72,7 +72,8 @@ from demo_execution.lifecycle import (
     TransitionResult,
 )
 from demo_execution.notification import notification_gate
-from demo_execution.risk import RiskSnapshot
+from demo_execution.risk import RiskSnapshot, evaluate_risk_caps
+from demo_execution.risk_snapshot import RiskSnapshotBuild
 from demo_execution.scope import (
     ScopePolicy,
     ScopePolicyError,
@@ -146,6 +147,9 @@ def _as_utc(value: Any) -> Optional[datetime]:
     return value.astimezone(timezone.utc)
 
 
+RISK_SNAPSHOT_MISSING = "RISK_SNAPSHOT_MISSING"
+
+
 class GuardedCanonicalAdapter:
     """Refuses every call unless a re-validated execution authority authorizes exactly that call."""
 
@@ -162,6 +166,7 @@ class GuardedCanonicalAdapter:
         owner_decision_register_path: Optional[str] = None,
         host_magic_registry_path: Optional[str] = None,
         authorization_path: Optional[str] = None,
+        risk_snapshot_builder: Optional[Callable[[datetime], RiskSnapshotBuild]] = None,
     ) -> None:
         if not isinstance(ticket_store, TicketStore):
             raise ValueError("ticket_store must be the append-only TICKET_STORE_V1 writer")
@@ -170,6 +175,10 @@ class GuardedCanonicalAdapter:
         self._store = ticket_store
         self._account_reader = live_account_reader
         self._authorization_path = authorization_path
+        # The canonical C14 risk source: a host-bound risk_snapshot.build_risk_snapshots (read-only
+        # broker reads), called fresh immediately before admission and again before send. Without
+        # it every order step is refused RISK_SNAPSHOT_MISSING; admission never sees a None snapshot.
+        self._risk_builder = risk_snapshot_builder
         self._scope_paths: dict[str, Any] = {
             "config_path": scope_config_path,
             "repo_root": repo_root,
@@ -190,6 +199,16 @@ class GuardedCanonicalAdapter:
             return resolve_ticket_scope_policy(binding, config_path=paths.pop("config_path"), **paths), None
         except ScopePolicyError as exc:
             return None, exc.reason_code
+
+    def _fresh_risk_snapshot(self, scope: ScopePolicy, now_utc: datetime) -> Optional[RiskSnapshot]:
+        """A risk snapshot built now for this scope, or None (BLOCKED build, no builder, or a raise)."""
+        if self._risk_builder is None:
+            return None
+        try:
+            build = self._risk_builder(now_utc)
+        except Exception:  # a broker read that raises is missing evidence, never a default
+            return None
+        return build.snapshot_for(scope) if isinstance(build, RiskSnapshotBuild) else None
 
     def _read_live_account(self) -> Optional[Mapping[str, Any]]:
         try:
@@ -295,14 +314,21 @@ class GuardedCanonicalAdapter:
         else:
             details["owner_confirmation"] = "NOT_REQUIRED_BY_COMMITTED_SCOPE"
 
-        if require_gates and confirmation_ok:
+        fresh_risk = self._fresh_risk_snapshot(scope, now_utc) if require_gates else None
+        if require_gates and confirmation_ok and fresh_risk is None:
+            # Built immediately before admission; a BLOCKED build never reaches the gates as None.
+            reasons.append(RISK_SNAPSHOT_MISSING)
+            details["gates"] = "NOT_EVALUATED_RISK_SNAPSHOT_MISSING"
+        elif require_gates and confirmation_ok:
+            # The caller's snapshot is the evidence the authority was minted on; the gates admit on
+            # the snapshot built now.
             reasons.extend(validate_evidence_refs(authority, scope, ticket, market, risk_snapshot,
                                                   now_utc=now_utc))
             # The store is handed to the gates so the canonical single-use owner confirmation is
             # consumed by its own sanctioned writer, and so the gates' duplicate ledger check sees
             # the same append-only store this guard writes evidence to.
             gates = evaluate_pre_send_gates(
-                ticket, market, risk_snapshot, now_utc=now_utc,
+                ticket, market, fresh_risk, now_utc=now_utc,
                 authorization_path=authority.authorization_path, scope=scope,
                 ticket_store=self._store,
             )
@@ -497,6 +523,15 @@ class GuardedCanonicalAdapter:
             authority, scope, ticket=ticket, market=None, risk_snapshot=None, now_utc=now_utc,
             require_gates=False, require_consumed_confirmation=True, details=details,
         ))
+        # C14 caps re-applied on a snapshot built now: a trade or loss since order_check blocks the send.
+        send_risk = self._fresh_risk_snapshot(scope, now_utc)
+        if send_risk is None:
+            reasons.append(RISK_SNAPSHOT_MISSING)
+        else:
+            caps = evaluate_risk_caps(dict(ticket), scope, send_risk, now_utc=now_utc)
+            details["send_risk_check"] = caps.reason_code
+            if not caps.allowed:
+                reasons.append(caps.reason_code)
         if reasons:
             return _refused(tuple(reasons), details, ticket_id=authority.ticket_id, state=trail.current)
 

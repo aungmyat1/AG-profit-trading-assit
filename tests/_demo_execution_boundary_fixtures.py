@@ -292,7 +292,8 @@ def boundary(tmp_path: Path, *, enabled: bool = True, ready_on: bool = True,
              confirm: bool = True, consumed: bool = False,
              ticket_updates: Optional[Mapping[str, Any]] = None,
              auth_updates: Optional[Mapping[str, Any]] = None,
-             host_magic_registry_path: Optional[Path] = None) -> dict[str, Any]:
+             host_magic_registry_path: Optional[Path] = None,
+             risk_builder: Any = "DEFAULT") -> dict[str, Any]:
     """A complete, admitted, broker-free boundary fixture: scope + ticket + guard + authority."""
     scope = fixture_scope(tmp_path, enabled=enabled, ready_on=ready_on,
                           host_magic_registry_path=host_magic_registry_path)
@@ -317,6 +318,7 @@ def boundary(tmp_path: Path, *, enabled: bool = True, ready_on: bool = True,
         owner_decision_register_path=str(tmp_path / "OWNER_DECISION_REGISTER.md"),
         host_magic_registry_path=host_magic_registry_path or HOST_MAGIC_REGISTRY,
         authorization_path=str(auth_path),
+        risk_snapshot_builder=ok_risk_builder(scope) if risk_builder == "DEFAULT" else risk_builder,
     )
     authority = build_authority(
         ticket=ready_ticket, scope=scope, market=quote, risk_snapshot=risk, now_utc=now,
@@ -329,6 +331,17 @@ def boundary(tmp_path: Path, *, enabled: bool = True, ready_on: bool = True,
         "risk_snapshot": risk, "store": store, "reader": reader, "guard": guard,
         "authority": authority, "now": now, "tmp_path": tmp_path,
     }
+
+
+def ok_risk_builder(scope: ScopePolicy, **updates: Any):
+    """Stand-in for a host-bound risk_snapshot.build_risk_snapshots: an OK build observed at call time."""
+    from demo_execution.risk_snapshot import OK, RiskSnapshotBuild, scope_key
+
+    def build(now: datetime) -> RiskSnapshotBuild:
+        snap = risk_snapshot(scope, now, **updates)
+        return RiskSnapshotBuild(OK, None, server_day=snap.server_day, observed_at_utc=snap.observed_at_utc,
+                                 scopes={scope_key(scope): {"snapshot": snap}})
+    return build
 
 
 def authority_for(fixture: Mapping[str, Any], *, now: Optional[datetime] = None,
