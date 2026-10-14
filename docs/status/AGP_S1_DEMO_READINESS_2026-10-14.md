@@ -104,3 +104,11 @@ The verdict remains **BLOCKED**, with no host acceptance or order authority gran
 No dated finding above is rewritten. No engine, contract, registry, READY, flag,
 schedule, runtime code, broker or Telegram operation changes in this update.
 Validation is reported on this PR's exact head; unrun host gates remain NOT_RUN.
+
+Validation of this appendix (managed Linux sandbox, 2026-10-14): `python -m pytest -q
+ tests/test_docs_live.py tests/test_context_pack.py tests/test_generated_files_ci.py`:
+**37 passed in 34.31s**; R1 lock acquired and released. Documentation generators plus
+`python scripts/docs/check_drift.py`: **zero blocking errors**, four existing
+allowlist advisories. Untouched generated outputs follow normal regeneration.
+Original dated findings remain a byte-identical prefix. Host Gates 3–4 remain
+NOT_RUN/BLOCKED; exact-head PR CI must pass before handoff.
