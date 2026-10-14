@@ -444,3 +444,7 @@ def cli(argv=None):
         merge_shards(args.merge_root,args.out);return 0
     if args.symbol is None or args.shard is None:parser.error('--symbol and --shard required')
     return run_shard(args.out,args.symbol,args.shard)
+
+
+if __name__ == "__main__":
+    raise SystemExit(cli())

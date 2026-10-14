@@ -19,7 +19,7 @@ from v1_tickets.lsmc_v113_logic_gate import signal_snapshot
 
 ROOT = Path(__file__).resolve().parents[1]
 COUNTS = {'D1': 30, 'H1': 200, 'M5': 300}
-BASE = '93e8c2b5233b269ae8e5d0eac244b76af5eeee58'
+BASE = '50bd6db5b2d3253ee8fdb70ec463201ab852da9d'  # main after #212 (registry D8/D9) and #214
 
 
 @pytest.fixture(scope='module')
