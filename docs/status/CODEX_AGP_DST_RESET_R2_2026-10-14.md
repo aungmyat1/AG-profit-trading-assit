@@ -6,8 +6,8 @@ review_by: 2026-11-07
 ---
 # C14 VT server-day helper and winter host acceptance
 
-Mission `CODEX-AGP-DST-RESET-R2`, 2026-10-14. Local preparation based on
-`afc99d5` (main); the final PR base must contain #224 before publication.
+Mission `CODEX-AGP-DST-RESET-R2`, 2026-10-14. Base `8416817f972d4238674742b26c56c2fc9caac98e` (main, contains #224).
+Merged main without rebase; the DST add/add conflict retains the shared-helper tests.
 
 Runtime assignment of a VT trading day to a C14 `RiskSnapshot`: **MISSING**.
 `src/demo_execution/admission.py:319` consumes a caller-supplied snapshot;
@@ -47,6 +47,8 @@ for regression cases. No dependency or timezone policy change.
 tests/test_demo_execution_server_day.py` and matching `python -m py_compile`: PASS.
 Documentation generators followed by `python scripts/docs/check_drift.py`: zero
 blocking errors, four existing allowlist advisories. Untouched generated outputs
-are deferred to normal regeneration. Focused tests are NOT_RUN_RESOURCE; exact-head
-CI is NOT_RUN until the required post-#224 base is available.
+are deferred to normal regeneration. Focused tests are NOT_RUN_RESOURCE; exact-head CI must pass before handoff.
+The admission regression pairs a valid-snapshot control with a missing snapshot:
+`None` must return `RISK_SNAPSHOT_MISSING` and risk gate BLOCKED. Existing
+production admission already propagates this block; no runtime fix is needed.
 The shared R1 lock is held by C24-R3; no passing local pytest result is claimed.
