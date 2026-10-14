@@ -17,6 +17,9 @@ from demo_execution.scope import ScopePolicy
 
 _DEFAULT_AUTH_PATH = Path.home() / ".config" / "ag-profit-trading" / "standing_demo_authorization.json"
 _SCHEMA = "AGP_STANDING_DEMO_AUTHORIZATION_V1"
+# A' (N scopes): one host-local file may hold several V1 records, one per exact scope/direction tuple.
+_CONTAINER_SCHEMA = "AGP_STANDING_DEMO_AUTHORIZATIONS_V1"
+_MATCH_KEYS = ("strategy", "version", "symbol", "session", "branch", "direction")
 _REQUIRED_KEYS = frozenset({
     "schema", "strategy", "version", "symbol", "session", "branch", "direction",
     "logic_identity", "granted_at", "revoked_at", "decision_id", "emergency_stop",
@@ -119,4 +122,27 @@ def load_standing_authorization(
         return AuthorizationResult(False, "AUTHORIZATION_INVALID")
     if not isinstance(record, dict):
         return AuthorizationResult(False, "AUTHORIZATION_INVALID")
+    if record.get("schema") == _CONTAINER_SCHEMA:
+        selected_record = select_container_record(record, scope, ticket)
+        if isinstance(selected_record, AuthorizationResult):
+            return selected_record
+        record = selected_record
     return validate_standing_authorization(record, scope, ticket, now_utc=now_utc)
+
+
+def select_container_record(container: Mapping[str, Any], scope: ScopePolicy,
+                            ticket: Mapping[str, Any]) -> Any:
+    """Exactly one record must match the scope tuple and the ticket's direction; none is a scope
+    mismatch, several are ambiguous (fail closed). The selected record is then validated in full."""
+    records = container.get("records")
+    if set(container) != {"schema", "records"} or not isinstance(records, list) \
+            or not all(isinstance(r, Mapping) for r in records):
+        return AuthorizationResult(False, "AUTHORIZATION_INVALID")
+    want = (scope.strategy_id, scope.strategy_version, scope.symbol, scope.session, scope.setup_branch,
+            ticket.get("direction") if isinstance(ticket, Mapping) else None)
+    matches = [r for r in records if tuple(r.get(k) for k in _MATCH_KEYS) == want]
+    if not matches:
+        return AuthorizationResult(False, "AUTHORIZATION_SCOPE_MISMATCH")
+    if len(matches) > 1:
+        return AuthorizationResult(False, "AUTHORIZATION_INVALID")
+    return matches[0]

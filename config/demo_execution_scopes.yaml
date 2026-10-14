@@ -1,0 +1,7 @@
+# Scope manifest (A'): one scope config file per admitted DEMO scope, in priority order. Listing a
+# scope here grants no order authority: each scope still needs its own registry LOGIC_VERIFIED
+# identity, READY binding, `enabled: true` and a matching host-local standing authorization record.
+# S1 keeps its own config file unchanged; the first entry is the fallback used to report mismatches.
+schema: AGP_C14_DEMO_SCOPES_V1
+scope_configs:
+  - config/demo_execution_s1.yaml
