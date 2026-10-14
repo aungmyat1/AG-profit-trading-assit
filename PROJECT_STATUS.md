@@ -8,6 +8,8 @@ review_by: 2026-11-07
 
 ## Current snapshot (2026-10-11)
 
+C14 risk snapshot builder (2026-10-14, unit-tested with a fake terminal only, never host-run; not yet wired into a host runner): `src/demo_execution/risk_snapshot.py` builds the per-scope and account `RiskSnapshot` for the current VT server day from one read-only `account_info` / `history_deals_get` / `positions_get` read set (trades today by scope magic; realized + open P&L in R and %; account totals include foreign/manual trades), using the shared server-day helper `src/demo_execution/vt_day.py` (server midnight = New York 17:00, rule from the committed host metadata). Missing, invalid or ahead-of-clock broker data, or an unknown day rule, returns BLOCKED with no snapshot, so admission refuses with `RISK_SNAPSHOT_MISSING`; staleness stays enforced at admission. Tests span the 2026-11-01 DST reset. Deal-time clock convention and margin mode are to be host-verified. No flag, scope or order-path change.
+
 Canonical DEMO broker adapter (2026-10-14, unit-tested with a fake terminal only, never host-run; AGP-AUTODEMO-B1, C14): `src/demo_execution/mt5_canonical_adapter.py` is the single `order_check`/`order_send` call site, reachable only behind `guarded_adapter`. Before each broker call it re-validates the guard's single-use step authorization, the enabled scope, the live pinned DEMO account (suffix/server/trade_mode) and an OWNER_APPROVED order shape; a send also requires the durable SENDING claim and, while `per_order_confirm_required` is true, a consumed owner confirmation. An unknown send outcome HALTs and is reconciled, never resubmitted. Inert as committed: every scope `enabled: false`, `demo_authorized: false`, order shape `PILOT_FULL_TP1` PROPOSED_PENDING_OWNER (deviation tag + analytics exclusion; margin mode UNKNOWN until host-verified), no standing authorization in the repo. `AGENTS.md` point 3 and `INVARIANTS.md` rewritten to C14 in the same change; zero-call-site test replaced by `test_exactly_one_order_send_call_site`; bypass tests cover scanner, Telegram callback, skills and assistant/API. Live disabled.
 
 N-scope DEMO admission (2026-10-14, unit-tested only; A'): `config/demo_execution_scopes.yaml` lists one scope config per admitted scope (today only S1's unchanged `config/demo_execution_s1.yaml`); admission and the guarded adapter select the scope by the ticket/authority identity tuple (no match -> first scope, whose checks report the exact mismatch), so S1 behaviour is byte-identical. The host-local standing authorization may also be a container of exact per-scope/direction records (none -> scope mismatch, several -> invalid). Scopes must share one DEMO account. No scope added, no flag, READY, registry or order path change. Tests: `tests/test_demo_execution_n_scopes.py`.
@@ -358,7 +360,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `334f8fe0df974b337f6ee60c434bb3e8a23cf1709368101a8e27ef480266129f`.
+inputs_sha256: `754c9e2b4693e5263381968f2f942a8af9abc0688eff8cd99807c73cb53e1913`.
 <!-- [[[end]]] -->
 
 ### Objective
