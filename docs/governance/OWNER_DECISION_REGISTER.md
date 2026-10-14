@@ -91,5 +91,21 @@ ready_authority_records:
     symbol_scope: [GBPUSD]
     session_scope: [ASIAN_LONDON]
     date: "2026-10-12"
+  - decision_id: OD1015-ASW113-READY
+    status: APPROVED
+    strategy_id: ST_ASIAN_SWEEP_5R_V1
+    version: "1.1.3"
+    contract_sha256: 143c1848abdad3ef669c48e581131114927e470be3b1957b57b175b44752e545
+    symbol_scope: [EURUSD, GBPUSD]
+    session_scope: [ASIAN_LONDON, LONDON_NEWYORK]
+    date: "2026-10-15"
+  - decision_id: OD1015-CCFD100-READY
+    status: APPROVED
+    strategy_id: ST_CRYPTO_CFD_SWEEP_RETEST_V1
+    version: "1.0.0"
+    contract_sha256: 395ede3926272cfe611285e84202a9961f2ad33eb3f48c40066ba4944f6bae84
+    symbol_scope: [BTCUSD, ETHUSD]
+    session_scope: [CRYPTO_DAY, CRYPTO_WEEKEND]
+    date: "2026-10-15"
 ```
 <!-- READY_AUTHORITY_RECORDS_END -->
