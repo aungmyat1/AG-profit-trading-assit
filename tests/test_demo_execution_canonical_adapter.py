@@ -1,7 +1,6 @@
 """B': the single canonical MT5 order_check/order_send adapter behind the guard (fake terminal only)."""
 from __future__ import annotations
 
-import ast
 import sys
 from datetime import timedelta
 from pathlib import Path
@@ -27,17 +26,6 @@ from demo_execution.mt5_canonical_adapter import (  # noqa: E402
 )
 
 ADAPTER = REPO / "src/demo_execution/mt5_canonical_adapter.py"
-
-
-def test_exactly_one_order_check_and_one_order_send_call_site_in_repo():
-    hits = {"order_check": [], "order_send": []}
-    for base in (REPO / "src", REPO / "scripts"):
-        for path in base.rglob("*.py"):
-            for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
-                if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and \
-                        node.func.attr in hits:
-                    hits[node.func.attr].append(path)
-    assert hits == {"order_check": [ADAPTER], "order_send": [ADAPTER]}
 
 
 def test_committed_order_shape_is_not_approved():
@@ -76,7 +64,9 @@ class FakeMT5:
 def _shape(tmp_path, status="OWNER_APPROVED"):
     path = tmp_path / "shape.yaml"
     path.write_text(yaml.safe_dump({"schema": "AGP_DEMO_ORDER_SHAPE_V1", "status": status,
-                                    "owner_decision_id": "TEST_ONLY_NOT_OWNER", "order": {
+                                    "owner_decision_id": "TEST_ONLY_NOT_OWNER", "shape_id": "PILOT_FULL_TP1",
+                                    "deviation_tag": "SHAPEDEV", "analytics_exclusion": True,
+                                    "account_margin_mode": "UNKNOWN_UNTIL_HOST_VERIFIED", "order": {
                                         "action": "DEAL", "take_profit_leg": 1, "filling": "IOC"}}))
     return path
 
@@ -96,7 +86,7 @@ def _auth(decision):
     return {"ticket_id": decision.ticket_id, "state": decision.state, "authorization_id": decision.authorization_id}
 
 
-def _flow(fixture, adapter, mt5):
+def _flow(fixture, adapter, mt5=None):
     guard, ticket = fixture["guard"], fixture["ticket"]
     a1 = authority_for(fixture, now=NOW)
     check = guard.authorize_order_check(authority=a1, ticket=ticket, market=fixture["market"],
@@ -123,7 +113,10 @@ def test_full_guarded_flow_sends_exactly_the_checked_request(tmp_path):
     assert send.admitted, send.reason_codes
     result = adapter.order_send(authority=a3, authorization=_auth(send), ticket=ticket, checked_order=checked,
                                 account_mode="DEMO")
-    assert result == {"retcode": 10009, "order": 111, "deal": 222}
+    assert {k: result[k] for k in ("retcode", "order", "deal")} == {"retcode": 10009, "order": 111, "deal": 222}
+    assert (result["shape_id"], result["shape_deviation_tag"], result["analytics_exclusion"],
+            result["account_margin_mode"]) == ("PILOT_FULL_TP1", "SHAPEDEV", True, "UNKNOWN_UNTIL_HOST_VERIFIED")
+    assert checked["request"]["comment"].endswith(" SHAPEDEV") and len(checked["request"]["comment"]) <= 31
     sent = [req for op, req in mt5.calls if op == "order_send"]
     assert sent == [checked["request"]]                 # byte-identical to the sealed request
     # The same send authorization is single-use: the lifecycle has moved on after the ack.
@@ -207,7 +200,82 @@ def test_reconcile_is_read_only_and_unknown_without_a_matching_deal(tmp_path):
     assert adapter.reconcile(authority=a, ticket_id=a.ticket_id, send_result={})["terminal_result"] == "UNKNOWN"
     from demo_execution.mt5_canonical_adapter import _comment
     mt5.deals = [{"ticket": 222, "order": 111, "position_id": 333, "magic": a.magic_number,
-                  "comment": _comment(a.ticket_id), "volume": 0.5, "price": 1.3001}]
+                  "comment": _comment(a.ticket_id, "SHAPEDEV"), "volume": 0.5, "price": 1.3001}]
     out = adapter.reconcile(authority=a, ticket_id=a.ticket_id, send_result={"order": 111})
     assert out["reconciled"] and out["broker_deal_id"] == 222
     assert {c[0] for c in mt5.calls} == {"history_deals_get"}
+
+
+def _to_send(fixture, adapter, t):
+    """Drive guard + adapter to an issued send authorization; returns (authority, decision, checked)."""
+    guard, ticket = fixture["guard"], fixture["ticket"]
+    _, checked = _flow(fixture, adapter, None)
+    assert checked.get("retcode") == 0, checked
+    t["now"] = NOW + timedelta(seconds=1)
+    rec = guard.record_order_checked(authority=authority_for(fixture, now=t["now"]), ticket=ticket,
+                                     checked_order=checked, now_utc=t["now"])
+    assert rec.admitted, rec.reason_codes
+    t["now"] = NOW + timedelta(seconds=2)
+    a3 = authority_for(fixture, now=t["now"])
+    send = guard.authorize_order_send(authority=a3, ticket=ticket, checked_order=checked, now_utc=t["now"])
+    return a3, send, checked
+
+
+def test_send_rereads_the_account_and_refuses_a_non_demo_account(tmp_path):
+    fixture, mt5, t = boundary(tmp_path), FakeMT5(), {"now": NOW}
+    adapter = _adapter(fixture, mt5, shape=_shape(tmp_path), clock=lambda: t["now"])
+    a3, send, checked = _to_send(fixture, adapter, t)
+    assert send.admitted
+    mt5.trade_mode = 2                                   # account switched to REAL after the check
+    out = adapter.order_send(authority=a3, authorization=_auth(send), ticket=fixture["ticket"],
+                             checked_order=checked, account_mode="DEMO")
+    assert out == {"refused": True, "reason_code": "ACCOUNT_NOT_DEMO"}
+    assert not [c for c in mt5.calls if c[0] == "order_send"]
+
+
+def test_send_requires_the_durable_sending_claim(tmp_path, monkeypatch):
+    fixture, mt5, t = boundary(tmp_path), FakeMT5(), {"now": NOW}
+    adapter = _adapter(fixture, mt5, shape=_shape(tmp_path), clock=lambda: t["now"])
+    a3, send, checked = _to_send(fixture, adapter, t)
+    from demo_execution import idempotency
+    monkeypatch.setattr(idempotency.ExecutionLedger, "inspect",
+                        lambda self, ticket_id: idempotency.LedgerCheck(True, "IDEMPOTENCY_KEY_AVAILABLE"))
+    out = adapter.order_send(authority=a3, authorization=_auth(send), ticket=fixture["ticket"],
+                             checked_order=checked, account_mode="DEMO")
+    assert out == {"refused": True, "reason_code": "SEND_CLAIM_MISSING"}
+    assert not [c for c in mt5.calls if c[0] == "order_send"]
+
+
+def test_per_order_confirm_required_true_needs_a_consumed_confirmation(tmp_path, monkeypatch):
+    fixture, mt5, t = boundary(tmp_path), FakeMT5(), {"now": NOW}
+    adapter = _adapter(fixture, mt5, shape=_shape(tmp_path), clock=lambda: t["now"])
+    a3, send, checked = _to_send(fixture, adapter, t)
+    from demo_execution import mt5_canonical_adapter as m
+    monkeypatch.setattr(m, "validate_confirmation_evidence", lambda *a, **k: ("OWNER_CONFIRM_NOT_CONSUMED",))
+    out = adapter.order_send(authority=a3, authorization=_auth(send), ticket=fixture["ticket"],
+                             checked_order=checked, account_mode="DEMO")
+    assert out == {"refused": True, "reason_code": "OWNER_CONFIRM_NOT_CONSUMED"}
+    assert not [c for c in mt5.calls if c[0] == "order_send"]
+
+
+def test_per_order_confirm_required_true_without_confirmation_never_reaches_the_broker(tmp_path):
+    fixture, mt5 = boundary(tmp_path, confirm=False), FakeMT5()
+    check = fixture["guard"].authorize_order_check(
+        authority=authority_for(fixture, now=NOW), ticket=fixture["ticket"], market=fixture["market"],
+        risk_snapshot=fixture["risk_snapshot"], now_utc=NOW)
+    assert not check.admitted and any(r.startswith("OWNER_CONFIRM") for r in check.reason_codes)
+    assert mt5.calls == []
+
+
+def test_per_order_confirm_required_false_uses_the_standing_authorization_only(tmp_path):
+    fixture = boundary(tmp_path, confirm=False)
+    raw = yaml.safe_load((tmp_path / "demo_execution_s1.yaml").read_text())
+    raw["per_order_confirm_required"] = False
+    (tmp_path / "demo_execution_s1.yaml").write_text(yaml.safe_dump(raw))
+    mt5, t = FakeMT5(), {"now": NOW}
+    adapter = _adapter(fixture, mt5, shape=_shape(tmp_path), clock=lambda: t["now"])
+    a3, send, checked = _to_send(fixture, adapter, t)
+    assert send.admitted, send.reason_codes
+    out = adapter.order_send(authority=a3, authorization=_auth(send), ticket=fixture["ticket"],
+                             checked_order=checked, account_mode="DEMO")
+    assert out["retcode"] == 10009 and len([c for c in mt5.calls if c[0] == "order_send"]) == 1

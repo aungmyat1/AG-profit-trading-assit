@@ -128,10 +128,9 @@ def test_no_broker_mutation_reachable_from_scheduler_ticket_report_path():
                 assert not node.attr.startswith("TRADE_ACTION_"), f"{path}:{node.lineno}"
 
 
-def test_order_calls_exist_only_in_the_canonical_adapter():
-    """Superseded zero-call-site rule (B', C14): exactly one order_check and one order_send call site,
-    both in src/demo_execution/mt5_canonical_adapter.py (also enforced in
-    tests/test_demo_execution_canonical_adapter.py)."""
+def test_exactly_one_order_send_call_site():
+    """Replaces the zero-call-site rule (B1, C14): exactly one order_check and one order_send call site,
+    both in the path-pinned canonical adapter src/demo_execution/mt5_canonical_adapter.py."""
     hits = []
     for base in (ROOT / "src", ROOT / "scripts"):
         for path in base.rglob("*.py"):

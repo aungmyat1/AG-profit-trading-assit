@@ -34,9 +34,12 @@ import yaml
 from demo_execution.authority import (
     ExecutionAuthority,
     evidence_digest,
+    per_order_confirm_required,
     validate_authority_shape,
+    validate_confirmation_evidence,
     validate_live_account,
 )
+from demo_execution.idempotency import SENDING, ExecutionLedger
 from demo_execution.lifecycle import AUTHORIZED, SENT, ExecutionLifecycle
 from demo_execution.scope import (
     ScopePolicy,
@@ -62,6 +65,7 @@ CHECKED_ORDER_MISMATCH = "CHECKED_ORDER_MISMATCH"
 QUOTE_UNAVAILABLE = "QUOTE_UNAVAILABLE"
 BROKER_CALL_RAISED = "BROKER_CALL_RAISED"
 BROKER_RESULT_MISSING = "BROKER_RESULT_MISSING"
+SEND_CLAIM_MISSING = "SEND_CLAIM_MISSING"
 
 _FILLING = {"FOK": "ORDER_FILLING_FOK", "IOC": "ORDER_FILLING_IOC", "RETURN": "ORDER_FILLING_RETURN"}
 
@@ -103,16 +107,33 @@ def load_order_shape(path: Optional[str | Path] = None) -> dict[str, Any]:
     if not isinstance(raw, dict) or raw.get("schema") != ORDER_SHAPE_SCHEMA:
         return {"approved": False}
     order = raw.get("order") if isinstance(raw.get("order"), dict) else {}
+    tag = raw.get("deviation_tag")
     ok = (raw.get("status") == "OWNER_APPROVED" and isinstance(raw.get("owner_decision_id"), str)
-          and raw["owner_decision_id"].strip() and order.get("action") == "DEAL"
+          and raw["owner_decision_id"].strip() and isinstance(raw.get("shape_id"), str)
+          and raw["shape_id"].strip() and isinstance(tag, str) and tag.isascii() and tag.isalnum()
+          and 1 <= len(tag) <= 8 and raw.get("analytics_exclusion") is True
+          and order.get("action") == "DEAL"
           and order.get("take_profit_leg") in (1, 2) and order.get("filling") in _FILLING)
     return {"approved": bool(ok), "take_profit_leg": order.get("take_profit_leg"),
-            "filling": order.get("filling"), "owner_decision_id": raw.get("owner_decision_id")}
+            "filling": order.get("filling"), "owner_decision_id": raw.get("owner_decision_id"),
+            "shape_id": raw.get("shape_id"), "deviation_tag": tag,
+            "analytics_exclusion": raw.get("analytics_exclusion") is True,
+            "account_margin_mode": raw.get("account_margin_mode")}
 
 
-def _comment(ticket_id: str) -> str:
-    # MT5 comments are at most 31 characters; a short digest keeps the ticket traceable.
-    return "AG " + hashlib.sha256(ticket_id.encode("utf-8")).hexdigest()[:16]
+def _comment(ticket_id: str, tag: Optional[str] = None) -> str:
+    # MT5 comments are at most 31 characters: a short ticket digest plus the shape deviation tag.
+    base = "AG " + hashlib.sha256(ticket_id.encode("utf-8")).hexdigest()[:16]
+    return f"{base} {tag}"[:31] if tag else base
+
+
+def _shape_fields(shape: Mapping[str, Any]) -> dict[str, Any]:
+    """Recorded on every broker result: the order deviates from the contract's leg split and is
+    excluded from strategy analytics; the margin mode is whatever the policy records (UNKNOWN until
+    host-verified)."""
+    return {"shape_id": shape.get("shape_id"), "shape_deviation_tag": shape.get("deviation_tag"),
+            "analytics_exclusion": bool(shape.get("analytics_exclusion")),
+            "account_margin_mode": shape.get("account_margin_mode") or "UNKNOWN"}
 
 
 class MT5CanonicalAdapter:
@@ -224,7 +245,7 @@ class MT5CanonicalAdapter:
             "action": mt5.TRADE_ACTION_DEAL, "symbol": scope.broker_symbol, "volume": vol,
             "type": mt5.ORDER_TYPE_BUY if long else mt5.ORDER_TYPE_SELL, "price": price,
             "sl": sl, "tp": target, "deviation": int(scope.slippage_limit_points),
-            "magic": int(scope.magic_number), "comment": _comment(authority.ticket_id),
+            "magic": int(scope.magic_number), "comment": _comment(authority.ticket_id, shape.get("deviation_tag")),
             "type_time": mt5.ORDER_TIME_GTC, "type_filling": getattr(mt5, _FILLING[shape["filling"]]),
         }, None
 
@@ -244,7 +265,7 @@ class MT5CanonicalAdapter:
         if result is None:
             return _refused(BROKER_RESULT_MISSING)
         # The sealed request travels with the result: order_send must send exactly this request.
-        return {**{k: v for k, v in result.items() if k != "request"}, "request": request}
+        return {**{k: v for k, v in result.items() if k != "request"}, "request": request, **_shape_fields(shape)}
 
     def order_send(self, *, authority: ExecutionAuthority, authorization: Mapping[str, Any],
                    ticket: Mapping[str, Any], checked_order: Mapping[str, Any],
@@ -256,20 +277,33 @@ class MT5CanonicalAdapter:
                 or row.evidence.get("checked_order_sha256") != evidence_digest(dict(checked_order)) \
                 or not isinstance(checked_order.get("request"), Mapping):
             return _refused(CHECKED_ORDER_MISMATCH)
+        # The durable SENDING claim must already exist (written by the guard before SENT): a crash
+        # after the broker call then halts on restart instead of resubmitting.
+        claim = ExecutionLedger(self._store).inspect(authority.ticket_id)
+        if claim.prior_state != SENDING or claim.reason_code != "HALT_UNCERTAIN_SEND":
+            return _refused(SEND_CLAIM_MISSING)
+        # Per-scope owner confirmation: required -> the single-use confirmation must be consumed;
+        # not required -> the standing authorization the guard re-validated is the only grant.
+        if per_order_confirm_required(scope):
+            reasons = validate_confirmation_evidence(self._store, authority, ticket, now_utc=self._clock(),
+                                                     require_consumed=True)
+            if reasons:
+                return _refused(reasons[0])
         request = dict(checked_order["request"])
         try:
             result = _as_dict(self._mt5.order_send(request))
         except Exception as exc:  # noqa: BLE001 -- outcome unknown: the guard HALTs, never resends
-            return {"unknown_outcome": True, "reason_code": BROKER_CALL_RAISED, "error_class": type(exc).__name__}
+            return {"unknown_outcome": True, "reason_code": BROKER_CALL_RAISED, "error_class": type(exc).__name__,
+                    **_shape_fields(shape)}
         if result is None:
-            return {"unknown_outcome": True, "reason_code": BROKER_RESULT_MISSING}
-        return {k: v for k, v in result.items() if k != "request"}
+            return {"unknown_outcome": True, "reason_code": BROKER_RESULT_MISSING, **_shape_fields(shape)}
+        return {**{k: v for k, v in result.items() if k != "request"}, **_shape_fields(shape)}
 
     def reconcile(self, *, authority: ExecutionAuthority, ticket_id: str,
                   send_result: Mapping[str, Any]) -> Mapping[str, Any]:
         """Read-only: the deals of the order the send reported, matched by magic + comment.
         No order id or no matching deal -> UNKNOWN (the ticket stays HALTed; never resubmitted)."""
-        comment = _comment(ticket_id)
+        comment = _comment(ticket_id, load_order_shape(self._shape_path).get("deviation_tag"))
         order_id = None
         for key in ("broker_order_id", "order_id", "order"):
             value = (send_result or {}).get(key) if isinstance(send_result, Mapping) else None
