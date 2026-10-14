@@ -1,0 +1,62 @@
+{
+  "schema": "AGP_HOST_EVIDENCE_V1",
+  "mission": "AGP-TKT-HOST-R2",
+  "supersedes_mission": "AGP-TKT-HOST-R1",
+  "captured_at_utc": "2026-10-14T18:54:13Z",
+  "captured_at_mmt": "2026-10-15T01:24:13+06:30",
+  "agent": "CLAUDE_CODE",
+  "mode": "READ_ONLY",
+  "order_api_calls": 0,
+  "broker_mutations": 0,
+  "telegram_sends": 0,
+  "steps": {
+    "1_host_pull": {
+      "status": "PASS",
+      "tree": "<HOST_LIVE_TREE>",
+      "method": "git pull --ff-only origin main",
+      "gate": "AG-V1-FX-Cycles, AG-V1-Crypto-Daily, AG-V1-LSMC-Watch all Ready; next starts 01:16:46/01:17:47/01:18:48 MMT, >= 5 min after 01:10:56 MMT check",
+      "pre_sha": "cf42542024ae0071270bd0f673df161cdfd5e22e",
+      "post_sha": "1a2024fdc84f0ea4e79f252afaf61101ed88e907",
+      "pulled_at_utc": "2026-10-14T18:43:27Z",
+      "includes": ["e9a91855 (#220) S1 block reasons", "83da95cf (#229)", "1a2024fd (#227) C14 risk snapshot builder"]
+    },
+    "2_s1_asw_ready_end_to_end": {
+      "status": "BLOCKED_RESOURCE",
+      "full_workload_started": false,
+      "reason": "resource_guard R1_GATE=BLOCKED_RESOURCE (AVAILABLE_RAM_MB 455 at first check, 514 at recheck; TOTAL 7378). Read-only MT5 replay/preview (scripts/host/s1_readonly_acceptance.py) not started.",
+      "live_cycle_option": "NOT_EVALUATED: next GBPUSD ASIAN_LONDON cycle is after 07:00Z 2026-10-15",
+      "dependency": "ASW 1.1.3 READY authority is in PR #232 (OPEN); a READY render before that merge is not expected"
+    },
+    "3_ccfd_scope_status_after_od1015": {
+      "status": "NOT_EVALUATED",
+      "trigger": "PR #232 'OD1015: scoped ASW 1.1.3 and CCFD 1.0.0 READY authority' is OPEN (not merged)",
+      "expected_after_merge": "READY route on BTCUSD SHORT, ETHUSD LONG, ETHUSD SHORT; all other CCFD/ASW scopes BLOCKED with specific reasons"
+    },
+    "4_local_config_shape": {
+      "config/local/owner_ticket.yaml": {
+        "present": false,
+        "effective_source": "config/owner_ticket.yaml (committed; manual_ticket.load_owner_config falls back when the local file is absent)",
+        "committed_file_sha256_prefix": "6f43e323056ffa05",
+        "committed_last_change": "1eb4cb57 (#168)",
+        "fields_present": ["risk_pct", "cost_warn_R", "cost_block_R", "commission"],
+        "fields_null": [],
+        "signature_fields": "NONE_IN_SCHEMA",
+        "signed": "NOT_APPLICABLE_NO_SIGNATURE_FIELD"
+      },
+      "config/local/actionability_policy.yaml": {
+        "present": true,
+        "sha256_prefix": "0843e79bce935fff",
+        "bytes": 2046,
+        "keys": ["policy_id", "version", "min_remaining_r", "signed_by", "signed_at", "lsmc_min_remaining_reward_fraction"],
+        "null_fields": ["min_remaining_r", "signed_by", "signed_at"],
+        "signed": false
+      }
+    }
+  },
+  "r1_carryover_not_run": {
+    "risk_snapshot_build": "BLOCKED_RESOURCE",
+    "canonical_adapter_dry_order_check": "SKIPPED: agents never call the adapter or order_check (AGENTS.md authority point 3)",
+    "usdjpy_xauusd_symbol_info_5d_spread": "BLOCKED_RESOURCE",
+    "telegram_acceptance_asw_silent_ccfd_pending": "BLOCKED_RESOURCE"
+  }
+}
