@@ -52,3 +52,9 @@ The admission regression pairs a valid-snapshot control with a missing snapshot:
 `None` must return `RISK_SNAPSHOT_MISSING` and risk gate BLOCKED. Existing
 production admission already propagates this block; no runtime fix is needed.
 The shared R1 lock is held by C24-R3; no passing local pytest result is claimed.
+
+Focused post-base validation (managed Linux, 2026-10-14): `python -m pytest -q
+ tests/test_demo_execution_dst_reset.py tests/test_demo_execution_server_day.py
+ tests/test_demo_execution_gates.py`: **131 passed in 17.95s**, R1 lock acquired
+and released. This supersedes the earlier local resource deferral; host clock
+acceptance remains pending and no live observation is claimed.
