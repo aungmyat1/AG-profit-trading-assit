@@ -6,8 +6,12 @@ review_by: 2026-11-07
 ---
 # Documentation Index
 
+[OD1014 ratification and Large-SMC version selection](status/AGP_OD1014_RATIFY_R1_2026-10-14.md)
+records owner Aung’s ratification, 1.1.3 as the next registration candidate, and supersession
+of the C21 1.1.2 registration proposal; runtime and execution authorization are unchanged.
+
 [C21 R2 dated evidence](status/AGP_C21_LSMC_V112_ENGINE_R2_2026-10-14.md) and
-[C21 Large-SMC 1.1.2 registration proposal](proposals/C21_LSMC_V112_REGISTRATION.md) records the append-only REPORT_ONLY candidate, OD1014 D2 pip convention and replay scope; it grants no registration or execution authority.
+[C21 Large-SMC 1.1.2 registration proposal (SUPERSEDED)](proposals/C21_LSMC_V112_REGISTRATION.md) records the append-only REPORT_ONLY candidate, OD1014 D2 pip convention and replay scope; it grants no registration or execution authority.
 
 [C18 R3 host acceptance (2026-10-13)](status/AGP_C18_R3_HOST_ACCEPTANCE_2026-10-13.md)
 records that C18 PRs #187, #188, and #190 are merged and synthetic checks pass, while real
