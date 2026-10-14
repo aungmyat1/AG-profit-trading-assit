@@ -8,6 +8,12 @@ review_by: 2026-11-07
 
 ## Current snapshot (2026-10-11)
 
+OD1014 C20/C21 closeout and Telegram acceptance (2026-10-14): **PARTIAL**, historical
+host checkpoint only. [Closeout](docs/status/AGP_OD1014_C20_C21_CLOSEOUT_2026-10-14.md)
+and [TG acceptance](docs/status/AGP_OD1014_TG_ACCEPT_2026-10-14.md) retain observed
+LSMC messages, ASW silent-cycle FAIL and pending CCFD/LNY checks. Ratification is
+solely #217; the C21 1.1.2 registration discussion is superseded by its version-selection decision.
+
 OD1014 / OD1014-FAST ratification (owner Aung, 2026-10-14, AGP-OD1014-RATIFY-R1):
 [register](docs/governance/OWNER_DECISION_REGISTER.md) records RATIFIED, including FAST D1–D5
 and D8/D9 as applied in #212. `AGP-C24-LSMC-VERSION-SELECTION` selects 1.1.3 (#216) as
