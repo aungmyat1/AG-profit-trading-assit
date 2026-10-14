@@ -1,9 +1,20 @@
 ---
 class: design
-state: NOT_VERIFIED
+state: SUPERSEDED
+verification_state: NOT_VERIFIED
+superseded_by: AGP-C24-LSMC-VERSION-SELECTION
 owner_reviewed: null
 ---
 # C21 Large-SMC 1.1.2 registration proposal
+
+**Status: SUPERSEDED** — owner Aung, 2026-10-14, `AGP-OD1014-RATIFY-R1` step 4;
+[owner decision register](../governance/OWNER_DECISION_REGISTER.md),
+`AGP-C24-LSMC-VERSION-SELECTION`. The next registration candidate is **1.1.3**
+([PR #216](https://github.com/aungmyat1/AG-profit-trading-assit/pull/216)).
+1.1.2 remains REPORT_ONLY observation, never LOGIC_VERIFIED or execution-eligible.
+Frozen identities and the historical evidence below are retained; no verification
+status transfers to 1.1.3. A DEMO ORDER PROPOSAL requires 1.1.3 LOGIC_VERIFIED and
+separate scope READY approval; broker execution remains disabled pending separate authorization.
 
 Mission `AGP-C21-LSMC-V112-ENGINE-R2`, 2026-10-14. Base main:
 `e884b8605739b64d229f848c99ed4a23d8b4ae45`, which contains PR #200 and the newer report interfaces.

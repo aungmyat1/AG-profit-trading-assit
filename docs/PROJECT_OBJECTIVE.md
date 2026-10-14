@@ -10,7 +10,7 @@ review_by: 2026-11-07
 **Target branch:** `main`  
 **Venue:** VT Markets MT5 Demo  
 **Product phase:** PRE-EDGE  
-**Owner ratification:** Original objective RATIFIED 2026-10-09 by the owner — register entry `OBJ-RATIFY-2026-10-09`. C14 sequencing amendment RATIFIED 2026-10-11 — register entry `C14` and [owner decision](governance/AGP_C14_AUTO_DEMO_OWNER_DECISION_2026-10-11.md). FX/Gold session coverage and crypto entry ceiling OWNER_APPROVED 2026-10-12 — register entry `AGP-OD1012-SESSION-CRYPTO` and [owner decision](governance/AGP_OD1012_SESSION_CRYPTO_OWNER_DECISION_2026-10-12.md). Policy ratification is not strategy-specific execution authorization; `demo_authorized=false` and `live_authorized=false`. OD1012-S1-READY (owner Aung, 2026-10-12, AGP-OD1012-S1-ACTIVATION-R3) separately approves READY only for v1.1.2 GBPUSD × ASIAN_LONDON, bound to raw SHA256 `4f936bbe17f4aa4fd3cd9fc85640bed57b6786f43c52e8e2d69aabb7234b14cf`; OD1012-S1-NOTIFY requires confirmed pre-order Telegram delivery under BLOCK_NEW_ORDERS. Neither grants order authority or deployment. OD1014 verification-phase opportunity tickets and the OD1014-FAST directions RATIFIED 2026-10-14 — register entry `OD1014-CLOSEOUT-R2`; reporting policy only, no READY, registry, demo or live change. See the [S1 implementation record](status/AGP_OD1012_S1_ACTIVATION_R3_2026-10-12.md).
+**Owner ratification:** Original objective RATIFIED 2026-10-09 by the owner — register entry `OBJ-RATIFY-2026-10-09`. C14 sequencing amendment RATIFIED 2026-10-11 — register entry `C14` and [owner decision](governance/AGP_C14_AUTO_DEMO_OWNER_DECISION_2026-10-11.md). FX/Gold session coverage and crypto entry ceiling OWNER_APPROVED 2026-10-12 — register entry `AGP-OD1012-SESSION-CRYPTO` and [owner decision](governance/AGP_OD1012_SESSION_CRYPTO_OWNER_DECISION_2026-10-12.md). Policy ratification is not strategy-specific execution authorization; `demo_authorized=false` and `live_authorized=false`. OD1012-S1-READY (owner Aung, 2026-10-12, AGP-OD1012-S1-ACTIVATION-R3) separately approves READY only for v1.1.2 GBPUSD × ASIAN_LONDON, bound to raw SHA256 `4f936bbe17f4aa4fd3cd9fc85640bed57b6786f43c52e8e2d69aabb7234b14cf`; OD1012-S1-NOTIFY requires confirmed pre-order Telegram delivery under BLOCK_NEW_ORDERS. Neither grants order authority or deployment. See the [S1 implementation record](status/AGP_OD1012_S1_ACTIVATION_R3_2026-10-12.md).
 
 
 ## C14 demo sequencing (ratified 2026-10-11)
@@ -124,7 +124,7 @@ No scope is `LOGIC_VERIFIED` or `EXECUTION_ELIGIBLE` by this section. No runtime
 
 ## Verification-phase opportunity tickets (OD1014, 2026-10-14)
 
-This section is an additive reporting-policy clarification; it does not override any authorization, risk, guard or routing rule above. Register entries `OD1014` and `OD1014-FAST` (RATIFIED 2026-10-14, register `OD1014-CLOSEOUT-R2`).
+This section is an additive reporting-policy clarification; it does not override any authorization, risk, guard or routing rule above. Ratification is recorded in the [owner decision register](governance/OWNER_DECISION_REGISTER.md), entries `OD1014` and `OD1014-FAST` (owner Aung, 2026-10-14, `AGP-OD1014-RATIFY-R1`).
 
 A priced OPPORTUNITY contains strategy-generated prices calculated from validated VT Markets MT5 market data. These are observational strategy outputs, not fabricated examples, but their trading correctness has not necessarily been verified. They are non-actionable and carry no execution authority.
 
