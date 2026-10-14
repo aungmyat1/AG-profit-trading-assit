@@ -1,0 +1,1948 @@
+{
+  "active_history_scans": {
+    "evaluated_checks": {
+      "L1.closed_bars_only": 2051,
+      "L1.replay_hash": 2051,
+      "L1.truncation_invariance": 2051,
+      "L2.alert_mapping": 2051,
+      "L2.c10_stop": 481,
+      "L2.c11_creation_anchor": 481,
+      "L2.c11_target": 481,
+      "L2.day_boundary": 2051,
+      "L2.delivery_gate_preserves_detection": 481,
+      "L2.direction_matches_bias": 481,
+      "L2.entry_by_reference": 481,
+      "L2.expiry_session_end": 481,
+      "L2.identity": 2051,
+      "L2.instruments_vt_only": 2051,
+      "L2.near_poi_band": 2051,
+      "L2.no_authority": 2051,
+      "L2.pip_source": 481,
+      "L2.poi_max_age": 2051,
+      "L2.point_source": 2051,
+      "L2.point_source_declared": 2051,
+      "L2.sweep_choch_window": 2051,
+      "L2.sweep_window_measured": 481,
+      "L2.swing_k": 2051,
+      "L2.tie_tolerance": 2051,
+      "L2.timeframes": 2051,
+      "L3.entry_in_choch_bar": 481,
+      "L3.stop_beyond_sweep": 400,
+      "L3.stop_side": 400,
+      "L3.sweep_extreme_side": 481,
+      "L3.target_direction": 434,
+      "L4.evaluated": 2051,
+      "L4.history": 2051,
+      "L4.m5_fresh": 2051,
+      "L4.stale_state_consistent": 2051,
+      "L6.invalid_if": 481,
+      "L6.stale_if": 481,
+      "L6.valid_until": 481
+    },
+    "gate_verdicts": {
+      "L1": "PASS",
+      "L2": "PASS",
+      "L3": "PASS",
+      "L4": "PASS",
+      "L5": "INSUFFICIENT",
+      "L6": "PASS"
+    },
+    "gates": {
+      "L1": {
+        "PASS": 2051
+      },
+      "L2": {
+        "PASS": 2051
+      },
+      "L3": {
+        "PASS": 2051
+      },
+      "L4": {
+        "PASS": 2051
+      },
+      "L5": {
+        "INSUFFICIENT": 400,
+        "NOT_APPLICABLE": 1651
+      },
+      "L6": {
+        "PASS": 2051
+      }
+    },
+    "not_applicable_checks": {
+      "L2.c10_stop": 1570,
+      "L2.c11_creation_anchor": 1570,
+      "L2.c11_target": 1570,
+      "L2.direction_matches_bias": 1570,
+      "L2.entry_by_reference": 1570,
+      "L2.expiry_session_end": 1570,
+      "L2.sweep_window_measured": 1570,
+      "L3.geometry": 1570,
+      "L3.stop_geometry": 81,
+      "L3.target_direction": 47,
+      "L5.cost": 1651,
+      "L6.freshness": 1570
+    },
+    "opportunity_scans": 481,
+    "priced_opportunity_scans": 400,
+    "qualifies_for_proposal": false,
+    "rr_eligible_scans": 31,
+    "scans": 2051,
+    "states": {
+      "DEVELOPING": 937,
+      "NEAR_POI": 633,
+      "OPPORTUNITY": 481
+    },
+    "terminal_reasons": {
+      "AMBIGUOUS_TARGET": 47,
+      "D30_BADGE_ECONOMICS_NOT_EVALUATED": 481,
+      "FAIL_CLOSED_RR_BELOW_SPEC_MINIMUM": 369,
+      "FAIL_CLOSED_RR_UNDEFINED": 81,
+      "MISSING_SPREAD": 81,
+      "REJECT_NO_STOP": 81,
+      "REJECT_STALE": 400
+    },
+    "verdict": "INSUFFICIENT",
+    "verification_status": "NOT_VERIFIED"
+  },
+  "boundary_reference": {
+    "checks": [
+      {
+        "at": "2026-08-14T20:05:00+00:00",
+        "equal": true,
+        "m5_row": 2867,
+        "opportunity_id": "EURUSD:H1:OB_SHADOW:LONG:2026-08-13T08:00:00+00:00|2026-08-13T21:00:00+00:00|2026-08-13T21:35:00+00:00",
+        "reference_sha256": "5f422e4316e0799fc8c440037a3d4bb7750c9c57d84c776e912b9f21f10a6a34",
+        "shard_sha256": "5f422e4316e0799fc8c440037a3d4bb7750c9c57d84c776e912b9f21f10a6a34"
+      },
+      {
+        "at": "2026-08-14T20:10:00+00:00",
+        "equal": true,
+        "m5_row": 2868,
+        "opportunity_id": "EURUSD:H1:OB_SHADOW:LONG:2026-08-13T08:00:00+00:00|2026-08-13T21:00:00+00:00|2026-08-13T21:35:00+00:00",
+        "reference_sha256": "77fd8cd774dbf3815f019cb8ef482fcb8933b53d393335d1ca861a2027bdd21d",
+        "shard_sha256": "77fd8cd774dbf3815f019cb8ef482fcb8933b53d393335d1ca861a2027bdd21d"
+      },
+      {
+        "at": "2026-08-14T20:15:00+00:00",
+        "equal": true,
+        "m5_row": 2869,
+        "opportunity_id": "EURUSD:H1:OB_SHADOW:LONG:2026-08-13T08:00:00+00:00|2026-08-13T21:00:00+00:00|2026-08-13T21:35:00+00:00",
+        "reference_sha256": "b5d71b89e96cddac34e9cf283a3800f61415a080e4b47d57cf7d62e17ef865f3",
+        "shard_sha256": "b5d71b89e96cddac34e9cf283a3800f61415a080e4b47d57cf7d62e17ef865f3"
+      },
+      {
+        "at": "2026-08-14T20:20:00+00:00",
+        "equal": true,
+        "m5_row": 2870,
+        "opportunity_id": "EURUSD:H1:OB_SHADOW:LONG:2026-08-13T08:00:00+00:00|2026-08-13T21:00:00+00:00|2026-08-13T21:35:00+00:00",
+        "reference_sha256": "df0fbbaf2fc8680918118acdf7adad502b90fb97287f7e4fce1ed4130fceb012",
+        "shard_sha256": "df0fbbaf2fc8680918118acdf7adad502b90fb97287f7e4fce1ed4130fceb012"
+      },
+      {
+        "at": "2026-08-14T20:25:00+00:00",
+        "equal": true,
+        "m5_row": 2871,
+        "opportunity_id": "EURUSD:H1:OB_SHADOW:LONG:2026-08-13T08:00:00+00:00|2026-08-13T21:00:00+00:00|2026-08-13T21:35:00+00:00",
+        "reference_sha256": "28fcde94230059c78284bad4574c5bc36f402b1f3919a4cb654a61ab78cba726",
+        "shard_sha256": "28fcde94230059c78284bad4574c5bc36f402b1f3919a4cb654a61ab78cba726"
+      },
+      {
+        "at": "2026-08-14T20:30:00+00:00",
+        "equal": true,
+        "m5_row": 2872,
+        "opportunity_id": "EURUSD:H1:OB_SHADOW:LONG:2026-08-13T08:00:00+00:00|2026-08-13T21:00:00+00:00|2026-08-13T21:35:00+00:00",
+        "reference_sha256": "a57fb96635dbaba8034f886a75f4ffa78ab3880932f53e7d9b5758779cb009ee",
+        "shard_sha256": "a57fb96635dbaba8034f886a75f4ffa78ab3880932f53e7d9b5758779cb009ee"
+      },
+      {
+        "at": "2026-08-14T20:35:00+00:00",
+        "equal": true,
+        "m5_row": 2873,
+        "opportunity_id": "EURUSD:H1:OB_SHADOW:LONG:2026-08-13T08:00:00+00:00|2026-08-13T21:00:00+00:00|2026-08-13T21:35:00+00:00",
+        "reference_sha256": "9b2363505a2c1463a2706a502f0868b02e45b2f2964076c1632fe80937db344a",
+        "shard_sha256": "9b2363505a2c1463a2706a502f0868b02e45b2f2964076c1632fe80937db344a"
+      },
+      {
+        "at": "2026-08-14T20:40:00+00:00",
+        "equal": true,
+        "m5_row": 2874,
+        "opportunity_id": "EURUSD:H1:OB_SHADOW:LONG:2026-08-13T08:00:00+00:00|2026-08-13T21:00:00+00:00|2026-08-13T21:35:00+00:00",
+        "reference_sha256": "192a3f720d2d739d78ab4724823284338d5e8aabf25c15d078d343cd151a189d",
+        "shard_sha256": "192a3f720d2d739d78ab4724823284338d5e8aabf25c15d078d343cd151a189d"
+      },
+      {
+        "at": "2026-08-14T20:45:00+00:00",
+        "equal": true,
+        "m5_row": 2875,
+        "opportunity_id": "EURUSD:H1:OB_SHADOW:LONG:2026-08-13T08:00:00+00:00|2026-08-13T21:00:00+00:00|2026-08-13T21:35:00+00:00",
+        "reference_sha256": "6c3d0e686c0e6093e3168c097a8d6d032468f22c9b425246a9b3457e4c52b3c4",
+        "shard_sha256": "6c3d0e686c0e6093e3168c097a8d6d032468f22c9b425246a9b3457e4c52b3c4"
+      },
+      {
+        "at": "2026-08-14T20:50:00+00:00",
+        "equal": true,
+        "m5_row": 2876,
+        "opportunity_id": "EURUSD:H1:OB_SHADOW:LONG:2026-08-13T08:00:00+00:00|2026-08-13T21:00:00+00:00|2026-08-13T21:35:00+00:00",
+        "reference_sha256": "234ab0e24a1fafab6826fd2c323eae2b31e97693b194f9362dae2678c7efbfb3",
+        "shard_sha256": "234ab0e24a1fafab6826fd2c323eae2b31e97693b194f9362dae2678c7efbfb3"
+      },
+      {
+        "at": "2026-08-14T20:55:00+00:00",
+        "equal": true,
+        "m5_row": 2877,
+        "opportunity_id": null,
+        "reference_sha256": "68b9a664d789a7f78ce7b58ce52eb7166f92e80cf21607cb7e93d13366fcccd7",
+        "shard_sha256": "68b9a664d789a7f78ce7b58ce52eb7166f92e80cf21607cb7e93d13366fcccd7"
+      },
+      {
+        "at": "2026-08-14T21:00:00+00:00",
+        "equal": true,
+        "m5_row": 2878,
+        "opportunity_id": null,
+        "reference_sha256": "cd73886ba02243c0c0c19f8c203077fb500e95a5f9715325ea3d1b04da8f4063",
+        "shard_sha256": "cd73886ba02243c0c0c19f8c203077fb500e95a5f9715325ea3d1b04da8f4063"
+      },
+      {
+        "at": "2026-08-16T21:05:00+00:00",
+        "equal": true,
+        "m5_row": 2879,
+        "opportunity_id": null,
+        "reference_sha256": "ba0403a59e8d7bd537115dc8300dab8b86e257ec632b1220162b57eb7901433b",
+        "shard_sha256": "ba0403a59e8d7bd537115dc8300dab8b86e257ec632b1220162b57eb7901433b"
+      },
+      {
+        "at": "2026-08-16T21:10:00+00:00",
+        "equal": true,
+        "m5_row": 2880,
+        "opportunity_id": null,
+        "reference_sha256": "1b702b0e907f1e69371e446390221bc68d35094da32a72cf0578aeaf256ea998",
+        "shard_sha256": "1b702b0e907f1e69371e446390221bc68d35094da32a72cf0578aeaf256ea998"
+      },
+      {
+        "at": "2026-08-16T21:15:00+00:00",
+        "equal": true,
+        "m5_row": 2881,
+        "opportunity_id": null,
+        "reference_sha256": "e9cec72a14f8de1c00d7ceae4756a9e9d2fa44dc34ef0defab9252fc4f01f173",
+        "shard_sha256": "e9cec72a14f8de1c00d7ceae4756a9e9d2fa44dc34ef0defab9252fc4f01f173"
+      },
+      {
+        "at": "2026-08-16T21:20:00+00:00",
+        "equal": true,
+        "m5_row": 2882,
+        "opportunity_id": null,
+        "reference_sha256": "40e13e97b7185277d22e07c236124278638a19b3e70972661abf122ff8ebbcbb",
+        "shard_sha256": "40e13e97b7185277d22e07c236124278638a19b3e70972661abf122ff8ebbcbb"
+      },
+      {
+        "at": "2026-08-16T21:25:00+00:00",
+        "equal": true,
+        "m5_row": 2883,
+        "opportunity_id": null,
+        "reference_sha256": "0208827ff90827df7e0dbd07f214cab2d089f311d5e428b96e852b5cc585766d",
+        "shard_sha256": "0208827ff90827df7e0dbd07f214cab2d089f311d5e428b96e852b5cc585766d"
+      },
+      {
+        "at": "2026-08-16T21:30:00+00:00",
+        "equal": true,
+        "m5_row": 2884,
+        "opportunity_id": null,
+        "reference_sha256": "538f26ff78b7206720d98c3282b10382eb148e55cad0aa207d62599be813932e",
+        "shard_sha256": "538f26ff78b7206720d98c3282b10382eb148e55cad0aa207d62599be813932e"
+      },
+      {
+        "at": "2026-08-16T21:35:00+00:00",
+        "equal": true,
+        "m5_row": 2885,
+        "opportunity_id": null,
+        "reference_sha256": "e42997cfd7b257e4ea3dee2c375338e3f19136bcd723604247e37b536f753ca0",
+        "shard_sha256": "e42997cfd7b257e4ea3dee2c375338e3f19136bcd723604247e37b536f753ca0"
+      },
+      {
+        "at": "2026-08-16T21:40:00+00:00",
+        "equal": true,
+        "m5_row": 2886,
+        "opportunity_id": null,
+        "reference_sha256": "31fdd69196d54346e38c81c433ee82eae02ce0f7fb1378936ea59e4a1f3c807b",
+        "shard_sha256": "31fdd69196d54346e38c81c433ee82eae02ce0f7fb1378936ea59e4a1f3c807b"
+      },
+      {
+        "at": "2026-08-16T21:45:00+00:00",
+        "equal": true,
+        "m5_row": 2887,
+        "opportunity_id": null,
+        "reference_sha256": "043be7558abfc660630b9b7f8827600e1fc9eb22ebfef53fbe5eece4636e2104",
+        "shard_sha256": "043be7558abfc660630b9b7f8827600e1fc9eb22ebfef53fbe5eece4636e2104"
+      },
+      {
+        "at": "2026-08-16T21:50:00+00:00",
+        "equal": true,
+        "m5_row": 2888,
+        "opportunity_id": null,
+        "reference_sha256": "bc054956d722c5fc5d266b6238dd960c29b951f658d2a46422fc7c60ab3fd4f7",
+        "shard_sha256": "bc054956d722c5fc5d266b6238dd960c29b951f658d2a46422fc7c60ab3fd4f7"
+      },
+      {
+        "at": "2026-08-16T21:55:00+00:00",
+        "equal": true,
+        "m5_row": 2889,
+        "opportunity_id": null,
+        "reference_sha256": "e2d04554789e21e1f3f8d75282b5bb9318458a9e087a9ff23270e8fe2d859c4d",
+        "shard_sha256": "e2d04554789e21e1f3f8d75282b5bb9318458a9e087a9ff23270e8fe2d859c4d"
+      },
+      {
+        "at": "2026-08-16T22:00:00+00:00",
+        "equal": true,
+        "m5_row": 2890,
+        "opportunity_id": null,
+        "reference_sha256": "1910758c7725fa207858e79a4402577bff240a8528c4281548d673845ba89f18",
+        "shard_sha256": "1910758c7725fa207858e79a4402577bff240a8528c4281548d673845ba89f18"
+      },
+      {
+        "at": "2026-08-25T23:05:00+00:00",
+        "equal": true,
+        "m5_row": 4919,
+        "opportunity_id": null,
+        "reference_sha256": "06eafea7cd80f2ab3baf02f468e638a4d63c147ff31f9fb1cdd9afa97f70eb53",
+        "shard_sha256": "06eafea7cd80f2ab3baf02f468e638a4d63c147ff31f9fb1cdd9afa97f70eb53"
+      },
+      {
+        "at": "2026-08-25T23:10:00+00:00",
+        "equal": true,
+        "m5_row": 4920,
+        "opportunity_id": null,
+        "reference_sha256": "d865837d39fc8d7968944e078b92de6046191564c07874c86b8496e13f780c4f",
+        "shard_sha256": "d865837d39fc8d7968944e078b92de6046191564c07874c86b8496e13f780c4f"
+      },
+      {
+        "at": "2026-08-25T23:15:00+00:00",
+        "equal": true,
+        "m5_row": 4921,
+        "opportunity_id": null,
+        "reference_sha256": "99289c35d1c4b2ec366c0e71d338e10ba0ba29992c5a4a9dfb4ec411f4eb35aa",
+        "shard_sha256": "99289c35d1c4b2ec366c0e71d338e10ba0ba29992c5a4a9dfb4ec411f4eb35aa"
+      },
+      {
+        "at": "2026-08-25T23:20:00+00:00",
+        "equal": true,
+        "m5_row": 4922,
+        "opportunity_id": null,
+        "reference_sha256": "b981127ff0d7e3c97f1395a529a6306342ec1069ea7cedcff985ef58786a6a82",
+        "shard_sha256": "b981127ff0d7e3c97f1395a529a6306342ec1069ea7cedcff985ef58786a6a82"
+      },
+      {
+        "at": "2026-08-25T23:25:00+00:00",
+        "equal": true,
+        "m5_row": 4923,
+        "opportunity_id": null,
+        "reference_sha256": "4d0d057fdd6a667f5c30280ff4ed5a2bb677ee55ad441a97ea7c4671b4b42d9f",
+        "shard_sha256": "4d0d057fdd6a667f5c30280ff4ed5a2bb677ee55ad441a97ea7c4671b4b42d9f"
+      },
+      {
+        "at": "2026-08-25T23:30:00+00:00",
+        "equal": true,
+        "m5_row": 4924,
+        "opportunity_id": null,
+        "reference_sha256": "ca6be9499899b466716d1f192cc96261c43deb8a8f3fd13660e23545bda1e99e",
+        "shard_sha256": "ca6be9499899b466716d1f192cc96261c43deb8a8f3fd13660e23545bda1e99e"
+      },
+      {
+        "at": "2026-08-25T23:35:00+00:00",
+        "equal": true,
+        "m5_row": 4925,
+        "opportunity_id": null,
+        "reference_sha256": "dcc03220c74299b686daa9fed27370906570dc6e1741cdb1d8b7210a6505521a",
+        "shard_sha256": "dcc03220c74299b686daa9fed27370906570dc6e1741cdb1d8b7210a6505521a"
+      },
+      {
+        "at": "2026-08-25T23:40:00+00:00",
+        "equal": true,
+        "m5_row": 4926,
+        "opportunity_id": null,
+        "reference_sha256": "e1e6ba4591b193398ab5a8203ee8f8f5c5a77054d3b5975db08190e7fbc62588",
+        "shard_sha256": "e1e6ba4591b193398ab5a8203ee8f8f5c5a77054d3b5975db08190e7fbc62588"
+      },
+      {
+        "at": "2026-08-25T23:45:00+00:00",
+        "equal": true,
+        "m5_row": 4927,
+        "opportunity_id": null,
+        "reference_sha256": "60c0cbe4f1206f50c7a55dfdee42088793e453e4a1a7a056bf9ff79350099f87",
+        "shard_sha256": "60c0cbe4f1206f50c7a55dfdee42088793e453e4a1a7a056bf9ff79350099f87"
+      },
+      {
+        "at": "2026-08-25T23:50:00+00:00",
+        "equal": true,
+        "m5_row": 4928,
+        "opportunity_id": null,
+        "reference_sha256": "994ff4cc02ca7d744cbd22c0abd124e9fb3240e9a51ca9c67ab5489127a25a18",
+        "shard_sha256": "994ff4cc02ca7d744cbd22c0abd124e9fb3240e9a51ca9c67ab5489127a25a18"
+      },
+      {
+        "at": "2026-08-25T23:55:00+00:00",
+        "equal": true,
+        "m5_row": 4929,
+        "opportunity_id": null,
+        "reference_sha256": "68cb16d723a262fdffa865a3e55acf96d455949bc974f3bb5493d4795d67bc2d",
+        "shard_sha256": "68cb16d723a262fdffa865a3e55acf96d455949bc974f3bb5493d4795d67bc2d"
+      },
+      {
+        "at": "2026-08-26T00:00:00+00:00",
+        "equal": true,
+        "m5_row": 4930,
+        "opportunity_id": null,
+        "reference_sha256": "8eede0eafee7730302ad06d770deee8249038730e66fac2c62ccff33d505717f",
+        "shard_sha256": "8eede0eafee7730302ad06d770deee8249038730e66fac2c62ccff33d505717f"
+      },
+      {
+        "at": "2026-08-26T00:05:00+00:00",
+        "equal": true,
+        "m5_row": 4931,
+        "opportunity_id": null,
+        "reference_sha256": "46c7133c7a65f4235642700fae89cdb7c598828eb2461cf2ddf203d062a4d7ae",
+        "shard_sha256": "46c7133c7a65f4235642700fae89cdb7c598828eb2461cf2ddf203d062a4d7ae"
+      },
+      {
+        "at": "2026-08-26T00:10:00+00:00",
+        "equal": true,
+        "m5_row": 4932,
+        "opportunity_id": null,
+        "reference_sha256": "db9684c8db7421a7976e88ff5acf78f68d69e4861e1151383f467f2fe53fc736",
+        "shard_sha256": "db9684c8db7421a7976e88ff5acf78f68d69e4861e1151383f467f2fe53fc736"
+      },
+      {
+        "at": "2026-08-26T00:15:00+00:00",
+        "equal": true,
+        "m5_row": 4933,
+        "opportunity_id": null,
+        "reference_sha256": "b9e43d35ca03d1f3fc394f4d768ecfdff4c811383c6ebb5230aa3fae419f29fd",
+        "shard_sha256": "b9e43d35ca03d1f3fc394f4d768ecfdff4c811383c6ebb5230aa3fae419f29fd"
+      },
+      {
+        "at": "2026-08-26T00:20:00+00:00",
+        "equal": true,
+        "m5_row": 4934,
+        "opportunity_id": null,
+        "reference_sha256": "02eab27ea897057462a23a59486544135fe1dd7ae3c00c2193d0e8b4888f8c62",
+        "shard_sha256": "02eab27ea897057462a23a59486544135fe1dd7ae3c00c2193d0e8b4888f8c62"
+      },
+      {
+        "at": "2026-08-26T00:25:00+00:00",
+        "equal": true,
+        "m5_row": 4935,
+        "opportunity_id": null,
+        "reference_sha256": "bc2956858246cb9a5845c1c227f87e479b56e48ab3399b16034798915dcacf12",
+        "shard_sha256": "bc2956858246cb9a5845c1c227f87e479b56e48ab3399b16034798915dcacf12"
+      },
+      {
+        "at": "2026-08-26T00:30:00+00:00",
+        "equal": true,
+        "m5_row": 4936,
+        "opportunity_id": null,
+        "reference_sha256": "8c83c8c4c7dd107e7a5ea89bc25ad2db83a2c1ba338da60d441270cf60e66928",
+        "shard_sha256": "8c83c8c4c7dd107e7a5ea89bc25ad2db83a2c1ba338da60d441270cf60e66928"
+      },
+      {
+        "at": "2026-08-26T00:35:00+00:00",
+        "equal": true,
+        "m5_row": 4937,
+        "opportunity_id": null,
+        "reference_sha256": "5a849766eb8def41b4f002a63d5640fc3d3366b27cfde6e443b028578f957820",
+        "shard_sha256": "5a849766eb8def41b4f002a63d5640fc3d3366b27cfde6e443b028578f957820"
+      },
+      {
+        "at": "2026-08-26T00:40:00+00:00",
+        "equal": true,
+        "m5_row": 4938,
+        "opportunity_id": null,
+        "reference_sha256": "8bb7413f7a53ec7efed2afc8f43cc1564d9f28d072d652b3eb7180e659c87907",
+        "shard_sha256": "8bb7413f7a53ec7efed2afc8f43cc1564d9f28d072d652b3eb7180e659c87907"
+      },
+      {
+        "at": "2026-08-26T00:45:00+00:00",
+        "equal": true,
+        "m5_row": 4939,
+        "opportunity_id": null,
+        "reference_sha256": "962269fd08d0cb81a7a8cd7d3497616c0fd79314c09692d5cd0acb1593f15da1",
+        "shard_sha256": "962269fd08d0cb81a7a8cd7d3497616c0fd79314c09692d5cd0acb1593f15da1"
+      },
+      {
+        "at": "2026-08-26T00:50:00+00:00",
+        "equal": true,
+        "m5_row": 4940,
+        "opportunity_id": null,
+        "reference_sha256": "c6e1c0203b79da642c914d141c3c010fc028e2ee61061a62189665008506d394",
+        "shard_sha256": "c6e1c0203b79da642c914d141c3c010fc028e2ee61061a62189665008506d394"
+      },
+      {
+        "at": "2026-08-26T00:55:00+00:00",
+        "equal": true,
+        "m5_row": 4941,
+        "opportunity_id": null,
+        "reference_sha256": "16be6977150a87b871d2ba99f79c3d59df877e2bee28c55b195f8336b241b3c1",
+        "shard_sha256": "16be6977150a87b871d2ba99f79c3d59df877e2bee28c55b195f8336b241b3c1"
+      },
+      {
+        "at": "2026-08-26T01:00:00+00:00",
+        "equal": true,
+        "m5_row": 4942,
+        "opportunity_id": null,
+        "reference_sha256": "5db56905e9f5a71e28b1e7d7b960603ae12ca570c569b9717c281e3b829f4f73",
+        "shard_sha256": "5db56905e9f5a71e28b1e7d7b960603ae12ca570c569b9717c281e3b829f4f73"
+      }
+    ],
+    "method": "Unmodified evaluator on overlapping boundary rows; warmed shard inputs vs independent full-recorded-history reference inputs; compare complete snapshot, not only signal id.",
+    "overlapping_reference_shard_rows": [
+      2867,
+      2868,
+      2869,
+      2870,
+      2871,
+      2872,
+      2873,
+      2874,
+      2875,
+      2876,
+      2877,
+      2878,
+      2879,
+      2880,
+      2881,
+      2882,
+      2883,
+      2884,
+      2885,
+      2886,
+      2887,
+      2888,
+      2889,
+      2890,
+      4919,
+      4920,
+      4921,
+      4922,
+      4923,
+      4924,
+      4925,
+      4926,
+      4927,
+      4928,
+      4929,
+      4930,
+      4931,
+      4932,
+      4933,
+      4934,
+      4935,
+      4936,
+      4937,
+      4938,
+      4939,
+      4940,
+      4941,
+      4942
+    ],
+    "verdict": "PASS"
+  },
+  "branch_matrix": {
+    "MARKET_CLOSED|NONE|NONE|NO_TARGET_OR_NO_OPPORTUNITY": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 1,
+        "L1.replay_hash": 1,
+        "L1.truncation_invariance": 1,
+        "L2.alert_mapping": 1,
+        "L2.day_boundary": 1,
+        "L2.identity": 1,
+        "L2.instruments_vt_only": 1,
+        "L2.near_poi_band": 1,
+        "L2.no_authority": 1,
+        "L2.poi_max_age": 1,
+        "L2.point_source_declared": 1,
+        "L2.sweep_choch_window": 1,
+        "L2.swing_k": 1,
+        "L2.tie_tolerance": 1,
+        "L2.timeframes": 1,
+        "L4.evaluated": 1,
+        "L4.history": 1,
+        "L4.m5_fresh": 1,
+        "L4.stale_state_consistent": 1
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "FAIL",
+        "L5": "NOT_RUN",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 1
+        },
+        "L2": {
+          "PASS": 1
+        },
+        "L3": {
+          "PASS": 1
+        },
+        "L4": {
+          "FAIL": 1
+        },
+        "L5": {
+          "NOT_APPLICABLE": 1
+        },
+        "L6": {
+          "PASS": 1
+        }
+      },
+      "not_applicable_checks": {
+        "L2.c10_stop": 1,
+        "L2.c11_creation_anchor": 1,
+        "L2.c11_target": 1,
+        "L2.direction_matches_bias": 1,
+        "L2.entry_by_reference": 1,
+        "L2.expiry_session_end": 1,
+        "L2.point_source": 1,
+        "L2.sweep_window_measured": 1,
+        "L3.geometry": 1,
+        "L5.cost": 1,
+        "L6.freshness": 1
+      },
+      "opportunity_scans": 0,
+      "priced_opportunity_scans": 0,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 1,
+      "states": {
+        "MARKET_CLOSED": 1
+      },
+      "terminal_reasons": {
+        "FX_WEEKEND": 1
+      },
+      "verdict": "DATA_INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "SHORT_D1|LONG|FVG|CONFIRMED_OPPOSING_H1_SWING": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 31,
+        "L1.replay_hash": 31,
+        "L1.truncation_invariance": 31,
+        "L2.alert_mapping": 31,
+        "L2.c10_stop": 31,
+        "L2.c11_creation_anchor": 31,
+        "L2.c11_target": 31,
+        "L2.day_boundary": 31,
+        "L2.delivery_gate_preserves_detection": 31,
+        "L2.direction_matches_bias": 31,
+        "L2.entry_by_reference": 31,
+        "L2.expiry_session_end": 31,
+        "L2.identity": 31,
+        "L2.instruments_vt_only": 31,
+        "L2.near_poi_band": 31,
+        "L2.no_authority": 31,
+        "L2.pip_source": 31,
+        "L2.poi_max_age": 31,
+        "L2.point_source": 31,
+        "L2.point_source_declared": 31,
+        "L2.sweep_choch_window": 31,
+        "L2.sweep_window_measured": 31,
+        "L2.swing_k": 31,
+        "L2.tie_tolerance": 31,
+        "L2.timeframes": 31,
+        "L3.entry_in_choch_bar": 31,
+        "L3.stop_beyond_sweep": 31,
+        "L3.stop_side": 31,
+        "L3.sweep_extreme_side": 31,
+        "L3.target_direction": 31,
+        "L4.evaluated": 31,
+        "L4.history": 31,
+        "L4.m5_fresh": 31,
+        "L4.stale_state_consistent": 31,
+        "L6.invalid_if": 31,
+        "L6.stale_if": 31,
+        "L6.valid_until": 31
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "INSUFFICIENT",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 31
+        },
+        "L2": {
+          "PASS": 31
+        },
+        "L3": {
+          "PASS": 31
+        },
+        "L4": {
+          "PASS": 31
+        },
+        "L5": {
+          "INSUFFICIENT": 31
+        },
+        "L6": {
+          "PASS": 31
+        }
+      },
+      "not_applicable_checks": {},
+      "opportunity_scans": 31,
+      "priced_opportunity_scans": 31,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 31,
+      "scans": 31,
+      "states": {
+        "OPPORTUNITY": 31
+      },
+      "terminal_reasons": {
+        "D30_BADGE_ECONOMICS_NOT_EVALUATED": 31,
+        "REJECT_STALE": 31
+      },
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "SHORT_D1|LONG|FVG|PRIMARY_EXTERNAL_LIQUIDITY": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 369,
+        "L1.replay_hash": 369,
+        "L1.truncation_invariance": 369,
+        "L2.alert_mapping": 369,
+        "L2.c10_stop": 369,
+        "L2.c11_creation_anchor": 369,
+        "L2.c11_target": 369,
+        "L2.day_boundary": 369,
+        "L2.delivery_gate_preserves_detection": 369,
+        "L2.direction_matches_bias": 369,
+        "L2.entry_by_reference": 369,
+        "L2.expiry_session_end": 369,
+        "L2.identity": 369,
+        "L2.instruments_vt_only": 369,
+        "L2.near_poi_band": 369,
+        "L2.no_authority": 369,
+        "L2.pip_source": 369,
+        "L2.poi_max_age": 369,
+        "L2.point_source": 369,
+        "L2.point_source_declared": 369,
+        "L2.sweep_choch_window": 369,
+        "L2.sweep_window_measured": 369,
+        "L2.swing_k": 369,
+        "L2.tie_tolerance": 369,
+        "L2.timeframes": 369,
+        "L3.entry_in_choch_bar": 369,
+        "L3.stop_beyond_sweep": 369,
+        "L3.stop_side": 369,
+        "L3.sweep_extreme_side": 369,
+        "L3.target_direction": 369,
+        "L4.evaluated": 369,
+        "L4.history": 369,
+        "L4.m5_fresh": 369,
+        "L4.stale_state_consistent": 369,
+        "L6.invalid_if": 369,
+        "L6.stale_if": 369,
+        "L6.valid_until": 369
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "INSUFFICIENT",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 369
+        },
+        "L2": {
+          "PASS": 369
+        },
+        "L3": {
+          "PASS": 369
+        },
+        "L4": {
+          "PASS": 369
+        },
+        "L5": {
+          "INSUFFICIENT": 369
+        },
+        "L6": {
+          "PASS": 369
+        }
+      },
+      "not_applicable_checks": {},
+      "opportunity_scans": 369,
+      "priced_opportunity_scans": 369,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 369,
+      "states": {
+        "OPPORTUNITY": 369
+      },
+      "terminal_reasons": {
+        "D30_BADGE_ECONOMICS_NOT_EVALUATED": 369,
+        "FAIL_CLOSED_RR_BELOW_SPEC_MINIMUM": 369,
+        "REJECT_STALE": 369
+      },
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "SHORT_D1|NONE|FVG|NO_TARGET_OR_NO_OPPORTUNITY": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 1279,
+        "L1.replay_hash": 1279,
+        "L1.truncation_invariance": 1279,
+        "L2.alert_mapping": 1279,
+        "L2.day_boundary": 1279,
+        "L2.identity": 1279,
+        "L2.instruments_vt_only": 1279,
+        "L2.near_poi_band": 1279,
+        "L2.no_authority": 1279,
+        "L2.poi_max_age": 1279,
+        "L2.point_source": 1279,
+        "L2.point_source_declared": 1279,
+        "L2.sweep_choch_window": 1279,
+        "L2.swing_k": 1279,
+        "L2.tie_tolerance": 1279,
+        "L2.timeframes": 1279,
+        "L4.evaluated": 1279,
+        "L4.history": 1279,
+        "L4.m5_fresh": 1279,
+        "L4.stale_state_consistent": 1279
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "NOT_RUN",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 1279
+        },
+        "L2": {
+          "PASS": 1279
+        },
+        "L3": {
+          "PASS": 1279
+        },
+        "L4": {
+          "PASS": 1279
+        },
+        "L5": {
+          "NOT_APPLICABLE": 1279
+        },
+        "L6": {
+          "PASS": 1279
+        }
+      },
+      "not_applicable_checks": {
+        "L2.c10_stop": 1279,
+        "L2.c11_creation_anchor": 1279,
+        "L2.c11_target": 1279,
+        "L2.direction_matches_bias": 1279,
+        "L2.entry_by_reference": 1279,
+        "L2.expiry_session_end": 1279,
+        "L2.sweep_window_measured": 1279,
+        "L3.geometry": 1279,
+        "L5.cost": 1279,
+        "L6.freshness": 1279
+      },
+      "opportunity_scans": 0,
+      "priced_opportunity_scans": 0,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 1279,
+      "states": {
+        "DEVELOPING": 820,
+        "NEAR_POI": 459
+      },
+      "terminal_reasons": {},
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "SHORT_D1|NONE|OB_PIVOT|NO_TARGET_OR_NO_OPPORTUNITY": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 153,
+        "L1.replay_hash": 153,
+        "L1.truncation_invariance": 153,
+        "L2.alert_mapping": 153,
+        "L2.day_boundary": 153,
+        "L2.identity": 153,
+        "L2.instruments_vt_only": 153,
+        "L2.near_poi_band": 153,
+        "L2.no_authority": 153,
+        "L2.poi_max_age": 153,
+        "L2.point_source": 153,
+        "L2.point_source_declared": 153,
+        "L2.sweep_choch_window": 153,
+        "L2.swing_k": 153,
+        "L2.tie_tolerance": 153,
+        "L2.timeframes": 153,
+        "L4.evaluated": 153,
+        "L4.history": 153,
+        "L4.m5_fresh": 153,
+        "L4.stale_state_consistent": 153
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "NOT_RUN",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 153
+        },
+        "L2": {
+          "PASS": 153
+        },
+        "L3": {
+          "PASS": 153
+        },
+        "L4": {
+          "PASS": 153
+        },
+        "L5": {
+          "NOT_APPLICABLE": 153
+        },
+        "L6": {
+          "PASS": 153
+        }
+      },
+      "not_applicable_checks": {
+        "L2.c10_stop": 153,
+        "L2.c11_creation_anchor": 153,
+        "L2.c11_target": 153,
+        "L2.direction_matches_bias": 153,
+        "L2.entry_by_reference": 153,
+        "L2.expiry_session_end": 153,
+        "L2.sweep_window_measured": 153,
+        "L3.geometry": 153,
+        "L5.cost": 153,
+        "L6.freshness": 153
+      },
+      "opportunity_scans": 0,
+      "priced_opportunity_scans": 0,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 153,
+      "states": {
+        "DEVELOPING": 36,
+        "NEAR_POI": 117
+      },
+      "terminal_reasons": {},
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "SHORT_D1|NONE|OB_SHADOW|NO_TARGET_OR_NO_OPPORTUNITY": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 138,
+        "L1.replay_hash": 138,
+        "L1.truncation_invariance": 138,
+        "L2.alert_mapping": 138,
+        "L2.day_boundary": 138,
+        "L2.identity": 138,
+        "L2.instruments_vt_only": 138,
+        "L2.near_poi_band": 138,
+        "L2.no_authority": 138,
+        "L2.poi_max_age": 138,
+        "L2.point_source": 138,
+        "L2.point_source_declared": 138,
+        "L2.sweep_choch_window": 138,
+        "L2.swing_k": 138,
+        "L2.tie_tolerance": 138,
+        "L2.timeframes": 138,
+        "L4.evaluated": 138,
+        "L4.history": 138,
+        "L4.m5_fresh": 138,
+        "L4.stale_state_consistent": 138
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "NOT_RUN",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 138
+        },
+        "L2": {
+          "PASS": 138
+        },
+        "L3": {
+          "PASS": 138
+        },
+        "L4": {
+          "PASS": 138
+        },
+        "L5": {
+          "NOT_APPLICABLE": 138
+        },
+        "L6": {
+          "PASS": 138
+        }
+      },
+      "not_applicable_checks": {
+        "L2.c10_stop": 138,
+        "L2.c11_creation_anchor": 138,
+        "L2.c11_target": 138,
+        "L2.direction_matches_bias": 138,
+        "L2.entry_by_reference": 138,
+        "L2.expiry_session_end": 138,
+        "L2.sweep_window_measured": 138,
+        "L3.geometry": 138,
+        "L5.cost": 138,
+        "L6.freshness": 138
+      },
+      "opportunity_scans": 0,
+      "priced_opportunity_scans": 0,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 138,
+      "states": {
+        "DEVELOPING": 81,
+        "NEAR_POI": 57
+      },
+      "terminal_reasons": {},
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "SHORT_D1|SHORT|FVG|CONFIRMED_OPPOSING_H1_SWING": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 15,
+        "L1.replay_hash": 15,
+        "L1.truncation_invariance": 15,
+        "L2.alert_mapping": 15,
+        "L2.c10_stop": 15,
+        "L2.c11_creation_anchor": 15,
+        "L2.c11_target": 15,
+        "L2.day_boundary": 15,
+        "L2.delivery_gate_preserves_detection": 15,
+        "L2.direction_matches_bias": 15,
+        "L2.entry_by_reference": 15,
+        "L2.expiry_session_end": 15,
+        "L2.identity": 15,
+        "L2.instruments_vt_only": 15,
+        "L2.near_poi_band": 15,
+        "L2.no_authority": 15,
+        "L2.pip_source": 15,
+        "L2.poi_max_age": 15,
+        "L2.point_source": 15,
+        "L2.point_source_declared": 15,
+        "L2.sweep_choch_window": 15,
+        "L2.sweep_window_measured": 15,
+        "L2.swing_k": 15,
+        "L2.tie_tolerance": 15,
+        "L2.timeframes": 15,
+        "L3.entry_in_choch_bar": 15,
+        "L3.sweep_extreme_side": 15,
+        "L3.target_direction": 15,
+        "L4.evaluated": 15,
+        "L4.history": 15,
+        "L4.m5_fresh": 15,
+        "L4.stale_state_consistent": 15,
+        "L6.invalid_if": 15,
+        "L6.stale_if": 15,
+        "L6.valid_until": 15
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "NOT_RUN",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 15
+        },
+        "L2": {
+          "PASS": 15
+        },
+        "L3": {
+          "PASS": 15
+        },
+        "L4": {
+          "PASS": 15
+        },
+        "L5": {
+          "NOT_APPLICABLE": 15
+        },
+        "L6": {
+          "PASS": 15
+        }
+      },
+      "not_applicable_checks": {
+        "L3.stop_geometry": 15,
+        "L5.cost": 15
+      },
+      "opportunity_scans": 15,
+      "priced_opportunity_scans": 0,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 15,
+      "states": {
+        "OPPORTUNITY": 15
+      },
+      "terminal_reasons": {
+        "D30_BADGE_ECONOMICS_NOT_EVALUATED": 15,
+        "FAIL_CLOSED_RR_UNDEFINED": 15,
+        "MISSING_SPREAD": 15,
+        "REJECT_NO_STOP": 15
+      },
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "SHORT_D1|SHORT|FVG|NO_TARGET_OR_NO_OPPORTUNITY": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 47,
+        "L1.replay_hash": 47,
+        "L1.truncation_invariance": 47,
+        "L2.alert_mapping": 47,
+        "L2.c10_stop": 47,
+        "L2.c11_creation_anchor": 47,
+        "L2.c11_target": 47,
+        "L2.day_boundary": 47,
+        "L2.delivery_gate_preserves_detection": 47,
+        "L2.direction_matches_bias": 47,
+        "L2.entry_by_reference": 47,
+        "L2.expiry_session_end": 47,
+        "L2.identity": 47,
+        "L2.instruments_vt_only": 47,
+        "L2.near_poi_band": 47,
+        "L2.no_authority": 47,
+        "L2.pip_source": 47,
+        "L2.poi_max_age": 47,
+        "L2.point_source": 47,
+        "L2.point_source_declared": 47,
+        "L2.sweep_choch_window": 47,
+        "L2.sweep_window_measured": 47,
+        "L2.swing_k": 47,
+        "L2.tie_tolerance": 47,
+        "L2.timeframes": 47,
+        "L3.entry_in_choch_bar": 47,
+        "L3.sweep_extreme_side": 47,
+        "L4.evaluated": 47,
+        "L4.history": 47,
+        "L4.m5_fresh": 47,
+        "L4.stale_state_consistent": 47,
+        "L6.invalid_if": 47,
+        "L6.stale_if": 47,
+        "L6.valid_until": 47
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "NOT_RUN",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 47
+        },
+        "L2": {
+          "PASS": 47
+        },
+        "L3": {
+          "PASS": 47
+        },
+        "L4": {
+          "PASS": 47
+        },
+        "L5": {
+          "NOT_APPLICABLE": 47
+        },
+        "L6": {
+          "PASS": 47
+        }
+      },
+      "not_applicable_checks": {
+        "L3.stop_geometry": 47,
+        "L3.target_direction": 47,
+        "L5.cost": 47
+      },
+      "opportunity_scans": 47,
+      "priced_opportunity_scans": 0,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 47,
+      "states": {
+        "OPPORTUNITY": 47
+      },
+      "terminal_reasons": {
+        "AMBIGUOUS_TARGET": 47,
+        "D30_BADGE_ECONOMICS_NOT_EVALUATED": 47,
+        "FAIL_CLOSED_RR_UNDEFINED": 47,
+        "MISSING_SPREAD": 47,
+        "REJECT_NO_STOP": 47
+      },
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "SHORT_D1|SHORT|FVG|PRIMARY_EXTERNAL_LIQUIDITY": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 19,
+        "L1.replay_hash": 19,
+        "L1.truncation_invariance": 19,
+        "L2.alert_mapping": 19,
+        "L2.c10_stop": 19,
+        "L2.c11_creation_anchor": 19,
+        "L2.c11_target": 19,
+        "L2.day_boundary": 19,
+        "L2.delivery_gate_preserves_detection": 19,
+        "L2.direction_matches_bias": 19,
+        "L2.entry_by_reference": 19,
+        "L2.expiry_session_end": 19,
+        "L2.identity": 19,
+        "L2.instruments_vt_only": 19,
+        "L2.near_poi_band": 19,
+        "L2.no_authority": 19,
+        "L2.pip_source": 19,
+        "L2.poi_max_age": 19,
+        "L2.point_source": 19,
+        "L2.point_source_declared": 19,
+        "L2.sweep_choch_window": 19,
+        "L2.sweep_window_measured": 19,
+        "L2.swing_k": 19,
+        "L2.tie_tolerance": 19,
+        "L2.timeframes": 19,
+        "L3.entry_in_choch_bar": 19,
+        "L3.sweep_extreme_side": 19,
+        "L3.target_direction": 19,
+        "L4.evaluated": 19,
+        "L4.history": 19,
+        "L4.m5_fresh": 19,
+        "L4.stale_state_consistent": 19,
+        "L6.invalid_if": 19,
+        "L6.stale_if": 19,
+        "L6.valid_until": 19
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "NOT_RUN",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 19
+        },
+        "L2": {
+          "PASS": 19
+        },
+        "L3": {
+          "PASS": 19
+        },
+        "L4": {
+          "PASS": 19
+        },
+        "L5": {
+          "NOT_APPLICABLE": 19
+        },
+        "L6": {
+          "PASS": 19
+        }
+      },
+      "not_applicable_checks": {
+        "L3.stop_geometry": 19,
+        "L5.cost": 19
+      },
+      "opportunity_scans": 19,
+      "priced_opportunity_scans": 0,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 19,
+      "states": {
+        "OPPORTUNITY": 19
+      },
+      "terminal_reasons": {
+        "D30_BADGE_ECONOMICS_NOT_EVALUATED": 19,
+        "FAIL_CLOSED_RR_UNDEFINED": 19,
+        "MISSING_SPREAD": 19,
+        "REJECT_NO_STOP": 19
+      },
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    }
+  },
+  "completed": true,
+  "completed_scans": 2052,
+  "data_audit": {
+    "bars": {
+      "D1": 52,
+      "H1": 1248,
+      "M5": 14973
+    },
+    "captured_at_utc": "2026-10-13T23:02:43.717700+00:00",
+    "days": [
+      "2026-08-16",
+      "2026-08-17",
+      "2026-08-18",
+      "2026-08-19",
+      "2026-08-20",
+      "2026-08-21",
+      "2026-08-23",
+      "2026-08-24",
+      "2026-08-25",
+      "2026-08-26",
+      "2026-08-27",
+      "2026-08-28",
+      "2026-08-30",
+      "2026-08-31",
+      "2026-09-01",
+      "2026-09-02",
+      "2026-09-03",
+      "2026-09-04",
+      "2026-09-06",
+      "2026-09-07",
+      "2026-09-08",
+      "2026-09-09",
+      "2026-09-10",
+      "2026-09-11",
+      "2026-09-13",
+      "2026-09-14",
+      "2026-09-15",
+      "2026-09-16",
+      "2026-09-17",
+      "2026-09-18",
+      "2026-09-20",
+      "2026-09-21",
+      "2026-09-22",
+      "2026-09-23",
+      "2026-09-24",
+      "2026-09-25",
+      "2026-09-27",
+      "2026-09-28",
+      "2026-09-29",
+      "2026-09-30",
+      "2026-10-01",
+      "2026-10-02",
+      "2026-10-04",
+      "2026-10-05",
+      "2026-10-06",
+      "2026-10-07",
+      "2026-10-08",
+      "2026-10-09",
+      "2026-10-11",
+      "2026-10-12",
+      "2026-10-13"
+    ],
+    "gap_policy": "Kept exactly as recorded; no fill, interpolation or replacement.",
+    "issues": [],
+    "missing_files": [],
+    "period_end_utc": "2026-10-13T21:00:00+00:00",
+    "period_start_utc": "2026-08-02T21:00:00+00:00",
+    "quote_policy": "MqlRates spread is bar metadata, not an evidenced contemporaneous bid/ask. No quote is invented.",
+    "recorded_gaps": [
+      {
+        "after": "2026-08-07T20:55:00+00:00",
+        "before": "2026-08-09T21:05:00+00:00",
+        "missing_bars": 577
+      },
+      {
+        "after": "2026-08-14T20:55:00+00:00",
+        "before": "2026-08-16T21:00:00+00:00",
+        "missing_bars": 576
+      },
+      {
+        "after": "2026-08-21T20:55:00+00:00",
+        "before": "2026-08-23T21:00:00+00:00",
+        "missing_bars": 576
+      },
+      {
+        "after": "2026-08-28T14:25:00+00:00",
+        "before": "2026-08-28T14:40:00+00:00",
+        "missing_bars": 2
+      },
+      {
+        "after": "2026-08-28T20:55:00+00:00",
+        "before": "2026-08-30T21:00:00+00:00",
+        "missing_bars": 576
+      },
+      {
+        "after": "2026-09-04T20:55:00+00:00",
+        "before": "2026-09-06T21:00:00+00:00",
+        "missing_bars": 576
+      },
+      {
+        "after": "2026-09-11T20:55:00+00:00",
+        "before": "2026-09-13T21:00:00+00:00",
+        "missing_bars": 576
+      },
+      {
+        "after": "2026-09-18T20:55:00+00:00",
+        "before": "2026-09-20T21:00:00+00:00",
+        "missing_bars": 576
+      },
+      {
+        "after": "2026-09-25T20:55:00+00:00",
+        "before": "2026-09-27T21:00:00+00:00",
+        "missing_bars": 576
+      },
+      {
+        "after": "2026-10-02T20:55:00+00:00",
+        "before": "2026-10-04T21:00:00+00:00",
+        "missing_bars": 576
+      },
+      {
+        "after": "2026-10-09T20:55:00+00:00",
+        "before": "2026-10-11T21:00:00+00:00",
+        "missing_bars": 576
+      }
+    ],
+    "runtime_windows": {
+      "D1": 30,
+      "H1": 200,
+      "M5": 300
+    },
+    "server": "VTMarkets-Demo",
+    "sha256": {
+      "tests/fixtures/vt_recorded_60d_fx/EURUSD_d1.csv": "434ed69ffba6689d91110c71154d676962b5bb99ed7b01ccd213bab56f8d6ca9",
+      "tests/fixtures/vt_recorded_60d_fx/EURUSD_h1.csv": "57c714478844aabadbe1eb224b244b5e7373d55fd300ba004fcca3f72b5a6c68",
+      "tests/fixtures/vt_recorded_60d_fx/EURUSD_m5.csv": "a44892113a78ba5845cd7cab4cc579567f284fc7d7b36f4566c1efa230a02eaf",
+      "tests/fixtures/vt_recorded_60d_fx/EURUSD_provenance.json": "f9e2eae11fe1b83706c70ca0854273301c6d81aba5a5c55cf66eb9f01cf78ee6"
+    },
+    "source": "MT5_VT_MARKETS_DEMO",
+    "time_policy": "UTC bar-open labels; evaluate each recorded M5 close; forming bars are passed through and independently checked by canonical L1.",
+    "verdict": "PASS_WITH_DECLARED_GAPS",
+    "window_policy": "FX: recorded window_start..window_end (60 calendar days, UTC dates with M5 bars); earlier recorded rows are warmup only"
+  },
+  "dataset": "tests/fixtures/vt_recorded_60d_fx",
+  "dlsmc_recheck": {
+    "counts": {
+      "D-LSMC-1": {
+        "opportunity_scans": 481,
+        "stop_none_contract_reason:MISSING_SPREAD": 81,
+        "stop_present_host_pip": 400
+      },
+      "D-LSMC-6": {
+        "active_checks": 2051,
+        "expiry_checks": 937,
+        "expiry_unobserved_origin": 5229
+      }
+    },
+    "verdicts": {
+      "D-LSMC-1": "PASS",
+      "D-LSMC-6": "PASS"
+    },
+    "violation_count": 0,
+    "violations": []
+  },
+  "elapsed_seconds": 783.35,
+  "engine_defects": [],
+  "evaluator": {
+    "creation_fact_cache_hits": 2397,
+    "creation_fact_cache_misses": 8,
+    "engine_globals_modified": false,
+    "h1_fact_cache_hits": 10083,
+    "h1_fact_cache_misses": 172,
+    "native_reference_schedule": "Every closed H1 window change and new opportunity/C11/eligibility plan; C10 is always recomputed, never memoized.",
+    "reference_parity": "PASS",
+    "snapshot_or_check_cache": false,
+    "uncached_snapshot_reference_checks": 182
+  },
+  "identity": {
+    "code_sha": "32d5c93c01bf43d818426cbfc926577e20446d08",
+    "contract_sha256": "e5f04912695967fdc95178e0f862d9c2af47f56529f8c97b1a8a104198f1aa7b",
+    "engine_sha256": "279ef511e6e94cb4ea571c28bc30146a7c49c205282d6eb2883007ac66e34bfe",
+    "frozen_file_sha256": {
+      "config/lsmc_report_lane.yaml": "ac9ce5b42d3c399d44f091fba0193fd5ce7a167472da89f475c4b3c0714a3628",
+      "src/large_smc_v112/__init__.py": "5c2e9e5205d83618e7bf2b4783d818c19c98dbf50c9deede2b5ee43e4816a228",
+      "src/large_smc_v112/contract.py": "85e61615b4c64b3bf9d3f0eb5d3941bbb89d22070cf674b97797b6a9f9249820",
+      "src/large_smc_v112/detect.py": "b336f1c4958caefc33fcf4a73dbd3b60b730870f76366a7faec37c5012779161",
+      "src/large_smc_v112/metadata.py": "b0437ae640ccc19a28740f79e83a4ad3eec55f0f81fae54b2db38c7f16a74ca7",
+      "src/large_smc_v112/targets.py": "a047891b188e00c7db429db3ee1b1e1cbfae5cbc78226f4039ed9290fdfe0e4c",
+      "src/large_smc_v112/watch.py": "8aef629782c928e40bb754c750af34c5daac8fcb6691cd7704630e20437196f5",
+      "src/large_smc_v112/windows.py": "7dcfeef1486ca8f1c8f8fa258df9cb47b7e25549b1c82c89ef67d8015db64c05",
+      "src/large_smc_watch/__init__.py": "ebbca3c124487c79a41912b6bbf75688d06529257bdc4ee53d0ffe2df789950f",
+      "src/large_smc_watch/contract.py": "51f9a0d088e750399b7ef4d98c978c6974b0b9ef2814f1c4251bbed79a9a5e1c",
+      "src/large_smc_watch/detect.py": "e3fd5e1fe699046c8b4c552e68d6a19a6f4abc51ea9cec3c4734c02db4e27973",
+      "src/large_smc_watch/watch.py": "86ac9cdcfa864b36a06b795920bd333f8fa9cfdd81efa5eb422e1d746bc2c63d",
+      "strategies/ST_LARGE_SMC_V1_1_1_0.yaml": "78285f9fabcb20af14de327d010e48684dc12205f4435eff886fcc2373a357b4",
+      "strategies/ST_LARGE_SMC_V1_1_1_2.yaml": "1f9b6cace2e1be33e5b3572e2c13e3e526b992478f91c8f09955b0f44b73024f"
+    },
+    "runner_sha256": "fe171028ee0b6822835147aebb614e2dfa82bcc861974d2e07c2e675ccb81efc"
+  },
+  "l5_cost_source": "VT recorded M5 spread_price of the last closed bar (<dataset>/<SYM>_m5_meta.csv) + OD1011-COMMISSION: crypto via scripts/ccfd_sweep_retest_replay.commission_binding (the accepted source of the CCFD 1.0.0 L5 PASS), FX/gold via config/owner_ticket.yaml bound to the capture server/login suffix, OD1009-D2 thresholds",
+  "layout": {
+    "boundary_overlap_bars_each_side": 12,
+    "core_end_row_exclusive": 4931,
+    "core_scans": 2052,
+    "core_start_row": 2879,
+    "days": [
+      "2026-08-16",
+      "2026-08-17",
+      "2026-08-18",
+      "2026-08-19",
+      "2026-08-20",
+      "2026-08-21",
+      "2026-08-23",
+      "2026-08-24",
+      "2026-08-25"
+    ],
+    "oldest_possible_creation_close": "2026-08-13T19:15:00+00:00",
+    "warmup_policy": "Current host windows plus the complete declared creation lookback before the oldest possible active creation bar; original capture start retained; no synthetic overlap.",
+    "warmup_start_row": {
+      "D1": 0,
+      "H1": 14,
+      "M5": 2270
+    }
+  },
+  "mismatch_categories": {
+    "EXPECTED_MARKET_CLOSED": 1
+  },
+  "mission": "AGP-LSMC113-EURUSD-ENTRY",
+  "protected_bytes_unchanged": true,
+  "raw_all_scans": {
+    "evaluated_checks": {
+      "L1.closed_bars_only": 2052,
+      "L1.replay_hash": 2052,
+      "L1.truncation_invariance": 2052,
+      "L2.alert_mapping": 2052,
+      "L2.c10_stop": 481,
+      "L2.c11_creation_anchor": 481,
+      "L2.c11_target": 481,
+      "L2.day_boundary": 2052,
+      "L2.delivery_gate_preserves_detection": 481,
+      "L2.direction_matches_bias": 481,
+      "L2.entry_by_reference": 481,
+      "L2.expiry_session_end": 481,
+      "L2.identity": 2052,
+      "L2.instruments_vt_only": 2052,
+      "L2.near_poi_band": 2052,
+      "L2.no_authority": 2052,
+      "L2.pip_source": 481,
+      "L2.poi_max_age": 2052,
+      "L2.point_source": 2051,
+      "L2.point_source_declared": 2052,
+      "L2.sweep_choch_window": 2052,
+      "L2.sweep_window_measured": 481,
+      "L2.swing_k": 2052,
+      "L2.tie_tolerance": 2052,
+      "L2.timeframes": 2052,
+      "L3.entry_in_choch_bar": 481,
+      "L3.stop_beyond_sweep": 400,
+      "L3.stop_side": 400,
+      "L3.sweep_extreme_side": 481,
+      "L3.target_direction": 434,
+      "L4.evaluated": 2052,
+      "L4.history": 2052,
+      "L4.m5_fresh": 2052,
+      "L4.stale_state_consistent": 2052,
+      "L6.invalid_if": 481,
+      "L6.stale_if": 481,
+      "L6.valid_until": 481
+    },
+    "gate_verdicts": {
+      "L1": "PASS",
+      "L2": "PASS",
+      "L3": "PASS",
+      "L4": "FAIL",
+      "L5": "INSUFFICIENT",
+      "L6": "PASS"
+    },
+    "gates": {
+      "L1": {
+        "PASS": 2052
+      },
+      "L2": {
+        "PASS": 2052
+      },
+      "L3": {
+        "PASS": 2052
+      },
+      "L4": {
+        "FAIL": 1,
+        "PASS": 2051
+      },
+      "L5": {
+        "INSUFFICIENT": 400,
+        "NOT_APPLICABLE": 1652
+      },
+      "L6": {
+        "PASS": 2052
+      }
+    },
+    "not_applicable_checks": {
+      "L2.c10_stop": 1571,
+      "L2.c11_creation_anchor": 1571,
+      "L2.c11_target": 1571,
+      "L2.direction_matches_bias": 1571,
+      "L2.entry_by_reference": 1571,
+      "L2.expiry_session_end": 1571,
+      "L2.point_source": 1,
+      "L2.sweep_window_measured": 1571,
+      "L3.geometry": 1571,
+      "L3.stop_geometry": 81,
+      "L3.target_direction": 47,
+      "L5.cost": 1652,
+      "L6.freshness": 1571
+    },
+    "opportunity_scans": 481,
+    "priced_opportunity_scans": 400,
+    "qualifies_for_proposal": false,
+    "rr_eligible_scans": 31,
+    "scans": 2052,
+    "states": {
+      "DEVELOPING": 937,
+      "MARKET_CLOSED": 1,
+      "NEAR_POI": 633,
+      "OPPORTUNITY": 481
+    },
+    "terminal_reasons": {
+      "AMBIGUOUS_TARGET": 47,
+      "D30_BADGE_ECONOMICS_NOT_EVALUATED": 481,
+      "FAIL_CLOSED_RR_BELOW_SPEC_MINIMUM": 369,
+      "FAIL_CLOSED_RR_UNDEFINED": 81,
+      "FX_WEEKEND": 1,
+      "MISSING_SPREAD": 81,
+      "REJECT_NO_STOP": 81,
+      "REJECT_STALE": 400
+    },
+    "verdict": "FAIL",
+    "verification_status": "NOT_VERIFIED"
+  },
+  "resource_class": "R1",
+  "resource_lock_released": true,
+  "rule_diff": {
+    "computed": [
+      "based_on",
+      "based_on_sha256",
+      "candidate_created_local_date",
+      "candidate_provenance.rule_change_mission",
+      "candidate_provenance.source_main_commit",
+      "candidate_rule_changes.changes",
+      "candidate_rule_changes.declared_diff_paths",
+      "candidate_rule_changes.diff_scope",
+      "candidate_rule_changes.frozen_versions_untouched",
+      "candidate_rule_changes.mission",
+      "implementation",
+      "rules.targets.creation_window",
+      "rules.targets.fallback.condition",
+      "version"
+    ],
+    "declared": [
+      "based_on",
+      "based_on_sha256",
+      "candidate_created_local_date",
+      "candidate_provenance.rule_change_mission",
+      "candidate_provenance.source_main_commit",
+      "candidate_rule_changes.changes",
+      "candidate_rule_changes.declared_diff_paths",
+      "candidate_rule_changes.diff_scope",
+      "candidate_rule_changes.frozen_versions_untouched",
+      "candidate_rule_changes.mission",
+      "implementation",
+      "rules.targets.creation_window",
+      "rules.targets.fallback.condition",
+      "version"
+    ],
+    "verdict": "PASS"
+  },
+  "scope_days": 60,
+  "selections": {
+    "EURUSD:H1:FVG:LONG:2026-08-14T11:00:00+00:00|2026-08-16T21:55:00+00:00|2026-08-16T22:20:00+00:00": {
+      "m5_row": 3165,
+      "target": {
+        "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+        "target_c11": 1.15848,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "core_selector_reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "core_selector_source": "liquidity.hierarchy.external_swing_liquidity",
+          "core_selector_source_id": "EURUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:1.15848000",
+          "core_selector_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "creation_bar_close_utc": "2026-08-16T22:25:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-04T14:00:00+00:00",
+            "M5": "2026-08-13T21:25:00+00:00"
+          },
+          "evidence_timestamp": "2026-08-14T14:25:00+00:00",
+          "price": 1.15848,
+          "reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "liquidity.hierarchy.external_swing_liquidity",
+          "source_id": "EURUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:1.15848000",
+          "status_at_selection": "UNSWEPT",
+          "structure_note": null,
+          "tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "7e9edcbfe6a90922283a88d98dee42e189350d969153b7596d79b0a2dd24579d"
+    },
+    "EURUSD:H1:FVG:LONG:2026-08-16T22:00:00+00:00|2026-08-18T06:40:00+00:00|2026-08-18T07:00:00+00:00": {
+      "m5_row": 3333,
+      "target": {
+        "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+        "target_c11": 1.15852,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "core_selector_reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "core_selector_source": "liquidity.hierarchy.external_swing_liquidity",
+          "core_selector_source_id": "EURUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:1.15852000",
+          "core_selector_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "creation_bar_close_utc": "2026-08-18T07:05:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-05T23:00:00+00:00",
+            "M5": "2026-08-17T06:05:00+00:00"
+          },
+          "evidence_timestamp": "2026-08-18T01:10:00+00:00",
+          "price": 1.15852,
+          "reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "liquidity.hierarchy.external_swing_liquidity",
+          "source_id": "EURUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:1.15852000",
+          "status_at_selection": "UNSWEPT",
+          "structure_note": null,
+          "tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "92c2d9bb4b09db85ea3877e413f225904ec934b092d723ea80ebd3cec1b6bb12"
+    },
+    "EURUSD:H1:FVG:LONG:2026-08-16T22:00:00+00:00|2026-08-18T11:35:00+00:00|2026-08-18T11:55:00+00:00": {
+      "m5_row": 3381,
+      "target": {
+        "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+        "target_c11": 1.15852,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "core_selector_reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "core_selector_source": "liquidity.hierarchy.external_swing_liquidity",
+          "core_selector_source_id": "EURUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:1.15852000",
+          "core_selector_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "creation_bar_close_utc": "2026-08-18T12:00:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-06T04:00:00+00:00",
+            "M5": "2026-08-17T11:00:00+00:00"
+          },
+          "evidence_timestamp": "2026-08-18T01:10:00+00:00",
+          "price": 1.15852,
+          "reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "liquidity.hierarchy.external_swing_liquidity",
+          "source_id": "EURUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:1.15852000",
+          "status_at_selection": "UNSWEPT",
+          "structure_note": null,
+          "tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "1f1e2af0416893b5cad10de1ca2216cc75f5ecfbd5d8d4307c4926d72bfc135e"
+    },
+    "EURUSD:H1:FVG:LONG:2026-08-16T22:00:00+00:00|2026-08-19T01:15:00+00:00|2026-08-19T02:05:00+00:00": {
+      "m5_row": 3561,
+      "target": {
+        "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+        "target_c11": 1.15878,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "core_selector_reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "core_selector_source": "liquidity.hierarchy.external_swing_liquidity",
+          "core_selector_source_id": "EURUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:1.15878000",
+          "core_selector_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "creation_bar_close_utc": "2026-08-19T02:10:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-06T18:00:00+00:00",
+            "M5": "2026-08-18T01:10:00+00:00"
+          },
+          "evidence_timestamp": "2026-08-18T14:20:00+00:00",
+          "price": 1.15878,
+          "reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "liquidity.hierarchy.external_swing_liquidity",
+          "source_id": "EURUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:1.15878000",
+          "status_at_selection": "UNSWEPT",
+          "structure_note": null,
+          "tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "0485ee5cb78ac699cdfdea6a2684c9ff7c33c90d5d72ffd1f595bf21647356f8"
+    },
+    "EURUSD:H1:FVG:LONG:2026-08-17T06:00:00+00:00|2026-08-17T11:30:00+00:00|2026-08-17T12:00:00+00:00": {
+      "m5_row": 3089,
+      "target": {
+        "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+        "target_c11": 1.16135,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+          "core_m5_fallback_ignored": false,
+          "core_selector_reason": "REJECT_NO_TARGET",
+          "core_selector_source": null,
+          "core_selector_source_id": null,
+          "core_selector_tier": null,
+          "creation_bar_close_utc": "2026-08-17T12:05:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-05T04:00:00+00:00",
+            "M5": "2026-08-14T11:05:00+00:00"
+          },
+          "kind": "high",
+          "known_at_index": 198,
+          "price": 1.16135,
+          "reason": "PRIMARY_UNAVAILABLE_H1_FALLBACK",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "fx_discovery.features.swings",
+          "structure_note": null,
+          "swing_index": 196,
+          "tier": "FALLBACK_H1_SWING",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "6e2efc5e28e72dc6ff6b120cf5cfb25a01892656f0a4ddc17cc85a0347825807"
+    },
+    "EURUSD:H1:FVG:SHORT:2026-08-21T13:00:00+00:00|2026-08-21T16:25:00+00:00|2026-08-21T17:00:00+00:00": {
+      "m5_row": 4317,
+      "target": {
+        "c11_source": null,
+        "target_c11": null,
+        "target_reason": "AMBIGUOUS_TARGET",
+        "target_selection": {
+          "c11_source": null,
+          "core_selector_reason": "REJECT_NO_TARGET",
+          "core_selector_source": null,
+          "core_selector_source_id": null,
+          "core_selector_tier": null,
+          "creation_bar_close_utc": "2026-08-21T17:05:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-11T09:00:00+00:00",
+            "M5": "2026-08-20T16:05:00+00:00"
+          },
+          "price": null,
+          "reason": "AMBIGUOUS_TARGET",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": null,
+          "structure_note": null,
+          "tier": null,
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "b5d540904500f0ce4f4f958c282f9d1cceab630e329713e08886bd2d2d66f8be"
+    },
+    "EURUSD:H1:FVG:SHORT:2026-08-24T07:00:00+00:00|2026-08-24T13:20:00+00:00|2026-08-24T13:40:00+00:00": {
+      "m5_row": 4533,
+      "target": {
+        "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+        "target_c11": 1.16598,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+          "core_m5_fallback_ignored": false,
+          "core_selector_reason": "REJECT_NO_TARGET",
+          "core_selector_source": null,
+          "core_selector_source_id": null,
+          "core_selector_tier": null,
+          "creation_bar_close_utc": "2026-08-24T13:45:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-12T05:00:00+00:00",
+            "M5": "2026-08-21T12:45:00+00:00"
+          },
+          "kind": "low",
+          "known_at_index": 198,
+          "price": 1.16598,
+          "reason": "PRIMARY_UNAVAILABLE_H1_FALLBACK",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "fx_discovery.features.swings",
+          "structure_note": null,
+          "swing_index": 196,
+          "tier": "FALLBACK_H1_SWING",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "de98bbedba7f7992df766f3889f4957ecab2cb8fb1be30a18c2d0127c61b5142"
+    },
+    "EURUSD:H1:FVG:SHORT:2026-08-24T07:00:00+00:00|2026-08-25T15:20:00+00:00|2026-08-25T16:15:00+00:00": {
+      "m5_row": 4856,
+      "target": {
+        "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+        "target_c11": 1.16506,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "core_selector_reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "core_selector_source": "liquidity.hierarchy.external_swing_liquidity",
+          "core_selector_source_id": "EURUSD:M5:SELL_SIDE:EXTERNAL_SWING_LOW:1.16506000",
+          "core_selector_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "creation_bar_close_utc": "2026-08-25T16:20:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-13T08:00:00+00:00",
+            "M5": "2026-08-24T15:20:00+00:00"
+          },
+          "evidence_timestamp": "2026-08-25T06:55:00+00:00",
+          "price": 1.16506,
+          "reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "liquidity.hierarchy.external_swing_liquidity",
+          "source_id": "EURUSD:M5:SELL_SIDE:EXTERNAL_SWING_LOW:1.16506000",
+          "status_at_selection": "UNSWEPT",
+          "structure_note": null,
+          "tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "ccdc337284c52fdff9e524bef096424fe899c7322fa21f46ac7eb82a2a1dfb7b"
+    }
+  },
+  "shard": 0,
+  "shard_days": 10,
+  "strategy": "ST_LARGE_SMC_V1@1.1.3",
+  "symbol": "EURUSD",
+  "verdict": "COMPLETED",
+  "verification_status": "NOT_VERIFIED",
+  "workers": 1
+}

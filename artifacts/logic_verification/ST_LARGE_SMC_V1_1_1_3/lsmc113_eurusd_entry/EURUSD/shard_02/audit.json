@@ -1,0 +1,2348 @@
+{
+  "active_history_scans": {
+    "evaluated_checks": {
+      "L1.closed_bars_only": 2051,
+      "L1.replay_hash": 2051,
+      "L1.truncation_invariance": 2051,
+      "L2.alert_mapping": 2051,
+      "L2.c10_stop": 323,
+      "L2.c11_creation_anchor": 323,
+      "L2.c11_target": 323,
+      "L2.day_boundary": 2051,
+      "L2.delivery_gate_preserves_detection": 323,
+      "L2.direction_matches_bias": 323,
+      "L2.entry_by_reference": 323,
+      "L2.expiry_session_end": 323,
+      "L2.identity": 2051,
+      "L2.instruments_vt_only": 2051,
+      "L2.near_poi_band": 2051,
+      "L2.no_authority": 2051,
+      "L2.pip_source": 323,
+      "L2.poi_max_age": 2051,
+      "L2.point_source": 2051,
+      "L2.point_source_declared": 2051,
+      "L2.sweep_choch_window": 2051,
+      "L2.sweep_window_measured": 323,
+      "L2.swing_k": 2051,
+      "L2.tie_tolerance": 2051,
+      "L2.timeframes": 2051,
+      "L3.entry_in_choch_bar": 323,
+      "L3.stop_beyond_sweep": 55,
+      "L3.stop_side": 55,
+      "L3.sweep_extreme_side": 323,
+      "L3.target_direction": 297,
+      "L4.evaluated": 2051,
+      "L4.history": 2051,
+      "L4.m5_fresh": 2051,
+      "L4.stale_state_consistent": 2051,
+      "L6.invalid_if": 323,
+      "L6.stale_if": 323,
+      "L6.valid_until": 323
+    },
+    "gate_verdicts": {
+      "L1": "PASS",
+      "L2": "PASS",
+      "L3": "PASS",
+      "L4": "PASS",
+      "L5": "INSUFFICIENT",
+      "L6": "PASS"
+    },
+    "gates": {
+      "L1": {
+        "PASS": 2051
+      },
+      "L2": {
+        "PASS": 2051
+      },
+      "L3": {
+        "PASS": 2051
+      },
+      "L4": {
+        "PASS": 2051
+      },
+      "L5": {
+        "INSUFFICIENT": 55,
+        "NOT_APPLICABLE": 1996
+      },
+      "L6": {
+        "PASS": 2051
+      }
+    },
+    "not_applicable_checks": {
+      "L2.c10_stop": 1728,
+      "L2.c11_creation_anchor": 1728,
+      "L2.c11_target": 1728,
+      "L2.direction_matches_bias": 1728,
+      "L2.entry_by_reference": 1728,
+      "L2.expiry_session_end": 1728,
+      "L2.sweep_window_measured": 1728,
+      "L3.geometry": 1728,
+      "L3.stop_geometry": 268,
+      "L3.target_direction": 26,
+      "L5.cost": 1996,
+      "L6.freshness": 1728
+    },
+    "opportunity_scans": 323,
+    "priced_opportunity_scans": 29,
+    "qualifies_for_proposal": false,
+    "rr_eligible_scans": 29,
+    "scans": 2051,
+    "states": {
+      "DEVELOPING": 1049,
+      "NEAR_POI": 679,
+      "OPPORTUNITY": 323
+    },
+    "terminal_reasons": {
+      "AMBIGUOUS_TARGET": 26,
+      "D30_BADGE_ECONOMICS_NOT_EVALUATED": 323,
+      "FAIL_CLOSED_RR_UNDEFINED": 294,
+      "MISSING_SPREAD": 268,
+      "REJECT_NO_STOP": 268,
+      "REJECT_NO_TARGET": 26,
+      "REJECT_STALE": 29
+    },
+    "verdict": "INSUFFICIENT",
+    "verification_status": "NOT_VERIFIED"
+  },
+  "boundary_reference": {
+    "checks": [
+      {
+        "at": "2026-09-04T20:05:00+00:00",
+        "equal": true,
+        "m5_row": 7185,
+        "opportunity_id": null,
+        "reference_sha256": "084a08da8426062a31069bf6380aeb215b437afcfef3deb488353c28f72cb8ca",
+        "shard_sha256": "084a08da8426062a31069bf6380aeb215b437afcfef3deb488353c28f72cb8ca"
+      },
+      {
+        "at": "2026-09-04T20:10:00+00:00",
+        "equal": true,
+        "m5_row": 7186,
+        "opportunity_id": null,
+        "reference_sha256": "811ffa33793f647b3d45447f07efe37385bfa5f04e12fab2d958f4dee82762f4",
+        "shard_sha256": "811ffa33793f647b3d45447f07efe37385bfa5f04e12fab2d958f4dee82762f4"
+      },
+      {
+        "at": "2026-09-04T20:15:00+00:00",
+        "equal": true,
+        "m5_row": 7187,
+        "opportunity_id": null,
+        "reference_sha256": "192385735865ced2e4e23c8034c8aceae1f976cebaf2daeb316588cd9946cd6f",
+        "shard_sha256": "192385735865ced2e4e23c8034c8aceae1f976cebaf2daeb316588cd9946cd6f"
+      },
+      {
+        "at": "2026-09-04T20:20:00+00:00",
+        "equal": true,
+        "m5_row": 7188,
+        "opportunity_id": null,
+        "reference_sha256": "670d348f871af1732876f9452dcbc638d0fcaac79b0e5b2388d30e6c1016f01f",
+        "shard_sha256": "670d348f871af1732876f9452dcbc638d0fcaac79b0e5b2388d30e6c1016f01f"
+      },
+      {
+        "at": "2026-09-04T20:25:00+00:00",
+        "equal": true,
+        "m5_row": 7189,
+        "opportunity_id": null,
+        "reference_sha256": "5a1b29244b0d47f62f516691cff289fba87b58c9a287282d57d1ec6103b016e5",
+        "shard_sha256": "5a1b29244b0d47f62f516691cff289fba87b58c9a287282d57d1ec6103b016e5"
+      },
+      {
+        "at": "2026-09-04T20:30:00+00:00",
+        "equal": true,
+        "m5_row": 7190,
+        "opportunity_id": null,
+        "reference_sha256": "2824aeb775728e1dd91c8306cf1c071796061ab03b86fdda1d52724dbeb8fff7",
+        "shard_sha256": "2824aeb775728e1dd91c8306cf1c071796061ab03b86fdda1d52724dbeb8fff7"
+      },
+      {
+        "at": "2026-09-04T20:35:00+00:00",
+        "equal": true,
+        "m5_row": 7191,
+        "opportunity_id": null,
+        "reference_sha256": "b107c8bdbcd4b20f9d1e5dbecc15320ccc24edc163dce3ac21d8bfa71c3434ee",
+        "shard_sha256": "b107c8bdbcd4b20f9d1e5dbecc15320ccc24edc163dce3ac21d8bfa71c3434ee"
+      },
+      {
+        "at": "2026-09-04T20:40:00+00:00",
+        "equal": true,
+        "m5_row": 7192,
+        "opportunity_id": null,
+        "reference_sha256": "22e393d8266f37d69c6f831aca4802b96980a52997677dbaed547b31a2041667",
+        "shard_sha256": "22e393d8266f37d69c6f831aca4802b96980a52997677dbaed547b31a2041667"
+      },
+      {
+        "at": "2026-09-04T20:45:00+00:00",
+        "equal": true,
+        "m5_row": 7193,
+        "opportunity_id": null,
+        "reference_sha256": "e89816f61c4a4f5e0623cabd3720082f418e318898529dd2690132de50746144",
+        "shard_sha256": "e89816f61c4a4f5e0623cabd3720082f418e318898529dd2690132de50746144"
+      },
+      {
+        "at": "2026-09-04T20:50:00+00:00",
+        "equal": true,
+        "m5_row": 7194,
+        "opportunity_id": null,
+        "reference_sha256": "eb27740db3ae0fbf094ef8363e2cb39bf0dc2fca5c1947e7728e0120e4e1274f",
+        "shard_sha256": "eb27740db3ae0fbf094ef8363e2cb39bf0dc2fca5c1947e7728e0120e4e1274f"
+      },
+      {
+        "at": "2026-09-04T20:55:00+00:00",
+        "equal": true,
+        "m5_row": 7195,
+        "opportunity_id": null,
+        "reference_sha256": "44c9e9533d6d3cfa29dafd5874b7e714904651ed2eb2cae44f88f6a007541605",
+        "shard_sha256": "44c9e9533d6d3cfa29dafd5874b7e714904651ed2eb2cae44f88f6a007541605"
+      },
+      {
+        "at": "2026-09-04T21:00:00+00:00",
+        "equal": true,
+        "m5_row": 7196,
+        "opportunity_id": null,
+        "reference_sha256": "1d81355c5dc11444044e6fe64add8a2890ae38aeac4b71cb708dcf541abb8b15",
+        "shard_sha256": "1d81355c5dc11444044e6fe64add8a2890ae38aeac4b71cb708dcf541abb8b15"
+      },
+      {
+        "at": "2026-09-06T21:05:00+00:00",
+        "equal": true,
+        "m5_row": 7197,
+        "opportunity_id": null,
+        "reference_sha256": "ac59c4f4f731ba21435e668c263d38afe61a29038b32c054668c0a1e9e4c8605",
+        "shard_sha256": "ac59c4f4f731ba21435e668c263d38afe61a29038b32c054668c0a1e9e4c8605"
+      },
+      {
+        "at": "2026-09-06T21:10:00+00:00",
+        "equal": true,
+        "m5_row": 7198,
+        "opportunity_id": null,
+        "reference_sha256": "8972b6ed707e4569f8df8451d4cbd365e7e01bd5a4fa778c3c17f575a479151b",
+        "shard_sha256": "8972b6ed707e4569f8df8451d4cbd365e7e01bd5a4fa778c3c17f575a479151b"
+      },
+      {
+        "at": "2026-09-06T21:15:00+00:00",
+        "equal": true,
+        "m5_row": 7199,
+        "opportunity_id": null,
+        "reference_sha256": "55e9c526ba987cb48b11f1ed14beaa44b42c588f8ae8f6230df0b9f5592ae000",
+        "shard_sha256": "55e9c526ba987cb48b11f1ed14beaa44b42c588f8ae8f6230df0b9f5592ae000"
+      },
+      {
+        "at": "2026-09-06T21:20:00+00:00",
+        "equal": true,
+        "m5_row": 7200,
+        "opportunity_id": null,
+        "reference_sha256": "43d3756262301dbe619030c188195f784cdff9b84265e1fee40c811b989a4de2",
+        "shard_sha256": "43d3756262301dbe619030c188195f784cdff9b84265e1fee40c811b989a4de2"
+      },
+      {
+        "at": "2026-09-06T21:25:00+00:00",
+        "equal": true,
+        "m5_row": 7201,
+        "opportunity_id": null,
+        "reference_sha256": "a4e3d434988c41b3d5964d10ecdb6bfc85cf17d5ebdf4051969fadbc6171c6c7",
+        "shard_sha256": "a4e3d434988c41b3d5964d10ecdb6bfc85cf17d5ebdf4051969fadbc6171c6c7"
+      },
+      {
+        "at": "2026-09-06T21:30:00+00:00",
+        "equal": true,
+        "m5_row": 7202,
+        "opportunity_id": null,
+        "reference_sha256": "73b613159e690dbf4fdf18beb0805b36b0a52e3b3a641e4c9bdb4cdde654dc12",
+        "shard_sha256": "73b613159e690dbf4fdf18beb0805b36b0a52e3b3a641e4c9bdb4cdde654dc12"
+      },
+      {
+        "at": "2026-09-06T21:35:00+00:00",
+        "equal": true,
+        "m5_row": 7203,
+        "opportunity_id": null,
+        "reference_sha256": "3638804a41e2accd16256a04dec50c27693df5cababd9297d6738f449b34ac69",
+        "shard_sha256": "3638804a41e2accd16256a04dec50c27693df5cababd9297d6738f449b34ac69"
+      },
+      {
+        "at": "2026-09-06T21:40:00+00:00",
+        "equal": true,
+        "m5_row": 7204,
+        "opportunity_id": null,
+        "reference_sha256": "72066fab203e76495e4e3da0f624a232a32e53d9bbe7dec4182baf0682ee9cbf",
+        "shard_sha256": "72066fab203e76495e4e3da0f624a232a32e53d9bbe7dec4182baf0682ee9cbf"
+      },
+      {
+        "at": "2026-09-06T21:45:00+00:00",
+        "equal": true,
+        "m5_row": 7205,
+        "opportunity_id": null,
+        "reference_sha256": "2962d6693fe4b63c184ed661fce5a7f0d7fd5aa4ab53e8017b885e06763b989d",
+        "shard_sha256": "2962d6693fe4b63c184ed661fce5a7f0d7fd5aa4ab53e8017b885e06763b989d"
+      },
+      {
+        "at": "2026-09-06T21:50:00+00:00",
+        "equal": true,
+        "m5_row": 7206,
+        "opportunity_id": null,
+        "reference_sha256": "6ad6a4fe76358cfe93639e9dfab3b4c35c5c9afa0f3dd0d7f2ebb1027d625de9",
+        "shard_sha256": "6ad6a4fe76358cfe93639e9dfab3b4c35c5c9afa0f3dd0d7f2ebb1027d625de9"
+      },
+      {
+        "at": "2026-09-06T21:55:00+00:00",
+        "equal": true,
+        "m5_row": 7207,
+        "opportunity_id": null,
+        "reference_sha256": "caf2e3b31d2ceba8d95782b8321687c01e62a393d2bbac3bf89c72f9b24eb324",
+        "shard_sha256": "caf2e3b31d2ceba8d95782b8321687c01e62a393d2bbac3bf89c72f9b24eb324"
+      },
+      {
+        "at": "2026-09-06T22:00:00+00:00",
+        "equal": true,
+        "m5_row": 7208,
+        "opportunity_id": null,
+        "reference_sha256": "3cf7bcbfcdb89c423c4b2c66d7deb9b6f47a3ee3582b314d0efafbe172f18447",
+        "shard_sha256": "3cf7bcbfcdb89c423c4b2c66d7deb9b6f47a3ee3582b314d0efafbe172f18447"
+      },
+      {
+        "at": "2026-09-15T23:05:00+00:00",
+        "equal": true,
+        "m5_row": 9237,
+        "opportunity_id": null,
+        "reference_sha256": "ff9bab5de9d5b2786ddcc3553860f5c5453c4e972be9b92576a88334d9c2088b",
+        "shard_sha256": "ff9bab5de9d5b2786ddcc3553860f5c5453c4e972be9b92576a88334d9c2088b"
+      },
+      {
+        "at": "2026-09-15T23:10:00+00:00",
+        "equal": true,
+        "m5_row": 9238,
+        "opportunity_id": null,
+        "reference_sha256": "4b8aa6b8c1257cdb34ad27f841e4b74684d04a212b6d0ee24dd103ee6686142e",
+        "shard_sha256": "4b8aa6b8c1257cdb34ad27f841e4b74684d04a212b6d0ee24dd103ee6686142e"
+      },
+      {
+        "at": "2026-09-15T23:15:00+00:00",
+        "equal": true,
+        "m5_row": 9239,
+        "opportunity_id": null,
+        "reference_sha256": "7c4841dcadcc7a52fc7cfbaa8460c8db2ef4270db466575885b981ae76a0f6bb",
+        "shard_sha256": "7c4841dcadcc7a52fc7cfbaa8460c8db2ef4270db466575885b981ae76a0f6bb"
+      },
+      {
+        "at": "2026-09-15T23:20:00+00:00",
+        "equal": true,
+        "m5_row": 9240,
+        "opportunity_id": null,
+        "reference_sha256": "71b1c730350a200a22554dc56dfddce7186437c7c9ed33d38cefdc171d50f61d",
+        "shard_sha256": "71b1c730350a200a22554dc56dfddce7186437c7c9ed33d38cefdc171d50f61d"
+      },
+      {
+        "at": "2026-09-15T23:25:00+00:00",
+        "equal": true,
+        "m5_row": 9241,
+        "opportunity_id": null,
+        "reference_sha256": "397d955201cd93ab8ffeb03a6907a445138d31f68e6af03aab6eb8e98c7550ed",
+        "shard_sha256": "397d955201cd93ab8ffeb03a6907a445138d31f68e6af03aab6eb8e98c7550ed"
+      },
+      {
+        "at": "2026-09-15T23:30:00+00:00",
+        "equal": true,
+        "m5_row": 9242,
+        "opportunity_id": null,
+        "reference_sha256": "ce8ae2b933cc7cf8f37e70181fe0ea07528a169120b51391173bf488503e1239",
+        "shard_sha256": "ce8ae2b933cc7cf8f37e70181fe0ea07528a169120b51391173bf488503e1239"
+      },
+      {
+        "at": "2026-09-15T23:35:00+00:00",
+        "equal": true,
+        "m5_row": 9243,
+        "opportunity_id": null,
+        "reference_sha256": "4053d7bc971a4739152fe44dad732b09c18c01f144814cb09c7f70f309402e67",
+        "shard_sha256": "4053d7bc971a4739152fe44dad732b09c18c01f144814cb09c7f70f309402e67"
+      },
+      {
+        "at": "2026-09-15T23:40:00+00:00",
+        "equal": true,
+        "m5_row": 9244,
+        "opportunity_id": null,
+        "reference_sha256": "7f23f52bdd3dd850ba268f4bfd76a394253f4f527eae2a3694a8137267b39c06",
+        "shard_sha256": "7f23f52bdd3dd850ba268f4bfd76a394253f4f527eae2a3694a8137267b39c06"
+      },
+      {
+        "at": "2026-09-15T23:45:00+00:00",
+        "equal": true,
+        "m5_row": 9245,
+        "opportunity_id": null,
+        "reference_sha256": "cb7a693a862e9a744652d98fbe06664747b0f0d6ab21d65569aaaaa7028c61a3",
+        "shard_sha256": "cb7a693a862e9a744652d98fbe06664747b0f0d6ab21d65569aaaaa7028c61a3"
+      },
+      {
+        "at": "2026-09-15T23:50:00+00:00",
+        "equal": true,
+        "m5_row": 9246,
+        "opportunity_id": null,
+        "reference_sha256": "3fb2d204a6fb01b1a91ae2ec58a04d31bf36274ab19a9596a2f3da344699f99b",
+        "shard_sha256": "3fb2d204a6fb01b1a91ae2ec58a04d31bf36274ab19a9596a2f3da344699f99b"
+      },
+      {
+        "at": "2026-09-15T23:55:00+00:00",
+        "equal": true,
+        "m5_row": 9247,
+        "opportunity_id": null,
+        "reference_sha256": "35cbb71b216eb58d849924cdcf2dd8bd71d8ac5b018597178ad5972346d094fe",
+        "shard_sha256": "35cbb71b216eb58d849924cdcf2dd8bd71d8ac5b018597178ad5972346d094fe"
+      },
+      {
+        "at": "2026-09-16T00:00:00+00:00",
+        "equal": true,
+        "m5_row": 9248,
+        "opportunity_id": null,
+        "reference_sha256": "c14ec89a862e866583d3f750f3cb4b8c27b14b252e9e312ab87b6d4603452744",
+        "shard_sha256": "c14ec89a862e866583d3f750f3cb4b8c27b14b252e9e312ab87b6d4603452744"
+      },
+      {
+        "at": "2026-09-16T00:05:00+00:00",
+        "equal": true,
+        "m5_row": 9249,
+        "opportunity_id": null,
+        "reference_sha256": "8c5eb985bfdcd3a28a31d22698073c98f39bea068866a48f6be8ae946c15bd60",
+        "shard_sha256": "8c5eb985bfdcd3a28a31d22698073c98f39bea068866a48f6be8ae946c15bd60"
+      },
+      {
+        "at": "2026-09-16T00:10:00+00:00",
+        "equal": true,
+        "m5_row": 9250,
+        "opportunity_id": null,
+        "reference_sha256": "5aaa4880e08f507a399154ada856bbf692cd87b1f3dbbfc5586b0271fe56e8ea",
+        "shard_sha256": "5aaa4880e08f507a399154ada856bbf692cd87b1f3dbbfc5586b0271fe56e8ea"
+      },
+      {
+        "at": "2026-09-16T00:15:00+00:00",
+        "equal": true,
+        "m5_row": 9251,
+        "opportunity_id": null,
+        "reference_sha256": "149f09deb3748c4de92ac7a426040b0b2c8f875e6e3bf3e288199c79296d7b09",
+        "shard_sha256": "149f09deb3748c4de92ac7a426040b0b2c8f875e6e3bf3e288199c79296d7b09"
+      },
+      {
+        "at": "2026-09-16T00:20:00+00:00",
+        "equal": true,
+        "m5_row": 9252,
+        "opportunity_id": null,
+        "reference_sha256": "4e0c7950e66a3d87d2a6e96fe0c4cabf4faaf6397498d0e5ddb269f559614d32",
+        "shard_sha256": "4e0c7950e66a3d87d2a6e96fe0c4cabf4faaf6397498d0e5ddb269f559614d32"
+      },
+      {
+        "at": "2026-09-16T00:25:00+00:00",
+        "equal": true,
+        "m5_row": 9253,
+        "opportunity_id": null,
+        "reference_sha256": "1e78d08de0f332236b156a41222b29f40d762f55f081ace7e5f756a67f7a2f0a",
+        "shard_sha256": "1e78d08de0f332236b156a41222b29f40d762f55f081ace7e5f756a67f7a2f0a"
+      },
+      {
+        "at": "2026-09-16T00:30:00+00:00",
+        "equal": true,
+        "m5_row": 9254,
+        "opportunity_id": null,
+        "reference_sha256": "a495eab480c74014129356b93d133d9baa38e2ba5a26da7d701c10a0a3782343",
+        "shard_sha256": "a495eab480c74014129356b93d133d9baa38e2ba5a26da7d701c10a0a3782343"
+      },
+      {
+        "at": "2026-09-16T00:35:00+00:00",
+        "equal": true,
+        "m5_row": 9255,
+        "opportunity_id": null,
+        "reference_sha256": "a5c48579bbcf0992662b3768a09bdafff383e9580eaa94d44ae6f27fe99c9217",
+        "shard_sha256": "a5c48579bbcf0992662b3768a09bdafff383e9580eaa94d44ae6f27fe99c9217"
+      },
+      {
+        "at": "2026-09-16T00:40:00+00:00",
+        "equal": true,
+        "m5_row": 9256,
+        "opportunity_id": null,
+        "reference_sha256": "c7db28c40d93acc7269dd059faec4321bb97146d2c0bb98d8d31490bde4ac061",
+        "shard_sha256": "c7db28c40d93acc7269dd059faec4321bb97146d2c0bb98d8d31490bde4ac061"
+      },
+      {
+        "at": "2026-09-16T00:45:00+00:00",
+        "equal": true,
+        "m5_row": 9257,
+        "opportunity_id": null,
+        "reference_sha256": "2b18e27c8f8458463d0aeb8a09547bc2a9b39a9393b8c5a7ccb78539233e45b0",
+        "shard_sha256": "2b18e27c8f8458463d0aeb8a09547bc2a9b39a9393b8c5a7ccb78539233e45b0"
+      },
+      {
+        "at": "2026-09-16T00:50:00+00:00",
+        "equal": true,
+        "m5_row": 9258,
+        "opportunity_id": null,
+        "reference_sha256": "4d2dac3f61d7eca201dc9bf94f35886c7a694ed16702a5081fa15ff724f0a112",
+        "shard_sha256": "4d2dac3f61d7eca201dc9bf94f35886c7a694ed16702a5081fa15ff724f0a112"
+      },
+      {
+        "at": "2026-09-16T00:55:00+00:00",
+        "equal": true,
+        "m5_row": 9259,
+        "opportunity_id": null,
+        "reference_sha256": "0d474a490c56362d82e85ff8556ea5fa88a913e390fb715943a193ca95b950e9",
+        "shard_sha256": "0d474a490c56362d82e85ff8556ea5fa88a913e390fb715943a193ca95b950e9"
+      },
+      {
+        "at": "2026-09-16T01:00:00+00:00",
+        "equal": true,
+        "m5_row": 9260,
+        "opportunity_id": null,
+        "reference_sha256": "bf607c7c6a298b980d3fd59d7b3bda45065d7aa0b39f12cd70e8f4f3d2e84924",
+        "shard_sha256": "bf607c7c6a298b980d3fd59d7b3bda45065d7aa0b39f12cd70e8f4f3d2e84924"
+      }
+    ],
+    "method": "Unmodified evaluator on overlapping boundary rows; warmed shard inputs vs independent full-recorded-history reference inputs; compare complete snapshot, not only signal id.",
+    "overlapping_reference_shard_rows": [
+      7185,
+      7186,
+      7187,
+      7188,
+      7189,
+      7190,
+      7191,
+      7192,
+      7193,
+      7194,
+      7195,
+      7196,
+      7197,
+      7198,
+      7199,
+      7200,
+      7201,
+      7202,
+      7203,
+      7204,
+      7205,
+      7206,
+      7207,
+      7208,
+      9237,
+      9238,
+      9239,
+      9240,
+      9241,
+      9242,
+      9243,
+      9244,
+      9245,
+      9246,
+      9247,
+      9248,
+      9249,
+      9250,
+      9251,
+      9252,
+      9253,
+      9254,
+      9255,
+      9256,
+      9257,
+      9258,
+      9259,
+      9260
+    ],
+    "verdict": "PASS"
+  },
+  "branch_matrix": {
+    "FULL_D1|LONG|FVG|PRIMARY_EXTERNAL_LIQUIDITY": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 29,
+        "L1.replay_hash": 29,
+        "L1.truncation_invariance": 29,
+        "L2.alert_mapping": 29,
+        "L2.c10_stop": 29,
+        "L2.c11_creation_anchor": 29,
+        "L2.c11_target": 29,
+        "L2.day_boundary": 29,
+        "L2.delivery_gate_preserves_detection": 29,
+        "L2.direction_matches_bias": 29,
+        "L2.entry_by_reference": 29,
+        "L2.expiry_session_end": 29,
+        "L2.identity": 29,
+        "L2.instruments_vt_only": 29,
+        "L2.near_poi_band": 29,
+        "L2.no_authority": 29,
+        "L2.pip_source": 29,
+        "L2.poi_max_age": 29,
+        "L2.point_source": 29,
+        "L2.point_source_declared": 29,
+        "L2.sweep_choch_window": 29,
+        "L2.sweep_window_measured": 29,
+        "L2.swing_k": 29,
+        "L2.tie_tolerance": 29,
+        "L2.timeframes": 29,
+        "L3.entry_in_choch_bar": 29,
+        "L3.stop_beyond_sweep": 29,
+        "L3.stop_side": 29,
+        "L3.sweep_extreme_side": 29,
+        "L3.target_direction": 29,
+        "L4.evaluated": 29,
+        "L4.history": 29,
+        "L4.m5_fresh": 29,
+        "L4.stale_state_consistent": 29,
+        "L6.invalid_if": 29,
+        "L6.stale_if": 29,
+        "L6.valid_until": 29
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "INSUFFICIENT",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 29
+        },
+        "L2": {
+          "PASS": 29
+        },
+        "L3": {
+          "PASS": 29
+        },
+        "L4": {
+          "PASS": 29
+        },
+        "L5": {
+          "INSUFFICIENT": 29
+        },
+        "L6": {
+          "PASS": 29
+        }
+      },
+      "not_applicable_checks": {},
+      "opportunity_scans": 29,
+      "priced_opportunity_scans": 29,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 29,
+      "scans": 29,
+      "states": {
+        "OPPORTUNITY": 29
+      },
+      "terminal_reasons": {
+        "D30_BADGE_ECONOMICS_NOT_EVALUATED": 29,
+        "REJECT_STALE": 29
+      },
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "FULL_D1|NONE|FVG|NO_TARGET_OR_NO_OPPORTUNITY": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 340,
+        "L1.replay_hash": 340,
+        "L1.truncation_invariance": 340,
+        "L2.alert_mapping": 340,
+        "L2.day_boundary": 340,
+        "L2.identity": 340,
+        "L2.instruments_vt_only": 340,
+        "L2.near_poi_band": 340,
+        "L2.no_authority": 340,
+        "L2.poi_max_age": 340,
+        "L2.point_source": 340,
+        "L2.point_source_declared": 340,
+        "L2.sweep_choch_window": 340,
+        "L2.swing_k": 340,
+        "L2.tie_tolerance": 340,
+        "L2.timeframes": 340,
+        "L4.evaluated": 340,
+        "L4.history": 340,
+        "L4.m5_fresh": 340,
+        "L4.stale_state_consistent": 340
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "NOT_RUN",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 340
+        },
+        "L2": {
+          "PASS": 340
+        },
+        "L3": {
+          "PASS": 340
+        },
+        "L4": {
+          "PASS": 340
+        },
+        "L5": {
+          "NOT_APPLICABLE": 340
+        },
+        "L6": {
+          "PASS": 340
+        }
+      },
+      "not_applicable_checks": {
+        "L2.c10_stop": 340,
+        "L2.c11_creation_anchor": 340,
+        "L2.c11_target": 340,
+        "L2.direction_matches_bias": 340,
+        "L2.entry_by_reference": 340,
+        "L2.expiry_session_end": 340,
+        "L2.sweep_window_measured": 340,
+        "L3.geometry": 340,
+        "L5.cost": 340,
+        "L6.freshness": 340
+      },
+      "opportunity_scans": 0,
+      "priced_opportunity_scans": 0,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 340,
+      "states": {
+        "DEVELOPING": 121,
+        "NEAR_POI": 219
+      },
+      "terminal_reasons": {},
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "FULL_D1|NONE|OB_PIVOT|NO_TARGET_OR_NO_OPPORTUNITY": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 223,
+        "L1.replay_hash": 223,
+        "L1.truncation_invariance": 223,
+        "L2.alert_mapping": 223,
+        "L2.day_boundary": 223,
+        "L2.identity": 223,
+        "L2.instruments_vt_only": 223,
+        "L2.near_poi_band": 223,
+        "L2.no_authority": 223,
+        "L2.poi_max_age": 223,
+        "L2.point_source": 223,
+        "L2.point_source_declared": 223,
+        "L2.sweep_choch_window": 223,
+        "L2.swing_k": 223,
+        "L2.tie_tolerance": 223,
+        "L2.timeframes": 223,
+        "L4.evaluated": 223,
+        "L4.history": 223,
+        "L4.m5_fresh": 223,
+        "L4.stale_state_consistent": 223
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "NOT_RUN",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 223
+        },
+        "L2": {
+          "PASS": 223
+        },
+        "L3": {
+          "PASS": 223
+        },
+        "L4": {
+          "PASS": 223
+        },
+        "L5": {
+          "NOT_APPLICABLE": 223
+        },
+        "L6": {
+          "PASS": 223
+        }
+      },
+      "not_applicable_checks": {
+        "L2.c10_stop": 223,
+        "L2.c11_creation_anchor": 223,
+        "L2.c11_target": 223,
+        "L2.direction_matches_bias": 223,
+        "L2.entry_by_reference": 223,
+        "L2.expiry_session_end": 223,
+        "L2.sweep_window_measured": 223,
+        "L3.geometry": 223,
+        "L5.cost": 223,
+        "L6.freshness": 223
+      },
+      "opportunity_scans": 0,
+      "priced_opportunity_scans": 0,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 223,
+      "states": {
+        "DEVELOPING": 172,
+        "NEAR_POI": 51
+      },
+      "terminal_reasons": {},
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "FULL_D1|NONE|OB_SHADOW|NO_TARGET_OR_NO_OPPORTUNITY": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 133,
+        "L1.replay_hash": 133,
+        "L1.truncation_invariance": 133,
+        "L2.alert_mapping": 133,
+        "L2.day_boundary": 133,
+        "L2.identity": 133,
+        "L2.instruments_vt_only": 133,
+        "L2.near_poi_band": 133,
+        "L2.no_authority": 133,
+        "L2.poi_max_age": 133,
+        "L2.point_source": 133,
+        "L2.point_source_declared": 133,
+        "L2.sweep_choch_window": 133,
+        "L2.swing_k": 133,
+        "L2.tie_tolerance": 133,
+        "L2.timeframes": 133,
+        "L4.evaluated": 133,
+        "L4.history": 133,
+        "L4.m5_fresh": 133,
+        "L4.stale_state_consistent": 133
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "NOT_RUN",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 133
+        },
+        "L2": {
+          "PASS": 133
+        },
+        "L3": {
+          "PASS": 133
+        },
+        "L4": {
+          "PASS": 133
+        },
+        "L5": {
+          "NOT_APPLICABLE": 133
+        },
+        "L6": {
+          "PASS": 133
+        }
+      },
+      "not_applicable_checks": {
+        "L2.c10_stop": 133,
+        "L2.c11_creation_anchor": 133,
+        "L2.c11_target": 133,
+        "L2.direction_matches_bias": 133,
+        "L2.entry_by_reference": 133,
+        "L2.expiry_session_end": 133,
+        "L2.sweep_window_measured": 133,
+        "L3.geometry": 133,
+        "L5.cost": 133,
+        "L6.freshness": 133
+      },
+      "opportunity_scans": 0,
+      "priced_opportunity_scans": 0,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 133,
+      "states": {
+        "DEVELOPING": 133
+      },
+      "terminal_reasons": {},
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "FULL_D1|SHORT|FVG|CONFIRMED_OPPOSING_H1_SWING": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 31,
+        "L1.replay_hash": 31,
+        "L1.truncation_invariance": 31,
+        "L2.alert_mapping": 31,
+        "L2.c10_stop": 31,
+        "L2.c11_creation_anchor": 31,
+        "L2.c11_target": 31,
+        "L2.day_boundary": 31,
+        "L2.delivery_gate_preserves_detection": 31,
+        "L2.direction_matches_bias": 31,
+        "L2.entry_by_reference": 31,
+        "L2.expiry_session_end": 31,
+        "L2.identity": 31,
+        "L2.instruments_vt_only": 31,
+        "L2.near_poi_band": 31,
+        "L2.no_authority": 31,
+        "L2.pip_source": 31,
+        "L2.poi_max_age": 31,
+        "L2.point_source": 31,
+        "L2.point_source_declared": 31,
+        "L2.sweep_choch_window": 31,
+        "L2.sweep_window_measured": 31,
+        "L2.swing_k": 31,
+        "L2.tie_tolerance": 31,
+        "L2.timeframes": 31,
+        "L3.entry_in_choch_bar": 31,
+        "L3.sweep_extreme_side": 31,
+        "L3.target_direction": 31,
+        "L4.evaluated": 31,
+        "L4.history": 31,
+        "L4.m5_fresh": 31,
+        "L4.stale_state_consistent": 31,
+        "L6.invalid_if": 31,
+        "L6.stale_if": 31,
+        "L6.valid_until": 31
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "NOT_RUN",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 31
+        },
+        "L2": {
+          "PASS": 31
+        },
+        "L3": {
+          "PASS": 31
+        },
+        "L4": {
+          "PASS": 31
+        },
+        "L5": {
+          "NOT_APPLICABLE": 31
+        },
+        "L6": {
+          "PASS": 31
+        }
+      },
+      "not_applicable_checks": {
+        "L3.stop_geometry": 31,
+        "L5.cost": 31
+      },
+      "opportunity_scans": 31,
+      "priced_opportunity_scans": 0,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 31,
+      "states": {
+        "OPPORTUNITY": 31
+      },
+      "terminal_reasons": {
+        "D30_BADGE_ECONOMICS_NOT_EVALUATED": 31,
+        "FAIL_CLOSED_RR_UNDEFINED": 31,
+        "MISSING_SPREAD": 31,
+        "REJECT_NO_STOP": 31
+      },
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "FULL_D1|SHORT|FVG|PRIMARY_EXTERNAL_LIQUIDITY": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 144,
+        "L1.replay_hash": 144,
+        "L1.truncation_invariance": 144,
+        "L2.alert_mapping": 144,
+        "L2.c10_stop": 144,
+        "L2.c11_creation_anchor": 144,
+        "L2.c11_target": 144,
+        "L2.day_boundary": 144,
+        "L2.delivery_gate_preserves_detection": 144,
+        "L2.direction_matches_bias": 144,
+        "L2.entry_by_reference": 144,
+        "L2.expiry_session_end": 144,
+        "L2.identity": 144,
+        "L2.instruments_vt_only": 144,
+        "L2.near_poi_band": 144,
+        "L2.no_authority": 144,
+        "L2.pip_source": 144,
+        "L2.poi_max_age": 144,
+        "L2.point_source": 144,
+        "L2.point_source_declared": 144,
+        "L2.sweep_choch_window": 144,
+        "L2.sweep_window_measured": 144,
+        "L2.swing_k": 144,
+        "L2.tie_tolerance": 144,
+        "L2.timeframes": 144,
+        "L3.entry_in_choch_bar": 144,
+        "L3.sweep_extreme_side": 144,
+        "L3.target_direction": 144,
+        "L4.evaluated": 144,
+        "L4.history": 144,
+        "L4.m5_fresh": 144,
+        "L4.stale_state_consistent": 144,
+        "L6.invalid_if": 144,
+        "L6.stale_if": 144,
+        "L6.valid_until": 144
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "NOT_RUN",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 144
+        },
+        "L2": {
+          "PASS": 144
+        },
+        "L3": {
+          "PASS": 144
+        },
+        "L4": {
+          "PASS": 144
+        },
+        "L5": {
+          "NOT_APPLICABLE": 144
+        },
+        "L6": {
+          "PASS": 144
+        }
+      },
+      "not_applicable_checks": {
+        "L3.stop_geometry": 144,
+        "L5.cost": 144
+      },
+      "opportunity_scans": 144,
+      "priced_opportunity_scans": 0,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 144,
+      "states": {
+        "OPPORTUNITY": 144
+      },
+      "terminal_reasons": {
+        "D30_BADGE_ECONOMICS_NOT_EVALUATED": 144,
+        "FAIL_CLOSED_RR_UNDEFINED": 144,
+        "MISSING_SPREAD": 144,
+        "REJECT_NO_STOP": 144
+      },
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "MARKET_CLOSED|NONE|NONE|NO_TARGET_OR_NO_OPPORTUNITY": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 1,
+        "L1.replay_hash": 1,
+        "L1.truncation_invariance": 1,
+        "L2.alert_mapping": 1,
+        "L2.day_boundary": 1,
+        "L2.identity": 1,
+        "L2.instruments_vt_only": 1,
+        "L2.near_poi_band": 1,
+        "L2.no_authority": 1,
+        "L2.poi_max_age": 1,
+        "L2.point_source_declared": 1,
+        "L2.sweep_choch_window": 1,
+        "L2.swing_k": 1,
+        "L2.tie_tolerance": 1,
+        "L2.timeframes": 1,
+        "L4.evaluated": 1,
+        "L4.history": 1,
+        "L4.m5_fresh": 1,
+        "L4.stale_state_consistent": 1
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "FAIL",
+        "L5": "NOT_RUN",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 1
+        },
+        "L2": {
+          "PASS": 1
+        },
+        "L3": {
+          "PASS": 1
+        },
+        "L4": {
+          "FAIL": 1
+        },
+        "L5": {
+          "NOT_APPLICABLE": 1
+        },
+        "L6": {
+          "PASS": 1
+        }
+      },
+      "not_applicable_checks": {
+        "L2.c10_stop": 1,
+        "L2.c11_creation_anchor": 1,
+        "L2.c11_target": 1,
+        "L2.direction_matches_bias": 1,
+        "L2.entry_by_reference": 1,
+        "L2.expiry_session_end": 1,
+        "L2.point_source": 1,
+        "L2.sweep_window_measured": 1,
+        "L3.geometry": 1,
+        "L5.cost": 1,
+        "L6.freshness": 1
+      },
+      "opportunity_scans": 0,
+      "priced_opportunity_scans": 0,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 1,
+      "states": {
+        "MARKET_CLOSED": 1
+      },
+      "terminal_reasons": {
+        "FX_WEEKEND": 1
+      },
+      "verdict": "DATA_INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "SHORT_D1|LONG|FVG|NO_TARGET_OR_NO_OPPORTUNITY": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 26,
+        "L1.replay_hash": 26,
+        "L1.truncation_invariance": 26,
+        "L2.alert_mapping": 26,
+        "L2.c10_stop": 26,
+        "L2.c11_creation_anchor": 26,
+        "L2.c11_target": 26,
+        "L2.day_boundary": 26,
+        "L2.delivery_gate_preserves_detection": 26,
+        "L2.direction_matches_bias": 26,
+        "L2.entry_by_reference": 26,
+        "L2.expiry_session_end": 26,
+        "L2.identity": 26,
+        "L2.instruments_vt_only": 26,
+        "L2.near_poi_band": 26,
+        "L2.no_authority": 26,
+        "L2.pip_source": 26,
+        "L2.poi_max_age": 26,
+        "L2.point_source": 26,
+        "L2.point_source_declared": 26,
+        "L2.sweep_choch_window": 26,
+        "L2.sweep_window_measured": 26,
+        "L2.swing_k": 26,
+        "L2.tie_tolerance": 26,
+        "L2.timeframes": 26,
+        "L3.entry_in_choch_bar": 26,
+        "L3.stop_beyond_sweep": 26,
+        "L3.stop_side": 26,
+        "L3.sweep_extreme_side": 26,
+        "L4.evaluated": 26,
+        "L4.history": 26,
+        "L4.m5_fresh": 26,
+        "L4.stale_state_consistent": 26,
+        "L6.invalid_if": 26,
+        "L6.stale_if": 26,
+        "L6.valid_until": 26
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "INSUFFICIENT",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 26
+        },
+        "L2": {
+          "PASS": 26
+        },
+        "L3": {
+          "PASS": 26
+        },
+        "L4": {
+          "PASS": 26
+        },
+        "L5": {
+          "INSUFFICIENT": 26
+        },
+        "L6": {
+          "PASS": 26
+        }
+      },
+      "not_applicable_checks": {
+        "L3.target_direction": 26
+      },
+      "opportunity_scans": 26,
+      "priced_opportunity_scans": 0,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 26,
+      "states": {
+        "OPPORTUNITY": 26
+      },
+      "terminal_reasons": {
+        "AMBIGUOUS_TARGET": 26,
+        "D30_BADGE_ECONOMICS_NOT_EVALUATED": 26,
+        "FAIL_CLOSED_RR_UNDEFINED": 26,
+        "REJECT_NO_TARGET": 26
+      },
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "SHORT_D1|NONE|FVG|NO_TARGET_OR_NO_OPPORTUNITY": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 438,
+        "L1.replay_hash": 438,
+        "L1.truncation_invariance": 438,
+        "L2.alert_mapping": 438,
+        "L2.day_boundary": 438,
+        "L2.identity": 438,
+        "L2.instruments_vt_only": 438,
+        "L2.near_poi_band": 438,
+        "L2.no_authority": 438,
+        "L2.poi_max_age": 438,
+        "L2.point_source": 438,
+        "L2.point_source_declared": 438,
+        "L2.sweep_choch_window": 438,
+        "L2.swing_k": 438,
+        "L2.tie_tolerance": 438,
+        "L2.timeframes": 438,
+        "L4.evaluated": 438,
+        "L4.history": 438,
+        "L4.m5_fresh": 438,
+        "L4.stale_state_consistent": 438
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "NOT_RUN",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 438
+        },
+        "L2": {
+          "PASS": 438
+        },
+        "L3": {
+          "PASS": 438
+        },
+        "L4": {
+          "PASS": 438
+        },
+        "L5": {
+          "NOT_APPLICABLE": 438
+        },
+        "L6": {
+          "PASS": 438
+        }
+      },
+      "not_applicable_checks": {
+        "L2.c10_stop": 438,
+        "L2.c11_creation_anchor": 438,
+        "L2.c11_target": 438,
+        "L2.direction_matches_bias": 438,
+        "L2.entry_by_reference": 438,
+        "L2.expiry_session_end": 438,
+        "L2.sweep_window_measured": 438,
+        "L3.geometry": 438,
+        "L5.cost": 438,
+        "L6.freshness": 438
+      },
+      "opportunity_scans": 0,
+      "priced_opportunity_scans": 0,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 438,
+      "states": {
+        "DEVELOPING": 208,
+        "NEAR_POI": 230
+      },
+      "terminal_reasons": {},
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "SHORT_D1|NONE|OB_PIVOT|NO_TARGET_OR_NO_OPPORTUNITY": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 513,
+        "L1.replay_hash": 513,
+        "L1.truncation_invariance": 513,
+        "L2.alert_mapping": 513,
+        "L2.day_boundary": 513,
+        "L2.identity": 513,
+        "L2.instruments_vt_only": 513,
+        "L2.near_poi_band": 513,
+        "L2.no_authority": 513,
+        "L2.poi_max_age": 513,
+        "L2.point_source": 513,
+        "L2.point_source_declared": 513,
+        "L2.sweep_choch_window": 513,
+        "L2.swing_k": 513,
+        "L2.tie_tolerance": 513,
+        "L2.timeframes": 513,
+        "L4.evaluated": 513,
+        "L4.history": 513,
+        "L4.m5_fresh": 513,
+        "L4.stale_state_consistent": 513
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "NOT_RUN",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 513
+        },
+        "L2": {
+          "PASS": 513
+        },
+        "L3": {
+          "PASS": 513
+        },
+        "L4": {
+          "PASS": 513
+        },
+        "L5": {
+          "NOT_APPLICABLE": 513
+        },
+        "L6": {
+          "PASS": 513
+        }
+      },
+      "not_applicable_checks": {
+        "L2.c10_stop": 513,
+        "L2.c11_creation_anchor": 513,
+        "L2.c11_target": 513,
+        "L2.direction_matches_bias": 513,
+        "L2.entry_by_reference": 513,
+        "L2.expiry_session_end": 513,
+        "L2.sweep_window_measured": 513,
+        "L3.geometry": 513,
+        "L5.cost": 513,
+        "L6.freshness": 513
+      },
+      "opportunity_scans": 0,
+      "priced_opportunity_scans": 0,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 513,
+      "states": {
+        "DEVELOPING": 365,
+        "NEAR_POI": 148
+      },
+      "terminal_reasons": {},
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "SHORT_D1|NONE|OB_SHADOW|NO_TARGET_OR_NO_OPPORTUNITY": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 81,
+        "L1.replay_hash": 81,
+        "L1.truncation_invariance": 81,
+        "L2.alert_mapping": 81,
+        "L2.day_boundary": 81,
+        "L2.identity": 81,
+        "L2.instruments_vt_only": 81,
+        "L2.near_poi_band": 81,
+        "L2.no_authority": 81,
+        "L2.poi_max_age": 81,
+        "L2.point_source": 81,
+        "L2.point_source_declared": 81,
+        "L2.sweep_choch_window": 81,
+        "L2.swing_k": 81,
+        "L2.tie_tolerance": 81,
+        "L2.timeframes": 81,
+        "L4.evaluated": 81,
+        "L4.history": 81,
+        "L4.m5_fresh": 81,
+        "L4.stale_state_consistent": 81
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "NOT_RUN",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 81
+        },
+        "L2": {
+          "PASS": 81
+        },
+        "L3": {
+          "PASS": 81
+        },
+        "L4": {
+          "PASS": 81
+        },
+        "L5": {
+          "NOT_APPLICABLE": 81
+        },
+        "L6": {
+          "PASS": 81
+        }
+      },
+      "not_applicable_checks": {
+        "L2.c10_stop": 81,
+        "L2.c11_creation_anchor": 81,
+        "L2.c11_target": 81,
+        "L2.direction_matches_bias": 81,
+        "L2.entry_by_reference": 81,
+        "L2.expiry_session_end": 81,
+        "L2.sweep_window_measured": 81,
+        "L3.geometry": 81,
+        "L5.cost": 81,
+        "L6.freshness": 81
+      },
+      "opportunity_scans": 0,
+      "priced_opportunity_scans": 0,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 81,
+      "states": {
+        "DEVELOPING": 50,
+        "NEAR_POI": 31
+      },
+      "terminal_reasons": {},
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "SHORT_D1|SHORT|FVG|CONFIRMED_OPPOSING_H1_SWING": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 53,
+        "L1.replay_hash": 53,
+        "L1.truncation_invariance": 53,
+        "L2.alert_mapping": 53,
+        "L2.c10_stop": 53,
+        "L2.c11_creation_anchor": 53,
+        "L2.c11_target": 53,
+        "L2.day_boundary": 53,
+        "L2.delivery_gate_preserves_detection": 53,
+        "L2.direction_matches_bias": 53,
+        "L2.entry_by_reference": 53,
+        "L2.expiry_session_end": 53,
+        "L2.identity": 53,
+        "L2.instruments_vt_only": 53,
+        "L2.near_poi_band": 53,
+        "L2.no_authority": 53,
+        "L2.pip_source": 53,
+        "L2.poi_max_age": 53,
+        "L2.point_source": 53,
+        "L2.point_source_declared": 53,
+        "L2.sweep_choch_window": 53,
+        "L2.sweep_window_measured": 53,
+        "L2.swing_k": 53,
+        "L2.tie_tolerance": 53,
+        "L2.timeframes": 53,
+        "L3.entry_in_choch_bar": 53,
+        "L3.sweep_extreme_side": 53,
+        "L3.target_direction": 53,
+        "L4.evaluated": 53,
+        "L4.history": 53,
+        "L4.m5_fresh": 53,
+        "L4.stale_state_consistent": 53,
+        "L6.invalid_if": 53,
+        "L6.stale_if": 53,
+        "L6.valid_until": 53
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "NOT_RUN",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 53
+        },
+        "L2": {
+          "PASS": 53
+        },
+        "L3": {
+          "PASS": 53
+        },
+        "L4": {
+          "PASS": 53
+        },
+        "L5": {
+          "NOT_APPLICABLE": 53
+        },
+        "L6": {
+          "PASS": 53
+        }
+      },
+      "not_applicable_checks": {
+        "L3.stop_geometry": 53,
+        "L5.cost": 53
+      },
+      "opportunity_scans": 53,
+      "priced_opportunity_scans": 0,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 53,
+      "states": {
+        "OPPORTUNITY": 53
+      },
+      "terminal_reasons": {
+        "D30_BADGE_ECONOMICS_NOT_EVALUATED": 53,
+        "FAIL_CLOSED_RR_UNDEFINED": 53,
+        "MISSING_SPREAD": 53,
+        "REJECT_NO_STOP": 53
+      },
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "SHORT_D1|SHORT|FVG|PRIMARY_EXTERNAL_LIQUIDITY": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 4,
+        "L1.replay_hash": 4,
+        "L1.truncation_invariance": 4,
+        "L2.alert_mapping": 4,
+        "L2.c10_stop": 4,
+        "L2.c11_creation_anchor": 4,
+        "L2.c11_target": 4,
+        "L2.day_boundary": 4,
+        "L2.delivery_gate_preserves_detection": 4,
+        "L2.direction_matches_bias": 4,
+        "L2.entry_by_reference": 4,
+        "L2.expiry_session_end": 4,
+        "L2.identity": 4,
+        "L2.instruments_vt_only": 4,
+        "L2.near_poi_band": 4,
+        "L2.no_authority": 4,
+        "L2.pip_source": 4,
+        "L2.poi_max_age": 4,
+        "L2.point_source": 4,
+        "L2.point_source_declared": 4,
+        "L2.sweep_choch_window": 4,
+        "L2.sweep_window_measured": 4,
+        "L2.swing_k": 4,
+        "L2.tie_tolerance": 4,
+        "L2.timeframes": 4,
+        "L3.entry_in_choch_bar": 4,
+        "L3.sweep_extreme_side": 4,
+        "L3.target_direction": 4,
+        "L4.evaluated": 4,
+        "L4.history": 4,
+        "L4.m5_fresh": 4,
+        "L4.stale_state_consistent": 4,
+        "L6.invalid_if": 4,
+        "L6.stale_if": 4,
+        "L6.valid_until": 4
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "NOT_RUN",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 4
+        },
+        "L2": {
+          "PASS": 4
+        },
+        "L3": {
+          "PASS": 4
+        },
+        "L4": {
+          "PASS": 4
+        },
+        "L5": {
+          "NOT_APPLICABLE": 4
+        },
+        "L6": {
+          "PASS": 4
+        }
+      },
+      "not_applicable_checks": {
+        "L3.stop_geometry": 4,
+        "L5.cost": 4
+      },
+      "opportunity_scans": 4,
+      "priced_opportunity_scans": 0,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 4,
+      "states": {
+        "OPPORTUNITY": 4
+      },
+      "terminal_reasons": {
+        "D30_BADGE_ECONOMICS_NOT_EVALUATED": 4,
+        "FAIL_CLOSED_RR_UNDEFINED": 4,
+        "MISSING_SPREAD": 4,
+        "REJECT_NO_STOP": 4
+      },
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    },
+    "SHORT_D1|SHORT|OB_PIVOT|CONFIRMED_OPPOSING_H1_SWING": {
+      "evaluated_checks": {
+        "L1.closed_bars_only": 36,
+        "L1.replay_hash": 36,
+        "L1.truncation_invariance": 36,
+        "L2.alert_mapping": 36,
+        "L2.c10_stop": 36,
+        "L2.c11_creation_anchor": 36,
+        "L2.c11_target": 36,
+        "L2.day_boundary": 36,
+        "L2.delivery_gate_preserves_detection": 36,
+        "L2.direction_matches_bias": 36,
+        "L2.entry_by_reference": 36,
+        "L2.expiry_session_end": 36,
+        "L2.identity": 36,
+        "L2.instruments_vt_only": 36,
+        "L2.near_poi_band": 36,
+        "L2.no_authority": 36,
+        "L2.pip_source": 36,
+        "L2.poi_max_age": 36,
+        "L2.point_source": 36,
+        "L2.point_source_declared": 36,
+        "L2.sweep_choch_window": 36,
+        "L2.sweep_window_measured": 36,
+        "L2.swing_k": 36,
+        "L2.tie_tolerance": 36,
+        "L2.timeframes": 36,
+        "L3.entry_in_choch_bar": 36,
+        "L3.sweep_extreme_side": 36,
+        "L3.target_direction": 36,
+        "L4.evaluated": 36,
+        "L4.history": 36,
+        "L4.m5_fresh": 36,
+        "L4.stale_state_consistent": 36,
+        "L6.invalid_if": 36,
+        "L6.stale_if": 36,
+        "L6.valid_until": 36
+      },
+      "gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "NOT_RUN",
+        "L6": "PASS"
+      },
+      "gates": {
+        "L1": {
+          "PASS": 36
+        },
+        "L2": {
+          "PASS": 36
+        },
+        "L3": {
+          "PASS": 36
+        },
+        "L4": {
+          "PASS": 36
+        },
+        "L5": {
+          "NOT_APPLICABLE": 36
+        },
+        "L6": {
+          "PASS": 36
+        }
+      },
+      "not_applicable_checks": {
+        "L3.stop_geometry": 36,
+        "L5.cost": 36
+      },
+      "opportunity_scans": 36,
+      "priced_opportunity_scans": 0,
+      "qualifies_for_proposal": false,
+      "rr_eligible_scans": 0,
+      "scans": 36,
+      "states": {
+        "OPPORTUNITY": 36
+      },
+      "terminal_reasons": {
+        "D30_BADGE_ECONOMICS_NOT_EVALUATED": 36,
+        "FAIL_CLOSED_RR_UNDEFINED": 36,
+        "MISSING_SPREAD": 36,
+        "REJECT_NO_STOP": 36
+      },
+      "verdict": "INSUFFICIENT",
+      "verification_status": "NOT_VERIFIED"
+    }
+  },
+  "completed": true,
+  "completed_scans": 2052,
+  "data_audit": {
+    "bars": {
+      "D1": 52,
+      "H1": 1248,
+      "M5": 14973
+    },
+    "captured_at_utc": "2026-10-13T23:02:43.717700+00:00",
+    "days": [
+      "2026-08-16",
+      "2026-08-17",
+      "2026-08-18",
+      "2026-08-19",
+      "2026-08-20",
+      "2026-08-21",
+      "2026-08-23",
+      "2026-08-24",
+      "2026-08-25",
+      "2026-08-26",
+      "2026-08-27",
+      "2026-08-28",
+      "2026-08-30",
+      "2026-08-31",
+      "2026-09-01",
+      "2026-09-02",
+      "2026-09-03",
+      "2026-09-04",
+      "2026-09-06",
+      "2026-09-07",
+      "2026-09-08",
+      "2026-09-09",
+      "2026-09-10",
+      "2026-09-11",
+      "2026-09-13",
+      "2026-09-14",
+      "2026-09-15",
+      "2026-09-16",
+      "2026-09-17",
+      "2026-09-18",
+      "2026-09-20",
+      "2026-09-21",
+      "2026-09-22",
+      "2026-09-23",
+      "2026-09-24",
+      "2026-09-25",
+      "2026-09-27",
+      "2026-09-28",
+      "2026-09-29",
+      "2026-09-30",
+      "2026-10-01",
+      "2026-10-02",
+      "2026-10-04",
+      "2026-10-05",
+      "2026-10-06",
+      "2026-10-07",
+      "2026-10-08",
+      "2026-10-09",
+      "2026-10-11",
+      "2026-10-12",
+      "2026-10-13"
+    ],
+    "gap_policy": "Kept exactly as recorded; no fill, interpolation or replacement.",
+    "issues": [],
+    "missing_files": [],
+    "period_end_utc": "2026-10-13T21:00:00+00:00",
+    "period_start_utc": "2026-08-02T21:00:00+00:00",
+    "quote_policy": "MqlRates spread is bar metadata, not an evidenced contemporaneous bid/ask. No quote is invented.",
+    "recorded_gaps": [
+      {
+        "after": "2026-08-07T20:55:00+00:00",
+        "before": "2026-08-09T21:05:00+00:00",
+        "missing_bars": 577
+      },
+      {
+        "after": "2026-08-14T20:55:00+00:00",
+        "before": "2026-08-16T21:00:00+00:00",
+        "missing_bars": 576
+      },
+      {
+        "after": "2026-08-21T20:55:00+00:00",
+        "before": "2026-08-23T21:00:00+00:00",
+        "missing_bars": 576
+      },
+      {
+        "after": "2026-08-28T14:25:00+00:00",
+        "before": "2026-08-28T14:40:00+00:00",
+        "missing_bars": 2
+      },
+      {
+        "after": "2026-08-28T20:55:00+00:00",
+        "before": "2026-08-30T21:00:00+00:00",
+        "missing_bars": 576
+      },
+      {
+        "after": "2026-09-04T20:55:00+00:00",
+        "before": "2026-09-06T21:00:00+00:00",
+        "missing_bars": 576
+      },
+      {
+        "after": "2026-09-11T20:55:00+00:00",
+        "before": "2026-09-13T21:00:00+00:00",
+        "missing_bars": 576
+      },
+      {
+        "after": "2026-09-18T20:55:00+00:00",
+        "before": "2026-09-20T21:00:00+00:00",
+        "missing_bars": 576
+      },
+      {
+        "after": "2026-09-25T20:55:00+00:00",
+        "before": "2026-09-27T21:00:00+00:00",
+        "missing_bars": 576
+      },
+      {
+        "after": "2026-10-02T20:55:00+00:00",
+        "before": "2026-10-04T21:00:00+00:00",
+        "missing_bars": 576
+      },
+      {
+        "after": "2026-10-09T20:55:00+00:00",
+        "before": "2026-10-11T21:00:00+00:00",
+        "missing_bars": 576
+      }
+    ],
+    "runtime_windows": {
+      "D1": 30,
+      "H1": 200,
+      "M5": 300
+    },
+    "server": "VTMarkets-Demo",
+    "sha256": {
+      "tests/fixtures/vt_recorded_60d_fx/EURUSD_d1.csv": "434ed69ffba6689d91110c71154d676962b5bb99ed7b01ccd213bab56f8d6ca9",
+      "tests/fixtures/vt_recorded_60d_fx/EURUSD_h1.csv": "57c714478844aabadbe1eb224b244b5e7373d55fd300ba004fcca3f72b5a6c68",
+      "tests/fixtures/vt_recorded_60d_fx/EURUSD_m5.csv": "a44892113a78ba5845cd7cab4cc579567f284fc7d7b36f4566c1efa230a02eaf",
+      "tests/fixtures/vt_recorded_60d_fx/EURUSD_provenance.json": "f9e2eae11fe1b83706c70ca0854273301c6d81aba5a5c55cf66eb9f01cf78ee6"
+    },
+    "source": "MT5_VT_MARKETS_DEMO",
+    "time_policy": "UTC bar-open labels; evaluate each recorded M5 close; forming bars are passed through and independently checked by canonical L1.",
+    "verdict": "PASS_WITH_DECLARED_GAPS",
+    "window_policy": "FX: recorded window_start..window_end (60 calendar days, UTC dates with M5 bars); earlier recorded rows are warmup only"
+  },
+  "dataset": "tests/fixtures/vt_recorded_60d_fx",
+  "dlsmc_recheck": {
+    "counts": {
+      "D-LSMC-1": {
+        "opportunity_scans": 323,
+        "stop_none_contract_reason:MISSING_SPREAD": 268,
+        "stop_present_host_pip": 55
+      },
+      "D-LSMC-6": {
+        "active_checks": 2051,
+        "expiry_checks": 37,
+        "expiry_unobserved_origin": 3316
+      }
+    },
+    "verdicts": {
+      "D-LSMC-1": "PASS",
+      "D-LSMC-6": "PASS"
+    },
+    "violation_count": 0,
+    "violations": []
+  },
+  "elapsed_seconds": 551.27,
+  "engine_defects": [],
+  "evaluator": {
+    "creation_fact_cache_hits": 1608,
+    "creation_fact_cache_misses": 7,
+    "engine_globals_modified": false,
+    "h1_fact_cache_hits": 10083,
+    "h1_fact_cache_misses": 172,
+    "native_reference_schedule": "Every closed H1 window change and new opportunity/C11/eligibility plan; C10 is always recomputed, never memoized.",
+    "reference_parity": "PASS",
+    "snapshot_or_check_cache": false,
+    "uncached_snapshot_reference_checks": 180
+  },
+  "identity": {
+    "code_sha": "32d5c93c01bf43d818426cbfc926577e20446d08",
+    "contract_sha256": "e5f04912695967fdc95178e0f862d9c2af47f56529f8c97b1a8a104198f1aa7b",
+    "engine_sha256": "279ef511e6e94cb4ea571c28bc30146a7c49c205282d6eb2883007ac66e34bfe",
+    "frozen_file_sha256": {
+      "config/lsmc_report_lane.yaml": "ac9ce5b42d3c399d44f091fba0193fd5ce7a167472da89f475c4b3c0714a3628",
+      "src/large_smc_v112/__init__.py": "5c2e9e5205d83618e7bf2b4783d818c19c98dbf50c9deede2b5ee43e4816a228",
+      "src/large_smc_v112/contract.py": "85e61615b4c64b3bf9d3f0eb5d3941bbb89d22070cf674b97797b6a9f9249820",
+      "src/large_smc_v112/detect.py": "b336f1c4958caefc33fcf4a73dbd3b60b730870f76366a7faec37c5012779161",
+      "src/large_smc_v112/metadata.py": "b0437ae640ccc19a28740f79e83a4ad3eec55f0f81fae54b2db38c7f16a74ca7",
+      "src/large_smc_v112/targets.py": "a047891b188e00c7db429db3ee1b1e1cbfae5cbc78226f4039ed9290fdfe0e4c",
+      "src/large_smc_v112/watch.py": "8aef629782c928e40bb754c750af34c5daac8fcb6691cd7704630e20437196f5",
+      "src/large_smc_v112/windows.py": "7dcfeef1486ca8f1c8f8fa258df9cb47b7e25549b1c82c89ef67d8015db64c05",
+      "src/large_smc_watch/__init__.py": "ebbca3c124487c79a41912b6bbf75688d06529257bdc4ee53d0ffe2df789950f",
+      "src/large_smc_watch/contract.py": "51f9a0d088e750399b7ef4d98c978c6974b0b9ef2814f1c4251bbed79a9a5e1c",
+      "src/large_smc_watch/detect.py": "e3fd5e1fe699046c8b4c552e68d6a19a6f4abc51ea9cec3c4734c02db4e27973",
+      "src/large_smc_watch/watch.py": "86ac9cdcfa864b36a06b795920bd333f8fa9cfdd81efa5eb422e1d746bc2c63d",
+      "strategies/ST_LARGE_SMC_V1_1_1_0.yaml": "78285f9fabcb20af14de327d010e48684dc12205f4435eff886fcc2373a357b4",
+      "strategies/ST_LARGE_SMC_V1_1_1_2.yaml": "1f9b6cace2e1be33e5b3572e2c13e3e526b992478f91c8f09955b0f44b73024f"
+    },
+    "runner_sha256": "fe171028ee0b6822835147aebb614e2dfa82bcc861974d2e07c2e675ccb81efc"
+  },
+  "l5_cost_source": "VT recorded M5 spread_price of the last closed bar (<dataset>/<SYM>_m5_meta.csv) + OD1011-COMMISSION: crypto via scripts/ccfd_sweep_retest_replay.commission_binding (the accepted source of the CCFD 1.0.0 L5 PASS), FX/gold via config/owner_ticket.yaml bound to the capture server/login suffix, OD1009-D2 thresholds",
+  "layout": {
+    "boundary_overlap_bars_each_side": 12,
+    "core_end_row_exclusive": 9249,
+    "core_scans": 2052,
+    "core_start_row": 7197,
+    "days": [
+      "2026-09-06",
+      "2026-09-07",
+      "2026-09-08",
+      "2026-09-09",
+      "2026-09-10",
+      "2026-09-11",
+      "2026-09-13",
+      "2026-09-14",
+      "2026-09-15"
+    ],
+    "oldest_possible_creation_close": "2026-09-03T19:15:00+00:00",
+    "warmup_policy": "Current host windows plus the complete declared creation lookback before the oldest possible active creation bar; original capture start retained; no synthetic overlap.",
+    "warmup_start_row": {
+      "D1": 0,
+      "H1": 374,
+      "M5": 6588
+    }
+  },
+  "mismatch_categories": {
+    "EXPECTED_MARKET_CLOSED": 1
+  },
+  "mission": "AGP-LSMC113-EURUSD-ENTRY",
+  "protected_bytes_unchanged": true,
+  "raw_all_scans": {
+    "evaluated_checks": {
+      "L1.closed_bars_only": 2052,
+      "L1.replay_hash": 2052,
+      "L1.truncation_invariance": 2052,
+      "L2.alert_mapping": 2052,
+      "L2.c10_stop": 323,
+      "L2.c11_creation_anchor": 323,
+      "L2.c11_target": 323,
+      "L2.day_boundary": 2052,
+      "L2.delivery_gate_preserves_detection": 323,
+      "L2.direction_matches_bias": 323,
+      "L2.entry_by_reference": 323,
+      "L2.expiry_session_end": 323,
+      "L2.identity": 2052,
+      "L2.instruments_vt_only": 2052,
+      "L2.near_poi_band": 2052,
+      "L2.no_authority": 2052,
+      "L2.pip_source": 323,
+      "L2.poi_max_age": 2052,
+      "L2.point_source": 2051,
+      "L2.point_source_declared": 2052,
+      "L2.sweep_choch_window": 2052,
+      "L2.sweep_window_measured": 323,
+      "L2.swing_k": 2052,
+      "L2.tie_tolerance": 2052,
+      "L2.timeframes": 2052,
+      "L3.entry_in_choch_bar": 323,
+      "L3.stop_beyond_sweep": 55,
+      "L3.stop_side": 55,
+      "L3.sweep_extreme_side": 323,
+      "L3.target_direction": 297,
+      "L4.evaluated": 2052,
+      "L4.history": 2052,
+      "L4.m5_fresh": 2052,
+      "L4.stale_state_consistent": 2052,
+      "L6.invalid_if": 323,
+      "L6.stale_if": 323,
+      "L6.valid_until": 323
+    },
+    "gate_verdicts": {
+      "L1": "PASS",
+      "L2": "PASS",
+      "L3": "PASS",
+      "L4": "FAIL",
+      "L5": "INSUFFICIENT",
+      "L6": "PASS"
+    },
+    "gates": {
+      "L1": {
+        "PASS": 2052
+      },
+      "L2": {
+        "PASS": 2052
+      },
+      "L3": {
+        "PASS": 2052
+      },
+      "L4": {
+        "FAIL": 1,
+        "PASS": 2051
+      },
+      "L5": {
+        "INSUFFICIENT": 55,
+        "NOT_APPLICABLE": 1997
+      },
+      "L6": {
+        "PASS": 2052
+      }
+    },
+    "not_applicable_checks": {
+      "L2.c10_stop": 1729,
+      "L2.c11_creation_anchor": 1729,
+      "L2.c11_target": 1729,
+      "L2.direction_matches_bias": 1729,
+      "L2.entry_by_reference": 1729,
+      "L2.expiry_session_end": 1729,
+      "L2.point_source": 1,
+      "L2.sweep_window_measured": 1729,
+      "L3.geometry": 1729,
+      "L3.stop_geometry": 268,
+      "L3.target_direction": 26,
+      "L5.cost": 1997,
+      "L6.freshness": 1729
+    },
+    "opportunity_scans": 323,
+    "priced_opportunity_scans": 29,
+    "qualifies_for_proposal": false,
+    "rr_eligible_scans": 29,
+    "scans": 2052,
+    "states": {
+      "DEVELOPING": 1049,
+      "MARKET_CLOSED": 1,
+      "NEAR_POI": 679,
+      "OPPORTUNITY": 323
+    },
+    "terminal_reasons": {
+      "AMBIGUOUS_TARGET": 26,
+      "D30_BADGE_ECONOMICS_NOT_EVALUATED": 323,
+      "FAIL_CLOSED_RR_UNDEFINED": 294,
+      "FX_WEEKEND": 1,
+      "MISSING_SPREAD": 268,
+      "REJECT_NO_STOP": 268,
+      "REJECT_NO_TARGET": 26,
+      "REJECT_STALE": 29
+    },
+    "verdict": "FAIL",
+    "verification_status": "NOT_VERIFIED"
+  },
+  "resource_class": "R1",
+  "resource_lock_released": true,
+  "rule_diff": {
+    "computed": [
+      "based_on",
+      "based_on_sha256",
+      "candidate_created_local_date",
+      "candidate_provenance.rule_change_mission",
+      "candidate_provenance.source_main_commit",
+      "candidate_rule_changes.changes",
+      "candidate_rule_changes.declared_diff_paths",
+      "candidate_rule_changes.diff_scope",
+      "candidate_rule_changes.frozen_versions_untouched",
+      "candidate_rule_changes.mission",
+      "implementation",
+      "rules.targets.creation_window",
+      "rules.targets.fallback.condition",
+      "version"
+    ],
+    "declared": [
+      "based_on",
+      "based_on_sha256",
+      "candidate_created_local_date",
+      "candidate_provenance.rule_change_mission",
+      "candidate_provenance.source_main_commit",
+      "candidate_rule_changes.changes",
+      "candidate_rule_changes.declared_diff_paths",
+      "candidate_rule_changes.diff_scope",
+      "candidate_rule_changes.frozen_versions_untouched",
+      "candidate_rule_changes.mission",
+      "implementation",
+      "rules.targets.creation_window",
+      "rules.targets.fallback.condition",
+      "version"
+    ],
+    "verdict": "PASS"
+  },
+  "scope_days": 60,
+  "selections": {
+    "EURUSD:H1:FVG:LONG:2026-09-07T22:00:00+00:00|2026-09-08T03:00:00+00:00|2026-09-08T03:45:00+00:00": {
+      "m5_row": 7591,
+      "target": {
+        "c11_source": null,
+        "target_c11": null,
+        "target_reason": "AMBIGUOUS_TARGET",
+        "target_selection": {
+          "c11_source": null,
+          "core_selector_reason": "REJECT_NO_TARGET",
+          "core_selector_source": null,
+          "core_selector_source_id": null,
+          "core_selector_tier": null,
+          "creation_bar_close_utc": "2026-09-08T03:50:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-26T19:00:00+00:00",
+            "M5": "2026-09-07T02:50:00+00:00"
+          },
+          "price": null,
+          "reason": "AMBIGUOUS_TARGET",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": null,
+          "structure_note": null,
+          "tier": null,
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "6333e2e9fcae5417eb8f4f03dc2c659e60920e8a88144090cea506b25ac92013"
+    },
+    "EURUSD:H1:FVG:LONG:2026-09-07T22:00:00+00:00|2026-09-08T03:10:00+00:00|2026-09-08T03:45:00+00:00": {
+      "m5_row": 7571,
+      "target": {
+        "c11_source": null,
+        "target_c11": null,
+        "target_reason": "AMBIGUOUS_TARGET",
+        "target_selection": {
+          "c11_source": null,
+          "core_selector_reason": "REJECT_NO_TARGET",
+          "core_selector_source": null,
+          "core_selector_source_id": null,
+          "core_selector_tier": null,
+          "creation_bar_close_utc": "2026-09-08T03:50:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-26T19:00:00+00:00",
+            "M5": "2026-09-07T02:50:00+00:00"
+          },
+          "price": null,
+          "reason": "AMBIGUOUS_TARGET",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": null,
+          "structure_note": null,
+          "tier": null,
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "6333e2e9fcae5417eb8f4f03dc2c659e60920e8a88144090cea506b25ac92013"
+    },
+    "EURUSD:H1:FVG:LONG:2026-09-14T15:00:00+00:00|2026-09-14T21:25:00+00:00|2026-09-14T22:00:00+00:00": {
+      "m5_row": 8965,
+      "target": {
+        "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+        "target_c11": 1.1563,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "core_selector_reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "core_selector_source": "liquidity.hierarchy.external_swing_liquidity",
+          "core_selector_source_id": "EURUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:1.15630000",
+          "core_selector_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "creation_bar_close_utc": "2026-09-14T22:05:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-09-02T14:00:00+00:00",
+            "M5": "2026-09-13T21:05:00+00:00"
+          },
+          "evidence_timestamp": "2026-09-14T16:50:00+00:00",
+          "price": 1.1563,
+          "reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "liquidity.hierarchy.external_swing_liquidity",
+          "source_id": "EURUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:1.15630000",
+          "status_at_selection": "UNSWEPT",
+          "structure_note": null,
+          "tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "4becb797ff17253dd574a65fe248647a1331e02efc814c5b4a3488506ac85e8f"
+    },
+    "EURUSD:H1:FVG:SHORT:2026-09-04T17:00:00+00:00|2026-09-06T23:45:00+00:00|2026-09-06T23:55:00+00:00": {
+      "m5_row": 7235,
+      "target": {
+        "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+        "target_c11": 1.15845,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "core_selector_reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "core_selector_source": "liquidity.hierarchy.external_swing_liquidity",
+          "core_selector_source_id": "EURUSD:M5:SELL_SIDE:EXTERNAL_SWING_LOW:1.15845000",
+          "core_selector_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "creation_bar_close_utc": "2026-09-07T00:00:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-25T16:00:00+00:00",
+            "M5": "2026-09-03T23:00:00+00:00"
+          },
+          "evidence_timestamp": "2026-09-04T12:30:00+00:00",
+          "price": 1.15845,
+          "reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "liquidity.hierarchy.external_swing_liquidity",
+          "source_id": "EURUSD:M5:SELL_SIDE:EXTERNAL_SWING_LOW:1.15845000",
+          "status_at_selection": "UNSWEPT",
+          "structure_note": null,
+          "tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "ca24ae60140fbe33f5285d33d589cb27c0e6e75dff42386e0e82dab6f498f87a"
+    },
+    "EURUSD:H1:FVG:SHORT:2026-09-10T10:00:00+00:00|2026-09-10T15:50:00+00:00|2026-09-10T16:30:00+00:00": {
+      "m5_row": 8347,
+      "target": {
+        "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+        "target_c11": 1.16214,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+          "core_m5_fallback_ignored": false,
+          "core_selector_reason": "REJECT_NO_TARGET",
+          "core_selector_source": null,
+          "core_selector_source_id": null,
+          "core_selector_tier": null,
+          "creation_bar_close_utc": "2026-09-10T16:35:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-31T08:00:00+00:00",
+            "M5": "2026-09-09T15:35:00+00:00"
+          },
+          "kind": "low",
+          "known_at_index": 172,
+          "price": 1.16214,
+          "reason": "PRIMARY_UNAVAILABLE_H1_FALLBACK",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "fx_discovery.features.swings",
+          "structure_note": null,
+          "swing_index": 170,
+          "tier": "FALLBACK_H1_SWING",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "12dc607712c8688d0d9208bc48def0b851b993168b31e29ba58324254ab92c95"
+    },
+    "EURUSD:H1:FVG:SHORT:2026-09-14T07:00:00+00:00|2026-09-14T12:15:00+00:00|2026-09-14T12:20:00+00:00": {
+      "m5_row": 8851,
+      "target": {
+        "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+        "target_c11": 1.15337,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+          "core_m5_fallback_ignored": false,
+          "core_selector_reason": "REJECT_NO_TARGET",
+          "core_selector_source": null,
+          "core_selector_source_id": null,
+          "core_selector_tier": null,
+          "creation_bar_close_utc": "2026-09-14T12:25:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-09-02T04:00:00+00:00",
+            "M5": "2026-09-11T11:25:00+00:00"
+          },
+          "kind": "low",
+          "known_at_index": 198,
+          "price": 1.15337,
+          "reason": "PRIMARY_UNAVAILABLE_H1_FALLBACK",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "fx_discovery.features.swings",
+          "structure_note": null,
+          "swing_index": 196,
+          "tier": "FALLBACK_H1_SWING",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "f80750e2ba3dc664013b9d23623281468e80aab1ab8531790c208ead1755d889"
+    },
+    "EURUSD:H1:FVG:SHORT:2026-09-14T19:00:00+00:00|2026-09-14T22:50:00+00:00|2026-09-14T23:50:00+00:00": {
+      "m5_row": 9115,
+      "target": {
+        "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+        "target_c11": 1.15225,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "core_selector_reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "core_selector_source": "liquidity.hierarchy.external_swing_liquidity",
+          "core_selector_source_id": "EURUSD:M5:SELL_SIDE:EXTERNAL_SWING_LOW:1.15225000",
+          "core_selector_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "creation_bar_close_utc": "2026-09-14T23:55:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-09-02T15:00:00+00:00",
+            "M5": "2026-09-13T22:55:00+00:00"
+          },
+          "evidence_timestamp": "2026-09-14T13:55:00+00:00",
+          "price": 1.15225,
+          "reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "liquidity.hierarchy.external_swing_liquidity",
+          "source_id": "EURUSD:M5:SELL_SIDE:EXTERNAL_SWING_LOW:1.15225000",
+          "status_at_selection": "UNSWEPT",
+          "structure_note": null,
+          "tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "aa98efdd1aef7d938851985bc2de4258d4073c2cda617519097010fec2f7deef"
+    },
+    "EURUSD:H1:OB_PIVOT:SHORT:2026-09-08T05:00:00+00:00|2026-09-10T11:45:00+00:00|2026-09-10T11:55:00+00:00": {
+      "m5_row": 8275,
+      "target": {
+        "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+        "target_c11": 1.16156,
+        "target_reason": null,
+        "target_selection": {
+          "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+          "core_m5_fallback_ignored": false,
+          "core_selector_reason": "REJECT_NO_TARGET",
+          "core_selector_source": null,
+          "core_selector_source_id": null,
+          "core_selector_tier": null,
+          "creation_bar_close_utc": "2026-09-10T12:00:00+00:00",
+          "creation_window_closed_bars": {
+            "H1": 200,
+            "M5": 300
+          },
+          "creation_window_start_utc": {
+            "H1": "2026-08-31T04:00:00+00:00",
+            "M5": "2026-09-09T11:00:00+00:00"
+          },
+          "kind": "low",
+          "known_at_index": 103,
+          "price": 1.16156,
+          "reason": "PRIMARY_UNAVAILABLE_H1_FALLBACK",
+          "selection_mode": "STATELESS_CREATION_ANCHORED",
+          "source": "fx_discovery.features.swings",
+          "structure_note": null,
+          "swing_index": 101,
+          "tier": "FALLBACK_H1_SWING",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "target_sha256": "7e770fdd242d95414be397d4510d4efebceb00256866a3ee6f6d47726878eaea"
+    }
+  },
+  "shard": 2,
+  "shard_days": 10,
+  "strategy": "ST_LARGE_SMC_V1@1.1.3",
+  "symbol": "EURUSD",
+  "verdict": "COMPLETED",
+  "verification_status": "NOT_VERIFIED",
+  "workers": 1
+}
