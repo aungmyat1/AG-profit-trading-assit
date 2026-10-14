@@ -65,3 +65,31 @@ def test_merger_never_converts_killed_or_failed_shard_to_pass(tmp_path,status,ex
     assert report['symbols']['BTCUSD']['verdict']==expected
     assert report['symbols']['BTCUSD']['qualifies_for_r3_proposal'] is False
     assert report['proposal']=='NO_QUALIFYING_SCOPE'
+
+
+def test_eurusd_d1r2_window_shards_cover_every_window_row_once():
+    info,bars=replay.inventory('EURUSD')
+    assert info['verdict']=='PASS_WITH_DECLARED_GAPS' and not info['issues']
+    layouts=[replay.layout(info,bars,s) for s in range(6)]
+    for before,after in zip(layouts,layouts[1:]):
+        assert before['core_end_row_exclusive']==after['core_start_row']
+    window=[b for b in bars['M5'] if b.time.date().isoformat() in info['days']]
+    assert sum(p['core_scans'] for p in layouts)==len(window)
+    assert layouts[0]['warmup_start_row']['M5'] < layouts[0]['core_start_row']   # real recorded warmup rows
+
+
+def test_fx_commission_binds_only_to_matching_capture_account():
+    prov=json.loads((replay.FX_DATASET/'EURUSD_provenance.json').read_text())
+    assert replay.fx_commission_binding(prov)['policy']=='OD1009-D2'
+    assert replay.fx_commission_binding({**prov,'login_suffix':'985'}) is None
+    assert replay.fx_commission_binding({**prov,'server':'Other'}) is None
+
+
+def test_independent_poi_age_counts_weekday_ny1700_dates():
+    import datetime as dt
+    utc=dt.timezone.utc
+    origin=dt.datetime(2026,9,7,12,tzinfo=utc)                       # Monday trading date
+    h1=[replay.A.Candle(origin+dt.timedelta(hours=h),1,1,1,1,None) for h in range(0,24*9)]
+    assert replay.independent_poi_age(origin,h1,dt.datetime(2026,9,7,20,tzinfo=utc))==0
+    assert replay.independent_poi_age(origin,h1,dt.datetime(2026,9,14,20,tzinfo=utc))==5   # weekend not counted
+    assert replay.independent_poi_age(origin,h1,dt.datetime(2026,9,14,22,tzinfo=utc))==6

@@ -336,9 +336,9 @@ def l5_od1011(case: Dict[str, Any], sig: Any) -> Dict[str, Any]:
     def insufficient(reason: str) -> Dict[str, Any]:
         return {"gate": "L5", "status": INSUFFICIENT, "reason": reason, "checks": []}
 
-    if case["symbol"] not in C.CRYPTO_SYMBOLS:
-        return insufficient("NO_ACCEPTED_COST_SOURCE_FOR_SYMBOL")
     ev = case.get("cost_evidence") or {}
+    if case["symbol"] not in C.CRYPTO_SYMBOLS:
+        return _l5_fx_gold(case, ev, abs(entry - stop), insufficient)
     binding = ev.get("commission_binding")
     if not binding or binding.get("source") != "OD1011-COMMISSION":
         return insufficient("COMMISSION_EVIDENCE_MISSING")
@@ -369,6 +369,49 @@ def l5_od1011(case: Dict[str, Any], sig: Any) -> Dict[str, Any]:
             "thresholds": {k: policy[k] for k in ("spread_ok_pct", "spread_block_pct", "cost_warn_R", "cost_block_R")},
             "actionability": ("BLOCK" if expected & {"SPREAD_TOO_WIDE", "COST_TOO_HIGH"} else
                               "WARN" if expected else "OK")}
+
+
+def _l5_fx_gold(case: Dict[str, Any], ev: Dict[str, Any], risk: float, insufficient) -> Dict[str, Any]:
+    """FX/gold OD1011-L5: host-captured VT M5 spread_price of the last closed bar + OD1011-COMMISSION
+    (config/owner_ticket.yaml, bound to the capture account) against the OD1009-D2 FX/gold policy
+    (cost_warn_R / cost_block_R; no spread bands exist for FX/gold). The canonical FX predicates
+    (logic_gate.l5_cost warn verdict, manual_ticket.cost_at_or_above_block) are checked against an
+    independent re-derivation. Missing evidence or policy stays INSUFFICIENT."""
+    from v1_tickets.guards import COST_R_TOL
+    from v1_tickets.logic_gate import l5_cost
+    from v1_tickets.manual_ticket import cost_at_or_above_block, load_owner_config
+    binding = ev.get("commission_binding")
+    if not binding or binding.get("source") != "OD1011-COMMISSION" or binding.get("policy") != "OD1009-D2":
+        return insufficient("COMMISSION_EVIDENCE_MISSING")
+    spread = ev.get("spread")
+    if spread is None or risk <= 0:
+        return insufficient("SPREAD_OR_STOP_DISTANCE_MISSING")
+    quote = dt.datetime.fromisoformat(ev["spread_bar_close_utc"]) if ev.get("spread_bar_close_utc") else None
+    if quote is None or not (dt.timedelta(0) <= case["now"] - quote <= QUOTE_MAX_AGE):
+        return insufficient("QUOTE_NOT_CONTEMPORANEOUS")
+    policy = load_owner_config()
+    warn_r, block_r = policy.get("cost_warn_R"), policy.get("cost_block_R")
+    if warn_r is None or block_r is None:
+        return insufficient("OD1009_D2_POLICY_NOT_SET")
+    commission = binding["value"]
+    cost = spread / risk + commission
+    canonical = l5_cost(spread, risk, commission_r=commission, warn_r=warn_r)
+    warn_verdict = next(c["verdict"] for c in canonical["checks"] if c["id"] == "L5.cost_vs_warn_level")
+    got = ({"COST_TOO_HIGH"} if cost_at_or_above_block(cost, block_r) else
+           {"COST_WARN"} if warn_verdict != PASS else set())
+
+    def reached(threshold: float) -> bool:                              # independent re-derivation
+        return cost >= threshold - COST_R_TOL * max(1.0, abs(threshold))
+    expected = {"COST_TOO_HIGH"} if reached(block_r) else {"COST_WARN"} if reached(warn_r) else set()
+    ok = got == expected
+    return {"gate": "L5", "status": PASS if ok else FAIL,
+            "checks": [_check("L5.cost_gate_applied", "FX/gold OD1009-D2 cost codes == independent derivation",
+                              sorted(got), sorted(expected), PASS if ok else FAIL)],
+            "spread": spread, "spread_source": "VT recorded M5 spread_price (host-captured point), last closed bar",
+            "commission_R": commission, "commission_source": binding["source"],
+            "spread_R": round(spread / risk, 6), "cost_R": round(cost, 6),
+            "thresholds": {"cost_warn_R": warn_r, "cost_block_R": block_r},
+            "actionability": "BLOCK" if "COST_TOO_HIGH" in expected else "WARN" if expected else "OK"}
 
 
 # ---------------------------------------------------------------------------------- run
