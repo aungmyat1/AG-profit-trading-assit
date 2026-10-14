@@ -1,0 +1,31 @@
+--- S0.py
++++ S1.py
+@@ -57,9 +57,12 @@
+     from backtesting import Backtest, Strategy
+ 
+     path = [b for b in bars if entry_time < b.time < horizon]
+-    rows = [{"time": entry_time, "Open": entry, "High": entry, "Low": entry, "Close": entry}]
++    # backtesting.py never calls next() on the first bar, so two identical anchor bars are used: the order is
++    # placed on the first next() call and filled at the anchor close (= entry) via trade_on_close.
++    rows = [{"time": entry_time - dt.timedelta(seconds=2), "Open": entry, "High": entry, "Low": entry, "Close": entry},
++            {"time": entry_time - dt.timedelta(seconds=1), "Open": entry, "High": entry, "Low": entry, "Close": entry}]
+     rows += [{"time": b.time, "Open": b.open, "High": b.high, "Low": b.low, "Close": b.close} for b in path]
+-    if len(rows) < 2:
++    if len(rows) < 3:
+         return {"result": "DATA_INSUFFICIENT"}
+     frame = pd.DataFrame(rows).set_index("time")
+     frame.index = pd.DatetimeIndex(frame.index)
+@@ -68,10 +71,11 @@
+ 
+     class Once(Strategy):
+         def init(self):
+-            self.rejected = None
++            self.rejected, self.placed = None, False
+ 
+         def next(self):
+-            if len(self.data) == 1:
++            if not self.placed:
++                self.placed = True
+                 try:
+                     (self.buy if long else self.sell)(size=1, sl=sl, tp=tp)
+                 except ValueError as exc:

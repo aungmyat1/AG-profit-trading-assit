@@ -1,0 +1,40 @@
+--- S5.py
++++ S6.py
+@@ -104,8 +104,16 @@
+             "exit_time": pd.Timestamp(t["ExitTime"]).isoformat(), "gross_R": round(sign * (exit_price - entry) / risk, 4)}
+ 
+ 
+-def compare(engine: Dict[str, Any], oracle: Dict[str, Any]) -> Dict[str, Any]:
++def compare(engine: Dict[str, Any], oracle: Dict[str, Any], *, direction: str = "", tp: float = 0.0) -> Dict[str, Any]:
+     e, o = engine.get("result"), oracle.get("result")
++    gap_tp = (e == "TP1" and o == "EXPIRY" and oracle.get("exit_time", "")[:16] == (engine.get("bar") or "")[:16]
++              and ((oracle.get("exit_price", tp) > tp) if direction == "LONG" else (oracle.get("exit_price", tp) < tp)))
++    if gap_tp:
++        return {"class": "SPEC_DIFFERENCE",
++                "note": "bar gapped through TP1: backtesting.py fills at the bar open, repo resolver books TP1"}
++    if e == "DATA_INSUFFICIENT" and engine.get("reason") == "BARS_END_BEFORE_HORIZON":
++        return {"class": "SPEC_DIFFERENCE",
++                "note": "dataset ends before the horizon: repo resolver refuses, backtesting.py finalizes at last bar"}
+     if e == "AMBIGUOUS":
+         cls = "SPEC_DIFFERENCE"       # repo resolver never guesses a same-bar TP/SL; backtesting.py picks one
+         note = "TP1 and SL in the same bar: repo=AMBIGUOUS (by design), oracle=" + str(o)
+@@ -174,7 +182,8 @@
+                           and math.isclose(box["low"], t["box"]["low"], abs_tol=1e-9))
+                 rows.append({"symbol": symbol, "cycle": cycle, "day": ds, "direction": t["direction"],
+                              "entry": t["entry"], "sl": t["stop_loss"], "tp1": tp1, "engine": engine,
+-                             "oracle": oracle, "comparison": compare(engine, oracle),
++                             "oracle": oracle,
++                             "comparison": compare(engine, oracle, direction=t["direction"], tp=tp1),
+                              "box_engine": t["box"], "box_pandas_ta": box, "box_agree": box_ok})
+                 fuzz.append(_asw_fuzz(h, symbol, cycle, day, session, post, t, signal_open, rng))
+     return {"rows": rows, "fuzz": fuzz}
+@@ -256,7 +265,8 @@
+         prev = [b for b in bars if day <= b.time < day + dt.timedelta(days=1)]
+         dc = donchian([b.high for b in prev], [b.low for b in prev])
+         rows.append({**{k: s[k] for k in ("symbol", "direction", "entry", "sl", "tp1", "retest_time")},
+-                     "engine": engine, "oracle": oracle, "comparison": compare(engine, oracle),
++                     "engine": engine, "oracle": oracle,
++                     "comparison": compare(engine, oracle, direction=s["direction"], tp=s["tp1"]),
+                      "reference_engine": {"high": ref["high"], "low": ref["low"]}, "reference_pandas_ta": dc,
+                      "reference_agree": math.isclose(dc["high"], ref["high"], abs_tol=1e-9)
+                      and math.isclose(dc["low"], ref["low"], abs_tol=1e-9)})
