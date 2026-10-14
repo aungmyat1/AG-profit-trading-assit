@@ -4,6 +4,7 @@ Server-clock times in the fake are derived independently (+3h before 2026-11-01T
 never from the helper under test. No broker, no order call, no flag or scope change."""
 from __future__ import annotations
 
+import itertools
 import json
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -35,8 +36,12 @@ def _server_epoch(at_utc: datetime) -> int:
     return int(((at_utc + offset).replace(tzinfo=None) - datetime(1970, 1, 1)).total_seconds())
 
 
-def deal(at, magic, profit, *, entry=0, kind=0, **extra):
+_IDS = itertools.count(500)
+
+
+def deal(at, magic, profit, *, entry=0, kind=0, pos=None, **extra):
     return SimpleNamespace(time=_server_epoch(at), magic=magic, profit=profit, entry=entry, type=kind,
+                           position_id=next(_IDS) if pos is None else pos,
                            swap=extra.get("swap", 0.0), commission=extra.get("commission", 0.0), fee=0.0)
 
 
@@ -103,10 +108,10 @@ def test_per_scope_and_account_metrics_for_the_current_server_day():
     now = datetime(2026, 11, 1, 21, 30, tzinfo=UTC)         # server day 2026-11-01
     mt5 = FakeMT5(deals=[
         deal(datetime(2026, 10, 31, 20, 0, tzinfo=UTC), 1001, -500.0, entry=1),   # previous day: excluded
-        deal(datetime(2026, 10, 31, 21, 5, tzinfo=UTC), 1001, 0.0),               # S1 entry
-        deal(datetime(2026, 11, 1, 3, 0, tzinfo=UTC), 1001, -40.0, entry=1, commission=-2.0),  # S1 exit
-        deal(datetime(2026, 11, 1, 9, 0, tzinfo=UTC), 1001, 0.0),                 # S1 entry (after DST end)
-        deal(datetime(2026, 11, 1, 10, 0, tzinfo=UTC), 7777, -30.0, entry=1),     # foreign/manual
+        deal(datetime(2026, 10, 31, 21, 5, tzinfo=UTC), 1001, 0.0, pos=1),        # S1 entry
+        deal(datetime(2026, 11, 1, 3, 0, tzinfo=UTC), 1001, -40.0, entry=1, commission=-2.0, pos=1),  # S1 exit
+        deal(datetime(2026, 11, 1, 9, 0, tzinfo=UTC), 1001, 0.0, pos=2),          # S1 entry (after DST end)
+        deal(datetime(2026, 11, 1, 10, 0, tzinfo=UTC), 7777, -30.0, entry=1),     # foreign close, carried
         deal(datetime(2026, 11, 1, 11, 0, tzinfo=UTC), 0, 1000.0, kind=2),        # balance: excluded
     ], positions=[position(datetime(2026, 11, 1, 9, 0, tzinfo=UTC), 1001, -8.0)])
     result = build(mt5, now)
@@ -115,7 +120,8 @@ def test_per_scope_and_account_metrics_for_the_current_server_day():
     assert (s1["trades_today"], s1["realized_pnl"], s1["open_pnl"]) == (2, -42.0, -8.0)
     assert s1["total_R"] == -1.0 and s1["daily_loss_pct"] == 0.5      # 1R = 0.5% of 10k = 50
     assert result.scopes[RS.scope_key(S2)]["trades_today"] == 0
-    assert result.account["realized_pnl"] == -72.0 and result.account["daily_loss_pct"] == 0.8
+    assert result.account["realized_pnl"] == -42.0 and result.account["carried_adverse_pnl"] == -30.0
+    assert result.account["daily_loss_pct"] == 0.8
     snap = result.snapshot_for(S1)
     assert snap.strategy_trades_today == 2 and snap.account_daily_loss_pct == 0.8
     assert snap.server_day == date(2026, 11, 1) and snap.daily_reset_basis == "VT_SERVER_DAY"
@@ -134,6 +140,54 @@ def test_counts_reset_at_the_winter_server_midnight():
     assert after.server_day == date(2026, 11, 2) and after.scopes[RS.scope_key(S1)]["trades_today"] == 0
 
 
+# --------------------------------------------------------------------------- carried positions, trade count
+
+NOW = datetime(2026, 11, 1, 21, 30, tzinfo=UTC)                  # server day 2026-11-01
+YESTERDAY = datetime(2026, 10, 30, 12, tzinfo=UTC)               # before the 2026-10-31 21:00Z day start
+
+
+def test_carried_gains_never_offset_carried_losses():
+    # +1.5% carried gain (unknown midnight mark) and a -1.0% carried loss: the loss is reported in full.
+    mt5 = FakeMT5(positions=[position(YESTERDAY, 1001, 150.0), position(YESTERDAY, 1001, -100.0)])
+    s1 = build(mt5, NOW).scopes[RS.scope_key(S1)]
+    assert s1["carried_adverse_pnl"] == -100.0 and s1["open_pnl"] == 0.0
+    assert s1["daily_loss_pct"] == 1.0 and s1["daily_loss_R"] == 2.0
+
+
+def test_carried_position_back_to_zero_reports_no_gain_and_no_offset():
+    # A carried position worth +1.5% at midnight and 0 now: its intraday give-back is unknowable from
+    # profit alone (conservative approximation, documented); it can never offset another loss.
+    mt5 = FakeMT5(positions=[position(YESTERDAY, 1001, 0.0)],
+                  deals=[deal(datetime(2026, 11, 1, 2, tzinfo=UTC), 1001, -50.0, entry=1)])
+    s1 = build(mt5, NOW).scopes[RS.scope_key(S1)]
+    assert s1["carried_adverse_pnl"] == -50.0 and s1["daily_loss_pct"] == 0.5
+
+
+def test_today_gains_do_not_offset_carried_losses():
+    mt5 = FakeMT5(deals=[deal(datetime(2026, 11, 1, 2, tzinfo=UTC), 1001, 0.0, pos=9),
+                         deal(datetime(2026, 11, 1, 3, tzinfo=UTC), 1001, 200.0, entry=1, pos=9),   # today: +200
+                         deal(datetime(2026, 11, 1, 4, tzinfo=UTC), 1001, -100.0, entry=1, pos=3),  # carried close
+                         deal(datetime(2026, 11, 1, 5, tzinfo=UTC), 1001, 80.0, entry=1, pos=4)],   # carried gain
+                  positions=[position(YESTERDAY, 1001, -20.0)])
+    s1 = build(mt5, NOW).scopes[RS.scope_key(S1)]
+    assert (s1["realized_pnl"], s1["carried_adverse_pnl"]) == (200.0, -120.0)
+    assert s1["daily_loss_pct"] == 1.2 and s1["trades_today"] == 1
+
+
+def test_trades_today_counts_distinct_positions_not_deals():
+    fills = [deal(datetime(2026, 11, 1, 2, tzinfo=UTC), 1001, 0.0, pos=7),
+             deal(datetime(2026, 11, 1, 2, 1, tzinfo=UTC), 1001, 0.0, pos=7),     # second fill, same trade
+             deal(datetime(2026, 11, 1, 3, tzinfo=UTC), 1001, 0.0, pos=8)]
+    assert build(FakeMT5(deals=fills), NOW).scopes[RS.scope_key(S1)]["trades_today"] == 2
+    assert build(FakeMT5(deals=fills[:2]), NOW).scopes[RS.scope_key(S1)]["trades_today"] == 1
+
+
+def test_duplicate_scope_magic_blocks():
+    result = build(FakeMT5(), NOW, scopes=(S1, _scope(1001, "EURUSD")))
+    assert (result.status, result.reason_code) == ("BLOCKED", RS.MAGIC_DUPLICATE)
+    assert result.snapshot_for(S1) is None
+
+
 # --------------------------------------------------------------------------- fail closed
 
 @pytest.mark.parametrize("mt5, reason", [
@@ -142,6 +196,7 @@ def test_counts_reset_at_the_winter_server_midnight():
     (FakeMT5(deals=None), RS.DEALS_UNAVAILABLE),
     (FakeMT5(positions=None), RS.POSITIONS_UNAVAILABLE),
     (FakeMT5(deals=[SimpleNamespace(time=None, magic=1, type=0, entry=0, profit=0.0)]), RS.DATA_INVALID),
+    (FakeMT5(deals=[deal(datetime(2026, 11, 1, 2, tzinfo=UTC), 1001, 0.0, pos="x")]), RS.DATA_INVALID),
     (FakeMT5(positions=[position(datetime(2026, 11, 1, 23, tzinfo=UTC), 1001, 0.0)]), RS.CLOCK_AHEAD),
 ])
 def test_missing_or_invalid_broker_data_blocks(mt5, reason):

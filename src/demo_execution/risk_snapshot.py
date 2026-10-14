@@ -16,10 +16,19 @@ Conventions (to be host-verified, like the margin mode):
   [server midnight, server now] on that clock (vt_day).
 * Realized P&L = profit + swap + commission + fee of BUY/SELL deals in the window (balance,
   credit and other non-trade deals are excluded); open P&L = profit + swap of open positions.
-* Loss % = max(0, -(realized + open)) / current equity x 100 -- the same DEMO-equity basis
-  risk.evaluate_risk_caps sizes against. 1R = MAX_RISK_PER_TRADE_PCT of that equity.
-* Trades today (per scope) = entry-IN BUY/SELL deals carrying the scope's magic number.
+* Carried positions (conservative approximation): the server-midnight mark of a position opened
+  before the day start is unknown, so only adverse movement is counted. An open carried position
+  contributes min(0, profit + swap); a closing deal today whose position has no entry-IN deal in
+  today's window (opened before the day start, or unknown -> treated as carried) contributes
+  min(0, pnl). Carried gains are never counted and nothing offsets a carried loss:
+  daily loss = max(0, -(today realized + today open)) + |carried adverse|.
+* Equity basis = current equity (conservative: after a loss it is smaller than the day-start
+  basis, so the loss % is larger). Loss % = daily loss / current equity x 100, the same DEMO-equity
+  basis risk.evaluate_risk_caps sizes against. 1R = MAX_RISK_PER_TRADE_PCT of that equity.
+* Trades today (per scope) = distinct position ids among entry-IN BUY/SELL deals carrying the
+  scope's magic number (two fills of one trade count once).
 * Account metrics include every deal and position (own, foreign or manual).
+* Scope magic numbers must be distinct; a duplicate blocks (deals could not be attributed).
 """
 from __future__ import annotations
 
@@ -41,6 +50,7 @@ POSITIONS_UNAVAILABLE = "RISK_BROKER_POSITIONS_UNAVAILABLE"
 DATA_INVALID = "RISK_BROKER_DATA_INVALID"
 CLOCK_AHEAD = "RISK_BROKER_TIME_AHEAD_OF_SERVER_CLOCK"
 SCOPES_MISSING = "RISK_SCOPES_MISSING"
+MAGIC_DUPLICATE = "RISK_SCOPE_MAGIC_DUPLICATE"
 
 DEAL_TYPE_BUY, DEAL_TYPE_SELL = 0, 1
 DEAL_ENTRY_IN = 0
@@ -90,13 +100,17 @@ def _clock(seconds: Any) -> Optional[datetime]:
     return None if value is None or value < 0 else _EPOCH + timedelta(seconds=value)
 
 
-def _metrics(realized: float, open_pnl: float, equity: float, trades: Optional[int] = None) -> dict[str, Any]:
-    total = realized + open_pnl
+def _metrics(book: Mapping[str, float], equity: float, trades: Optional[int] = None) -> dict[str, Any]:
+    realized, open_pnl, carried = book["realized"], book["open"], book["carried_adverse"]
+    total = realized + open_pnl + carried
+    loss = max(0.0, -(realized + open_pnl)) - carried          # carried is <= 0 and never offset
     one_r = equity * MAX_RISK_PER_TRADE_PCT / 100
-    out = {"realized_pnl": round(realized, 8), "open_pnl": round(open_pnl, 8), "total_pnl": round(total, 8),
+    out = {"realized_pnl": round(realized, 8), "open_pnl": round(open_pnl, 8),
+           "carried_adverse_pnl": round(carried, 8), "total_pnl": round(total, 8),
            "realized_R": round(realized / one_r, 6), "open_R": round(open_pnl / one_r, 6),
-           "total_R": round(total / one_r, 6), "total_pct": round(total / equity * 100, 6),
-           "daily_loss_pct": round(max(0.0, -total) / equity * 100, 6)}
+           "carried_adverse_R": round(carried / one_r, 6), "total_R": round(total / one_r, 6),
+           "total_pct": round(total / equity * 100, 6), "daily_loss_R": round(loss / one_r, 6),
+           "daily_loss_pct": round(loss / equity * 100, 6)}
     if trades is not None:
         out["trades_today"] = trades
     return out
@@ -110,6 +124,9 @@ def build_risk_snapshots(mt5: Any, scopes: Sequence[Any], *, metadata: Mapping[s
     `symbol_meta` maps scope_key -> verified SymbolMeta (passed through for sizing)."""
     if not scopes:
         return _blocked(SCOPES_MISSING)
+    magic_list = [s.magic_number for s in scopes]
+    if len(set(magic_list)) != len(magic_list):
+        return _blocked(MAGIC_DUPLICATE)
     now = now_utc.astimezone(timezone.utc) if isinstance(now_utc, datetime) and now_utc.tzinfo else None
     day = vt_day.server_day(now, metadata) if now else None
     clock_now = vt_day.server_clock(now, metadata) if now else None
@@ -133,10 +150,9 @@ def build_risk_snapshots(mt5: Any, scopes: Sequence[Any], *, metadata: Mapping[s
         return _blocked(POSITIONS_UNAVAILABLE, **base)
 
     magics = {scope_key(s): s.magic_number for s in scopes}
-    realized_by = {key: 0.0 for key in magics}
-    open_by = {key: 0.0 for key in magics}
-    trades_by = {key: 0 for key in magics}
-    account_realized = account_open = 0.0
+    books = {key: {"realized": 0.0, "open": 0.0, "carried_adverse": 0.0} for key in [*magics, None]}
+    positions_by = {key: set() for key in magics}
+    rows = []
     for deal in deals:
         at, kind, magic = _clock(_get(deal, "time")), _integer(_get(deal, "type")), _integer(_get(deal, "magic"))
         if at is None or kind is None or magic is None:
@@ -146,15 +162,28 @@ def build_risk_snapshots(mt5: Any, scopes: Sequence[Any], *, metadata: Mapping[s
         if at < day_start or kind not in (DEAL_TYPE_BUY, DEAL_TYPE_SELL):
             continue
         parts = [_number(_get(deal, k) or 0) for k in ("profit", "swap", "commission", "fee")]
-        entry = _integer(_get(deal, "entry"))
-        if any(p is None for p in parts) or entry is None:
+        entry, position_id = _integer(_get(deal, "entry")), _integer(_get(deal, "position_id"))
+        if any(p is None for p in parts) or entry is None or position_id is None:
             return _blocked(DATA_INVALID, **base)
-        pnl = sum(parts)
-        account_realized += pnl
-        for key, scope_magic in magics.items():
-            if magic == scope_magic:
-                realized_by[key] += pnl
-                trades_by[key] += entry == DEAL_ENTRY_IN
+        rows.append((magic, entry, position_id, sum(parts)))
+    opened_today = {position_id for _, entry, position_id, _ in rows if entry == DEAL_ENTRY_IN}
+
+    def book(magic: int, pnl: float, *, carried: bool, field_: str) -> None:
+        keys = [None] + [key for key, scope_magic in magics.items() if magic == scope_magic]
+        for key in keys:
+            if carried:
+                books[key]["carried_adverse"] += min(0.0, pnl)
+            else:
+                books[key][field_] += pnl
+
+    for magic, entry, position_id, pnl in rows:
+        # A closing deal of a position with no entry-IN deal today was opened before the day start
+        # (or cannot be shown to be today's): carried, adverse movement only.
+        book(magic, pnl, carried=entry != DEAL_ENTRY_IN and position_id not in opened_today, field_="realized")
+        if entry == DEAL_ENTRY_IN:
+            for key, scope_magic in magics.items():
+                if magic == scope_magic:
+                    positions_by[key].add(position_id)
     open_positions = []
     for position in positions:
         symbol, magic = _get(position, "symbol"), _integer(_get(position, "magic"))
@@ -164,18 +193,16 @@ def build_risk_snapshots(mt5: Any, scopes: Sequence[Any], *, metadata: Mapping[s
             return _blocked(DATA_INVALID, **base)
         if opened > clock_now:
             return _blocked(CLOCK_AHEAD, **base)
-        account_open += profit + swap
+        book(magic, profit + swap, carried=opened < day_start, field_="open")
         open_positions.append(OpenPosition(symbol=symbol, magic_number=magic))
-        for key, scope_magic in magics.items():
-            if magic == scope_magic:
-                open_by[key] += profit + swap
+    trades_by = {key: len(ids) for key, ids in positions_by.items()}
 
-    account_metrics = {**_metrics(account_realized, account_open, equity), "equity": equity,
+    account_metrics = {**_metrics(books[None], equity), "equity": equity,
                        "open_positions": len(open_positions)}
     per_scope = {}
     for scope in scopes:
         key = scope_key(scope)
-        metrics = _metrics(realized_by[key], open_by[key], equity, trades_by[key])
+        metrics = _metrics(books[key], equity, trades_by[key])
         per_scope[key] = {**metrics, "magic_number": scope.magic_number, "snapshot": RiskSnapshot(
             observed_at_utc=now, server_day=day, demo_equity=equity,
             strategy_daily_loss_pct=metrics["daily_loss_pct"],

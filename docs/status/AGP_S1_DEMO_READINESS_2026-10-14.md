@@ -75,7 +75,10 @@ Every guard below is **NOT_RUN** because the R1 resource gate failed. No guard i
 
 When `resource_guard` R1 passes inside an AL trade window (07:00–11:00Z), run the following in this
 order, each under an R1 lock:
-1. Gate 3: `scripts/host/s1_readonly_acceptance.py` (read-only).
+1. Gate 3: `scripts/host/s1_readonly_acceptance.py` (read-only). Added 2026-10-14 (#227): host check
+   "MT5 deal/position time = server clock" — read one recent deal's `time` (read-only
+   `history_deals_get`) and compare it with the terminal's server time for the same moment; the C14
+   risk snapshot (`src/demo_execution/risk_snapshot.py`) assumes server-clock epoch seconds.
 2. Gate 4: the guard block-path tests.
 
 Record each gate as PASS or FAIL with its evidence.
