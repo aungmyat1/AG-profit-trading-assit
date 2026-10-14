@@ -760,6 +760,8 @@ authoritative machine-readable source.
 
 - [Fresh analyzer computation (2026-10-10)](status/ANALYZER_FRESH_COMPUTATION_2026-10-10.md) — main byte equivalence and session-zone call trace.
 - [Import-resolution audit (2026-10-10)](status/IMPORT_RESOLUTION_AUDIT_2026-10-10.md) — all 161 locations, guards/history and ledger tech debt.
+- [OD1014 C20/C21 closeout (2026-10-14)](status/AGP_OD1014_C20_C21_CLOSEOUT_2026-10-14.md) — PARTIAL: baseline/PR reconciliation, S1 and CCFD identity reproduction, C21 1.1.2 static checks, OD1014 ratification; C21 registration and L1–L6 blocked.
+- [OD1014 Telegram acceptance (2026-10-14)](status/AGP_OD1014_TG_ACCEPT_2026-10-14.md) — PARTIAL: LSMC evidenced, ASW GBPUSD AL silent (FAIL), CCFD/LNY pending.
 - [C23 registry apply (2026-10-14)](status/C23_REGISTRY_APPLY_2026-10-14.md) — OD1014-FAST D8 CCFD identity re-record, D9 ASW v1.1.3 candidate registration; identity-set proof and ledger.
 - [C25 OSS differential verification (2026-10-14)](status/C25_OSS_DIFFERENTIAL_2026-10-14.md) — backtesting.py / pandas-ta / smartmoneyconcepts oracles and L3 fuzz on 60 recorded days; evidence only.
 - [C25 harness change log (2026-10-14)](status/C25_HARNESS_CHANGE_LOG.md) — first-run divergences and every later harness change with before/after counts.
