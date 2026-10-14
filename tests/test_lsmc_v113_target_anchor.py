@@ -4,7 +4,6 @@ import csv
 import datetime as dt
 import hashlib
 import random
-import subprocess
 from pathlib import Path
 
 import pytest
@@ -19,7 +18,26 @@ from v1_tickets.lsmc_v113_logic_gate import signal_snapshot
 
 ROOT = Path(__file__).resolve().parents[1]
 COUNTS = {'D1': 30, 'H1': 200, 'M5': 300}
-BASE = '50bd6db5b2d3253ee8fdb70ec463201ab852da9d'  # main after #212 (registry D8/D9) and #214
+# Frozen LSMC 1.1.0 / 1.1.2 engine, gate, contract and report-selection bytes (sha256 on main 50bd6db).
+# strategies/registry.yaml is deliberately absent: registry identity is L1 registry_identity_matches.
+FROZEN_SHA256 = {
+    'config/lsmc_report_lane.yaml': 'ac9ce5b42d3c399d44f091fba0193fd5ce7a167472da89f475c4b3c0714a3628',
+    'src/large_smc_v112/__init__.py': '5c2e9e5205d83618e7bf2b4783d818c19c98dbf50c9deede2b5ee43e4816a228',
+    'src/large_smc_v112/contract.py': '85e61615b4c64b3bf9d3f0eb5d3941bbb89d22070cf674b97797b6a9f9249820',
+    'src/large_smc_v112/detect.py': 'b336f1c4958caefc33fcf4a73dbd3b60b730870f76366a7faec37c5012779161',
+    'src/large_smc_v112/metadata.py': 'b0437ae640ccc19a28740f79e83a4ad3eec55f0f81fae54b2db38c7f16a74ca7',
+    'src/large_smc_v112/targets.py': 'a047891b188e00c7db429db3ee1b1e1cbfae5cbc78226f4039ed9290fdfe0e4c',
+    'src/large_smc_v112/watch.py': '8aef629782c928e40bb754c750af34c5daac8fcb6691cd7704630e20437196f5',
+    'src/large_smc_v112/windows.py': '7dcfeef1486ca8f1c8f8fa258df9cb47b7e25549b1c82c89ef67d8015db64c05',
+    'src/large_smc_watch/__init__.py': 'ebbca3c124487c79a41912b6bbf75688d06529257bdc4ee53d0ffe2df789950f',
+    'src/large_smc_watch/contract.py': '51f9a0d088e750399b7ef4d98c978c6974b0b9ef2814f1c4251bbed79a9a5e1c',
+    'src/large_smc_watch/detect.py': 'e3fd5e1fe699046c8b4c552e68d6a19a6f4abc51ea9cec3c4734c02db4e27973',
+    'src/large_smc_watch/watch.py': '86ac9cdcfa864b36a06b795920bd333f8fa9cfdd81efa5eb422e1d746bc2c63d',
+    'src/v1_tickets/lsmc_logic_gate.py': 'e3133071f126d744b34cd8feae6379bdd41b9474cf9e9775991d4d75ae3ac799',
+    'src/v1_tickets/lsmc_v112_logic_gate.py': '3689d467325987550555ca2e47e7be18beb0f011be975abc2914b13bc695629f',
+    'strategies/ST_LARGE_SMC_V1_1_1_0.yaml': '78285f9fabcb20af14de327d010e48684dc12205f4435eff886fcc2373a357b4',
+    'strategies/ST_LARGE_SMC_V1_1_1_2.yaml': '1f9b6cace2e1be33e5b3572e2c13e3e526b992478f91c8f09955b0f44b73024f',
+}
 
 
 @pytest.fixture(scope='module')
@@ -113,11 +131,7 @@ def test_missing_or_clipped_creation_context_cannot_select_later_fallback(bars):
 
 
 def test_frozen_versions_and_report_selection_are_byte_identical():
-    paths = subprocess.check_output(['git','ls-tree','-r','--name-only',BASE,'src/large_smc_watch',
-        'src/large_smc_v112','src/v1_tickets/lsmc_logic_gate.py','src/v1_tickets/lsmc_v112_logic_gate.py',
-        'strategies/ST_LARGE_SMC_V1_1_1_0.yaml','strategies/ST_LARGE_SMC_V1_1_1_2.yaml',
-        'config/lsmc_report_lane.yaml','strategies/registry.yaml'],cwd=ROOT,text=True).splitlines()
-    for p in paths:
-        before = subprocess.check_output(['git','show',f'{BASE}:{p}'],cwd=ROOT)
-        assert hashlib.sha256((ROOT/p).read_bytes()).digest() == hashlib.sha256(before).digest(),p
+    assert len(FROZEN_SHA256) == 16
+    for p, want in FROZEN_SHA256.items():
+        assert hashlib.sha256((ROOT/p).read_bytes()).hexdigest() == want, p
     assert yaml.safe_load((ROOT/'config/lsmc_report_lane.yaml').read_text())['strategy_version'] == '1.1.2'

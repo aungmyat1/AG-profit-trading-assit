@@ -22,7 +22,22 @@ ROOT = audit.ROOT
 DATASET = A.CRYPTO_DATASET
 GATES = ('L1', 'L2', 'L3', 'L4', 'L5', 'L6')
 MISSION = 'AGP-C24-R3'
-DECLARED_WARNINGS = {'L5': 'Existing canonical L5 cost placeholder: accepted cost/account evidence is incomplete; no cost or commission is invented.'}
+# OD1011-L5: L5 is PASS / INSUFFICIENT (cost-blocked = actionability outcome); no declared WARN is accepted.
+COST_SOURCE = ('VT recorded M5 spread_price of the last closed bar (tests/fixtures/ccfd_v100/recorded_60d/<SYM>_m5_meta.csv) '
+               '+ OD1011-COMMISSION binding (scripts/ccfd_sweep_retest_replay.commission_binding), the accepted source '
+               'of the CCFD 1.0.0 L5 PASS on the same recorded 60d data')
+_COST = {}
+
+
+def cost_source(symbol):
+    """Spread by M5 bar open time + commission binding, loaded once per symbol (read-only)."""
+    if symbol not in _COST:
+        import ccfd_sweep_retest_replay as ccfd
+        with (DATASET/f'{symbol}_m5_meta.csv').open() as stream:
+            spread = {dt.datetime.fromisoformat(r['timestamp_utc']): float(r['spread_price']) for r in csv.DictReader(stream)}
+        provenance = json.loads((DATASET/f'{symbol}_provenance.json').read_text())
+        _COST[symbol] = {'spread': spread, 'binding': ccfd.commission_binding(provenance)}
+    return _COST[symbol]
 
 
 def digest(path):
@@ -129,14 +144,14 @@ def add_result(counts, result, snap):
 
 
 def summary(counts, history_insufficient=False):
-    gates = {g: ('FAIL' if c['FAIL'] else 'WARN' if c['WARN'] else 'PASS' if c['PASS'] else 'NOT_RUN')
+    gates = {g: ('FAIL' if c['FAIL'] else 'WARN' if c['WARN'] else 'INSUFFICIENT' if c['INSUFFICIENT']
+                 else 'PASS' if c['PASS'] else 'NOT_RUN')
              for g,c in counts['gates'].items()}
     eligible = (not history_insufficient and counts['rr_eligible_scans'] > 0
-                and all(gates[g] == 'PASS' for g in GATES[:4])
-                and all(gates[g] == 'PASS' or gates[g] == 'WARN' and g in DECLARED_WARNINGS for g in GATES[4:]))
+                and all(gates[g] == 'PASS' for g in GATES))
     return {**counts, 'gate_verdicts': gates,
             'verdict': ('DATA_INSUFFICIENT' if history_insufficient else 'FAIL' if 'FAIL' in gates.values()
-                        else 'PASS_WITH_DECLARED_WARN' if eligible else 'NOT_VERIFIED'),
+                        else 'PASS' if eligible else 'INSUFFICIENT'),
             'qualifies_for_proposal': eligible, 'verification_status': 'NOT_VERIFIED'}
 
 
@@ -278,7 +293,11 @@ def make_case(symbol, bars, row, starts=None):
         if tf in ('H1','M5'):
             history[tf] = available
     history['capture_start_utc'] = {tf:bars[tf][0].time.isoformat() for tf in ('H1','M5')}
-    return {'case_id':f'{symbol}:{now.isoformat()}','symbol':symbol,'now':now,
+    cost = cost_source(symbol)
+    last = bars['M5'][row]
+    return {'cost_evidence':{'spread':cost['spread'].get(last.time),
+                             'spread_bar_close_utc':(last.time+dt.timedelta(minutes=5)).isoformat(),
+                             'commission_binding':cost['binding']},'case_id':f'{symbol}:{now.isoformat()}','symbol':symbol,'now':now,
             'fixture':str(DATASET.relative_to(ROOT)),'classification':'VT_RECORDED',
             'target_history':history,**windows}
 
@@ -313,7 +332,7 @@ def run_shard(path,symbol,shard):
     report={'mission':MISSION,'strategy':'ST_LARGE_SMC_V1@1.1.3','symbol':symbol,'shard':shard,
             'scope_days':60,'shard_days':SHARD_DAYS,'verdict':'NOT_RUN_RESOURCE','completed':False,
             'verification_status':'NOT_VERIFIED','resource_class':'R1','workers':1,
-            'declared_warnings':DECLARED_WARNINGS,'boundary_reference':{'verdict':'NOT_RUN'},
+            'l5_cost_source':COST_SOURCE,'boundary_reference':{'verdict':'NOT_RUN'},
             'engine_defects':[],'FX':'PENDING_D1'}
     write_report(path,report)
     owner={'agent':'CODEX_LOCAL','mission':MISSION,'pid':os.getpid()};lock=RG.canonical_lock_path()
@@ -337,7 +356,7 @@ def run_shard(path,symbol,shard):
         evaluator=EvidenceEvaluator();total,active=new_counts(),new_counts();branches={};previous=None
         selections={};mismatch_counts=Counter();last_checkpoint=time.monotonic()
         with (path.parent/'signal_events.jsonl').open('w') as events,(path.parent/'mismatches.jsonl').open('w') as mismatches,(path.parent/'scans.csv').open('w',newline='') as scans:
-            writer=csv.writer(scans);writer.writerow(['symbol','m5_row','closed_at_utc','branch','operational_state','signal_state',*GATES,'opp_id','entry','stop','target','pip_source','c11_source','rr','rr_block','creation_target_sha256'])
+            writer=csv.writer(scans);writer.writerow(['symbol','m5_row','closed_at_utc','branch','operational_state','signal_state',*GATES,'opp_id','entry','stop','target','pip_source','c11_source','rr','rr_block','creation_target_sha256','l5_cost_R','l5_actionability'])
             for row in range(plan['core_start_row'],plan['core_end_row_exclusive']):
                 case=make_case(symbol,bars,row,plan['warmup_start_row'])
                 result,snap=evaluator.evaluate(C.SPEC,case);signal=G.signal_snapshot(snap);o=signal.opportunity or {}
@@ -363,7 +382,7 @@ def run_shard(path,symbol,shard):
                         category='EXPECTED_INSUFFICIENT_HISTORY' if branch.startswith('INSUFFICIENT_H1_M5') and gate=='L4' else f'UNEXPECTED_{gate}'
                         mismatch_counts[category]+=1
                         mismatches.write(json.dumps({'category':category,'symbol':symbol,'m5_row':row,'gate':gate,'at':snap.evaluated_at,'checks':result['gates'][gate]},sort_keys=True)+'\n')
-                writer.writerow([symbol,row,snap.evaluated_at,branch,snap.state,signal.state,*[result['gate_status'][g] for g in GATES],o.get('opp_id'),o.get('entry_reference'),o.get('stop_c10'),o.get('target_c11'),o.get('pip_source'),o.get('c11_source'),o.get('reward_risk'),o.get('reward_risk_reason'),target_hash])
+                writer.writerow([symbol,row,snap.evaluated_at,branch,snap.state,signal.state,*[result['gate_status'][g] for g in GATES],o.get('opp_id'),o.get('entry_reference'),o.get('stop_c10'),o.get('target_c11'),o.get('pip_source'),o.get('c11_source'),o.get('reward_risk'),o.get('reward_risk_reason'),target_hash,result['gates']['L5'].get('cost_R'),result['gates']['L5'].get('actionability')])
                 done=row-plan['core_start_row']+1
                 if done%100==0 or time.monotonic()-last_checkpoint>30:
                     for stream in (events,mismatches,scans):stream.flush()
@@ -378,7 +397,7 @@ def run_shard(path,symbol,shard):
         report.update(completed=True,completed_scans=plan['core_scans'],elapsed_seconds=round(time.monotonic()-started,2),evaluator=evaluator.statistics())
         failed=(not report['protected_bytes_unchanged'] or report['engine_defects'] or report['boundary_reference']['verdict']!='PASS'
                 or any(k.startswith('UNEXPECTED_') for k in mismatch_counts))
-        report['verdict']='FAIL' if failed else 'PASS_WITH_DECLARED_WARN'
+        report['verdict']='FAIL' if failed else 'COMPLETED'
         write_report(path,report)
         print(json.dumps({'symbol':symbol,'shard':shard,'verdict':report['verdict'],'scans':report['completed_scans'],'seconds':report['elapsed_seconds'],'engine_defects':len(report['engine_defects'])}),flush=True)
         return 1 if failed else 0
@@ -407,7 +426,7 @@ def merge_shards(root,out):
             if not path.exists():
                 shards.append({'shard':shard,'verdict':'NOT_RUN'});continue
             row=json.loads(path.read_text());shards.append({'shard':shard,'verdict':row['verdict'],'completed_scans':row.get('completed_scans',0),'completed':row.get('completed',False)})
-            if not row.get('completed') or row['verdict']!='PASS_WITH_DECLARED_WARN':
+            if not row.get('completed') or row['verdict']!='COMPLETED':
                 continue
             identity=row['identity']
             identities.add(json.dumps({k:identity[k] for k in ('contract_sha256','engine_sha256','runner_sha256','frozen_file_sha256')},sort_keys=True))
@@ -417,19 +436,19 @@ def merge_shards(root,out):
                 if opp in seen and seen[opp]['target_sha256']!=value['target_sha256']:
                     cross.append({'classification':'ENGINE_DEFECT','opp_id':opp,'before':seen[opp],'after':value,'file_line':'src/large_smc_v113/watch.py:264'})
                 seen[opp]=value
-        complete=all(x.get('completed') and x['verdict']=='PASS_WITH_DECLARED_WARN' for x in shards)
+        complete=all(x.get('completed') and x['verdict']=='COMPLETED' for x in shards)
         matrix={key:summary(value,history_insufficient=key.startswith('INSUFFICIENT_H1_M5')) for key,value in branches.items()}
         failed_shard=any(x['verdict'].startswith('FAIL') for x in shards)
         identity_mismatch=len(identities)>1
         verdict=('FAIL_ENGINE_DEFECT' if cross else 'FAIL_SHARD' if failed_shard else 'FAIL_IDENTITY_MISMATCH' if identity_mismatch
-                 else 'PASS_WITH_DECLARED_WARN' if complete else 'PARTIAL_NOT_RUN_RESOURCE' if any(x['verdict']=='NOT_RUN_RESOURCE' for x in shards) else 'NOT_RUN')
+                 else 'COMPLETED' if complete else 'PARTIAL_NOT_RUN_RESOURCE' if any(x['verdict']=='NOT_RUN_RESOURCE' for x in shards) else 'NOT_RUN')
         report['symbols'][symbol]={'verdict':verdict,'shards':shards,'completed':complete,'raw_all_scans_completed_shards_only':summary(raw),'active_history_completed_shards_only':summary(active),'branch_matrix_completed_shards_only':matrix,'cross_shard_engine_defects':cross,'unique_opportunities_completed_shards_only':len(seen)}
         # R3 explicitly asks for L1-L6 PASS; advisory WARN is never manufactured into PASS.
         eligible=complete and not cross and not failed_shard and not identity_mismatch and any(v['qualifies_for_proposal'] and all(v['gate_verdicts'][g]=='PASS' for g in GATES) for v in matrix.values())
         report['symbols'][symbol]['qualifies_for_r3_proposal']=eligible
     if any(v['qualifies_for_r3_proposal'] for v in report['symbols'].values()):report['proposal']='ELIGIBLE_PROPOSAL_REQUIRED'
-    report['verdict']='FAIL' if any(v['verdict'].startswith('FAIL') for v in report['symbols'].values()) else 'COMPLETED_WITH_DECLARED_WARN' if all(v['completed'] for v in report['symbols'].values()) else 'PARTIAL_NOT_RUN_RESOURCE'
-    report['proposal_gate_note']='Owner R3 requires L1-L6 PASS; unchanged canonical L5 is WARN without accepted contemporaneous quote/account cost evidence. No cost or PASS is invented.'
+    report['verdict']='FAIL' if any(v['verdict'].startswith('FAIL') for v in report['symbols'].values()) else 'COMPLETED' if all(v['completed'] for v in report['symbols'].values()) else 'PARTIAL_NOT_RUN_RESOURCE'
+    report['proposal_gate_note']='A scope qualifies only with L1-L6 all PASS (OD1011-L5 cost evidence) and target stability PASS.'
     write_report(Path(out),report);print(json.dumps({s:v['verdict'] for s,v in report['symbols'].items()}))
     return report
 

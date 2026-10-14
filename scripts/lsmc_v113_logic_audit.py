@@ -25,7 +25,7 @@ def rule_diff():
 
 def frozen_identity():
     paths = ['strategies/ST_LARGE_SMC_V1_1_1_0.yaml', 'strategies/ST_LARGE_SMC_V1_1_1_2.yaml',
-             'config/lsmc_report_lane.yaml', 'strategies/registry.yaml']
+             'config/lsmc_report_lane.yaml']   # registry identity is L1 registry_identity_matches, not frozen bytes
     for folder in ('src/large_smc_watch', 'src/large_smc_v112'):
         paths += [str(p.relative_to(ROOT)) for p in sorted((ROOT/folder).glob('*.py'))]
     return {p: hashlib.sha256((ROOT/p).read_bytes()).hexdigest() for p in paths}

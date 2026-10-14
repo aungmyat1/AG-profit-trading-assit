@@ -6,7 +6,7 @@ It is never a statement about profitability, and it grants no proposal, demo or 
 The gate reads the contract and the engine output; it never changes a rule. A contract value
 the engine does not implement FAILS (fail closed) instead of being interpreted.
 
-L1-L4 block; L5 (cost) and L6 (freshness fields) are advisory, as in v1_tickets.logic_gate.
+L1-L4 block; L5 is graded per OD1011-L5 (PASS / INSUFFICIENT; never blocks) and L6 (freshness fields) is advisory.
 Checks that need an OPPORTUNITY are NOT_APPLICABLE on a non-opportunity snapshot.
 
 Detection is verified on the PRE-delivery-gate snapshot (`signal_snapshot`). Since the
@@ -46,7 +46,6 @@ from v1_tickets.logic_gate import (
     _gate,
     blocking_failures,
     l1_determinism,
-    l5_cost,
     l6_freshness,
 )
 
@@ -313,6 +312,65 @@ def l4(case: Dict[str, Any], snap) -> Dict[str, Any]:
     ])
 
 
+# ---------------------------------------------------------------------------------- L5
+
+INSUFFICIENT = "INSUFFICIENT"
+COST_CODES = ("SPREAD_TOO_WIDE", "SPREAD_WARN", "COST_TOO_HIGH", "COST_WARN")
+QUOTE_MAX_AGE = dt.timedelta(minutes=15)
+
+
+def l5_od1011(case: Dict[str, Any], sig: Any) -> Dict[str, Any]:
+    """OD1011-L5 (owner register, 2026-10-11): PASS = spread + commission evidence exist from an accepted source
+    and the cost gate applies them correctly (OD1009-D2 0.10R warn / 0.25R block, owner spread bands). Same
+    accepted source and gate as the CCFD 1.0.0 L5 on the recorded 60d crypto data
+    (scripts/ccfd_sweep_retest_replay.py l5_od1011): recorded VT M5 spread of the last closed bar, the
+    OD1011-COMMISSION binding, v1_tickets.manual_ticket.crypto_cfd_cost_gate. A cost-blocked plan is an
+    actionability outcome, not a FAIL; missing evidence is INSUFFICIENT, never PASS. The snapshot carries no
+    cost codes of its own, so the gate's codes are checked against an independent re-derivation only.
+    `case["cost_evidence"]`: {"spread", "spread_bar_close_utc", "commission_binding"} supplied by the caller."""
+    o = sig.opportunity or {}
+    entry, stop = o.get("entry_reference"), o.get("stop_c10")
+    if sig.state != OPPORTUNITY or entry is None or stop is None:
+        return {"gate": "L5", "status": NOT_APPLICABLE, "checks": [_na("L5.cost", "no priced OPPORTUNITY")]}
+
+    def insufficient(reason: str) -> Dict[str, Any]:
+        return {"gate": "L5", "status": INSUFFICIENT, "reason": reason, "checks": []}
+
+    if case["symbol"] not in C.CRYPTO_SYMBOLS:
+        return insufficient("NO_ACCEPTED_COST_SOURCE_FOR_SYMBOL")
+    ev = case.get("cost_evidence") or {}
+    binding = ev.get("commission_binding")
+    if not binding or binding.get("source") != "OD1011-COMMISSION":
+        return insufficient("COMMISSION_EVIDENCE_MISSING")
+    spread, risk = ev.get("spread"), abs(entry - stop)
+    if spread is None or risk <= 0:
+        return insufficient("SPREAD_OR_STOP_DISTANCE_MISSING")
+    quote = dt.datetime.fromisoformat(ev["spread_bar_close_utc"]) if ev.get("spread_bar_close_utc") else None
+    if quote is None or not (dt.timedelta(0) <= case["now"] - quote <= QUOTE_MAX_AGE):
+        return insufficient("QUOTE_NOT_CONTEMPORANEOUS")
+    from v1_tickets.crypto_cfd_policy import load_ticket_policy
+    from v1_tickets.manual_ticket import crypto_cfd_cost_gate
+    policy = load_ticket_policy()
+    commission = binding["value"]
+    blocks, warns, _, _ = crypto_cfd_cost_gate(risk, spread, commission, policy)
+    pct, cost = spread / risk * 100, spread / risk + commission        # independent re-derivation
+    expected = ({"SPREAD_TOO_WIDE"} if pct > policy["spread_block_pct"] else
+                {"SPREAD_WARN"} if pct >= policy["spread_ok_pct"] else set())
+    expected |= ({"COST_TOO_HIGH"} if cost >= policy["cost_block_R"] else
+                 {"COST_WARN"} if cost >= policy["cost_warn_R"] else set())
+    got = set(blocks) | set(warns)
+    ok = got == expected and got <= set(COST_CODES)
+    return {"gate": "L5", "status": PASS if ok else FAIL,
+            "checks": [_check("L5.cost_gate_applied", "crypto_cfd_cost_gate codes == independent OD1009-D2 derivation",
+                              sorted(got), sorted(expected), PASS if ok else FAIL)],
+            "spread": spread, "spread_source": "VT recorded M5 spread_price, last closed bar",
+            "commission_R": commission, "commission_source": binding["source"],
+            "spread_R": round(spread / risk, 6), "cost_R": round(cost, 6),
+            "thresholds": {k: policy[k] for k in ("spread_ok_pct", "spread_block_pct", "cost_warn_R", "cost_block_R")},
+            "actionability": ("BLOCK" if expected & {"SPREAD_TOO_WIDE", "COST_TOO_HIGH"} else
+                              "WARN" if expected else "OK")}
+
+
 # ---------------------------------------------------------------------------------- run
 
 def evaluate_case(spec: Dict[str, Any], case: Dict[str, Any]) -> Dict[str, Any]:
@@ -335,8 +393,7 @@ def evaluate_case(spec: Dict[str, Any], case: Dict[str, Any]) -> Dict[str, Any]:
             f"{sig.state} -> {snap.state}: {snap.reason_codes[0]}")])
     gates = {
         "L1": l1(case), "L2": l2_gate, "L3": l3(case, sig), "L4": l4(case, snap),
-        # Fixtures carry no bid/ask or commission: L5 stays advisory WARN (never blocks).
-        "L5": l5_cost(None, None, commission_r=None, warn_r=None),
+        "L5": l5_od1011(case, sig),
         "L6": (l6_freshness(o.get("expires_at"), f"no closed M5 bar for > {C.STALE_AFTER_MINUTES} min",
                             "POI invalidated / opportunity invalidated or expired")
                if sig.state == OPPORTUNITY else _gate("L6", [_na("L6.freshness")])),
