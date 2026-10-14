@@ -1,0 +1,373 @@
+{
+  "classification": "ENGINE_DEFECT",
+  "command": "python scripts/lsmc_v112_c24_static_target_repro.py --scans <scans.csv> --out <repro.json>",
+  "contract_sha256": "1f9b6cace2e1be33e5b3572e2c13e3e526b992478f91c8f09955b0f44b73024f",
+  "count": 3,
+  "defect_id": "C24-C11-STATIC-ROLLING-WINDOW",
+  "engine_sha256": "7f218a9001cb7ffa069e02a101accd53ab86b2b2c8989c73939671fb624f0d7a",
+  "file_line": "src/large_smc_v112/watch.py:264",
+  "fixtures": {
+    "tests/fixtures/ccfd_v100/recorded_60d/BTCUSD_d1.csv": "85110e81326dba871db5c935c5b352c53a1dc1ebf220f544ad7d295a56546559",
+    "tests/fixtures/ccfd_v100/recorded_60d/BTCUSD_h1.csv": "f1d7ba4b6abfe949288bde914969daac61657a33e0b2b832c0596d2418e63127",
+    "tests/fixtures/ccfd_v100/recorded_60d/BTCUSD_m5.csv": "60a9b5a485d9b70ddf507e8fa27e206236fb14ed836cd20618b7b39377d505bb",
+    "tests/fixtures/ccfd_v100/recorded_60d/BTCUSD_provenance.json": "c3b21053e52f0078c598fc0139e3b1790b4c6bf3c082834a0631e3dab1941903"
+  },
+  "full_replay_status": "NOT_RUN_RESOURCE; these witnesses establish a bounded defect, not full-window coverage",
+  "mechanism": "Target is recomputed from the current rolling M5/H1 window clipped at trigger. An older selected target source can leave that window although opportunity ID and trigger remain unchanged.",
+  "minimal_repro": "Two adjacent recorded M5 scans, original 30/200/300 host windows; call unchanged G.evaluate_snapshot for each. Same opp_id, unequal target_c11.",
+  "mission": "AGP-C24-LSMC-V112-VERIFY-R2",
+  "rule": "strategies/ST_LARGE_SMC_V1_1_1_2.yaml:138,177 (STATIC_AT_OPPORTUNITY_EVALUATION; retarget_after_selection=false)",
+  "snapshot_or_feature_memo": false,
+  "strategy_version": "1.1.2",
+  "symbol": "BTCUSD",
+  "witnesses": [
+    {
+      "after": {
+        "m5_row": 1272,
+        "now": "2026-08-16T03:05:00+00:00",
+        "operational_state": "REJECTED",
+        "opportunity": {
+          "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+          "choch_index": 290,
+          "choch_level": 63074.75,
+          "choch_time": "2026-08-16T02:20:00+00:00",
+          "direction": "LONG",
+          "economic_status": "NOT_EVALUATED",
+          "entry_reference": 63099.68,
+          "expires_at": "2026-08-16T23:00:00+00:00",
+          "invalidated_time": null,
+          "opp_id": "BTCUSD:H1:FVG:LONG:2026-08-15T15:00:00+00:00|2026-08-16T01:40:00+00:00|2026-08-16T02:20:00+00:00",
+          "pip_size": 0.1,
+          "pip_source": "10*point host_captured 2026-09-30T15:12:03.313685+00:00",
+          "poi_id": "BTCUSD:H1:FVG:LONG:2026-08-15T15:00:00+00:00",
+          "reward_risk": 0.13046699955645277,
+          "reward_risk_reason": "FAIL_CLOSED_RR_BELOW_SPEC_MINIMUM",
+          "stop_c10": 62989.997091305486,
+          "stop_reason": null,
+          "sweep_extreme": 62998.24,
+          "sweep_time": "2026-08-16T01:40:00+00:00",
+          "target_c11": 63113.99,
+          "target_reason": null,
+          "target_selection": {
+            "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+            "core_m5_fallback_ignored": false,
+            "core_selector_reason": "REJECT_NO_TARGET",
+            "core_selector_source": null,
+            "core_selector_source_id": null,
+            "core_selector_tier": null,
+            "kind": "high",
+            "known_at_index": 97,
+            "price": 63113.99,
+            "reason": "PRIMARY_UNAVAILABLE_H1_FALLBACK",
+            "source": "fx_discovery.features.swings",
+            "structure_note": null,
+            "swing_index": 95,
+            "tier": "FALLBACK_H1_SWING"
+          },
+          "target_tier": "FALLBACK_H1_SWING",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "state": "OPPORTUNITY",
+        "window_bars": {
+          "D1": 6,
+          "H1": 107,
+          "M5": 300
+        },
+        "window_first": {
+          "D1": "2026-08-10T21:00:00+00:00",
+          "H1": "2026-08-11T00:00:00+00:00",
+          "M5": "2026-08-14T09:10:00+00:00"
+        }
+      },
+      "before": {
+        "m5_row": 1271,
+        "now": "2026-08-16T03:00:00+00:00",
+        "operational_state": "REJECTED",
+        "opportunity": {
+          "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "choch_index": 291,
+          "choch_level": 63074.75,
+          "choch_time": "2026-08-16T02:20:00+00:00",
+          "direction": "LONG",
+          "economic_status": "NOT_EVALUATED",
+          "entry_reference": 63099.68,
+          "expires_at": "2026-08-16T23:00:00+00:00",
+          "invalidated_time": null,
+          "opp_id": "BTCUSD:H1:FVG:LONG:2026-08-15T15:00:00+00:00|2026-08-16T01:40:00+00:00|2026-08-16T02:20:00+00:00",
+          "pip_size": 0.1,
+          "pip_source": "10*point host_captured 2026-09-30T15:12:03.313685+00:00",
+          "poi_id": "BTCUSD:H1:FVG:LONG:2026-08-15T15:00:00+00:00",
+          "reward_risk": 1.2638249810403863,
+          "reward_risk_reason": "FAIL_CLOSED_RR_BELOW_SPEC_MINIMUM",
+          "stop_c10": 62989.99709130651,
+          "stop_reason": null,
+          "sweep_extreme": 62998.24,
+          "sweep_time": "2026-08-16T01:40:00+00:00",
+          "target_c11": 63238.3,
+          "target_reason": null,
+          "target_selection": {
+            "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+            "core_selector_reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+            "core_selector_source": "liquidity.hierarchy.external_swing_liquidity",
+            "core_selector_source_id": "BTCUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:63238.30000000",
+            "core_selector_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+            "evidence_timestamp": "2026-08-14T17:20:00+00:00",
+            "price": 63238.3,
+            "reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+            "source": "liquidity.hierarchy.external_swing_liquidity",
+            "source_id": "BTCUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:63238.30000000",
+            "status_at_selection": "UNSWEPT",
+            "structure_note": null,
+            "tier": "PRIMARY_EXTERNAL_LIQUIDITY"
+          },
+          "target_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "state": "OPPORTUNITY",
+        "window_bars": {
+          "D1": 6,
+          "H1": 107,
+          "M5": 300
+        },
+        "window_first": {
+          "D1": "2026-08-10T21:00:00+00:00",
+          "H1": "2026-08-11T00:00:00+00:00",
+          "M5": "2026-08-14T09:05:00+00:00"
+        }
+      },
+      "reproduced": true
+    },
+    {
+      "after": {
+        "m5_row": 1488,
+        "now": "2026-08-16T21:05:00+00:00",
+        "operational_state": "REJECTED",
+        "opportunity": {
+          "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+          "choch_index": 171,
+          "choch_level": 62985.52,
+          "choch_time": "2026-08-16T10:25:00+00:00",
+          "direction": "LONG",
+          "economic_status": "NOT_EVALUATED",
+          "entry_reference": 63002.72,
+          "expires_at": "2026-08-16T23:00:00+00:00",
+          "invalidated_time": null,
+          "opp_id": "BTCUSD:H1:FVG:LONG:2026-08-14T15:00:00+00:00|2026-08-16T10:00:00+00:00|2026-08-16T10:25:00+00:00",
+          "pip_size": 0.1,
+          "pip_source": "10*point host_captured 2026-09-30T15:12:03.313685+00:00",
+          "poi_id": "BTCUSD:H1:FVG:LONG:2026-08-14T15:00:00+00:00",
+          "reward_risk": 2.1868482473971804,
+          "reward_risk_reason": null,
+          "stop_c10": 62951.838554461916,
+          "stop_reason": null,
+          "sweep_extreme": 62956.36,
+          "sweep_time": "2026-08-16T10:00:00+00:00",
+          "target_c11": 63113.99,
+          "target_reason": null,
+          "target_selection": {
+            "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+            "core_m5_fallback_ignored": false,
+            "core_selector_reason": "REJECT_NO_TARGET",
+            "core_selector_source": null,
+            "core_selector_source_id": null,
+            "core_selector_tier": null,
+            "kind": "high",
+            "known_at_index": 97,
+            "price": 63113.99,
+            "reason": "PRIMARY_UNAVAILABLE_H1_FALLBACK",
+            "source": "fx_discovery.features.swings",
+            "structure_note": null,
+            "swing_index": 95,
+            "tier": "FALLBACK_H1_SWING"
+          },
+          "target_tier": "FALLBACK_H1_SWING",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "state": "OPPORTUNITY",
+        "window_bars": {
+          "D1": 7,
+          "H1": 125,
+          "M5": 300
+        },
+        "window_first": {
+          "D1": "2026-08-10T21:00:00+00:00",
+          "H1": "2026-08-11T00:00:00+00:00",
+          "M5": "2026-08-15T20:10:00+00:00"
+        }
+      },
+      "before": {
+        "m5_row": 1487,
+        "now": "2026-08-16T21:00:00+00:00",
+        "operational_state": "REJECTED",
+        "opportunity": {
+          "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "choch_index": 172,
+          "choch_level": 62985.52,
+          "choch_time": "2026-08-16T10:25:00+00:00",
+          "direction": "LONG",
+          "economic_status": "NOT_EVALUATED",
+          "entry_reference": 63002.72,
+          "expires_at": "2026-08-16T23:00:00+00:00",
+          "invalidated_time": null,
+          "opp_id": "BTCUSD:H1:FVG:LONG:2026-08-14T15:00:00+00:00|2026-08-16T10:00:00+00:00|2026-08-16T10:25:00+00:00",
+          "pip_size": 0.1,
+          "pip_source": "10*point host_captured 2026-09-30T15:12:03.313685+00:00",
+          "poi_id": "BTCUSD:H1:FVG:LONG:2026-08-14T15:00:00+00:00",
+          "reward_risk": 2.8114372410752813,
+          "reward_risk_reason": null,
+          "stop_c10": 62951.83855121287,
+          "stop_reason": null,
+          "sweep_extreme": 62956.36,
+          "sweep_time": "2026-08-16T10:00:00+00:00",
+          "target_c11": 63145.77,
+          "target_reason": null,
+          "target_selection": {
+            "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+            "core_selector_reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+            "core_selector_source": "liquidity.hierarchy.external_swing_liquidity",
+            "core_selector_source_id": "BTCUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:63145.77000000",
+            "core_selector_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+            "evidence_timestamp": "2026-08-16T04:20:00+00:00",
+            "price": 63145.77,
+            "reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+            "source": "liquidity.hierarchy.external_swing_liquidity",
+            "source_id": "BTCUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:63145.77000000",
+            "status_at_selection": "UNSWEPT",
+            "structure_note": null,
+            "tier": "PRIMARY_EXTERNAL_LIQUIDITY"
+          },
+          "target_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "state": "OPPORTUNITY",
+        "window_bars": {
+          "D1": 7,
+          "H1": 125,
+          "M5": 300
+        },
+        "window_first": {
+          "D1": "2026-08-10T21:00:00+00:00",
+          "H1": "2026-08-11T00:00:00+00:00",
+          "M5": "2026-08-15T20:05:00+00:00"
+        }
+      },
+      "reproduced": true
+    },
+    {
+      "after": {
+        "m5_row": 1634,
+        "now": "2026-08-17T09:15:00+00:00",
+        "operational_state": "REJECTED",
+        "opportunity": {
+          "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+          "choch_index": 196,
+          "choch_level": 62925.14,
+          "choch_time": "2026-08-17T00:40:00+00:00",
+          "direction": "LONG",
+          "economic_status": "NOT_EVALUATED",
+          "entry_reference": 62939.68,
+          "expires_at": "2026-08-17T16:00:00+00:00",
+          "invalidated_time": null,
+          "opp_id": "BTCUSD:H1:FVG:LONG:2026-08-14T15:00:00+00:00|2026-08-17T00:25:00+00:00|2026-08-17T00:40:00+00:00",
+          "pip_size": 0.1,
+          "pip_source": "10*point host_captured 2026-09-30T15:12:03.313685+00:00",
+          "poi_id": "BTCUSD:H1:FVG:LONG:2026-08-14T15:00:00+00:00",
+          "reward_risk": 0.815724441235583,
+          "reward_risk_reason": "FAIL_CLOSED_RR_BELOW_SPEC_MINIMUM",
+          "stop_c10": 62725.99264286262,
+          "stop_reason": null,
+          "sweep_extreme": 62750.46,
+          "sweep_time": "2026-08-17T00:25:00+00:00",
+          "target_c11": 63113.99,
+          "target_reason": null,
+          "target_selection": {
+            "c11_source": "CONFIRMED_OPPOSING_H1_SWING",
+            "core_m5_fallback_ignored": false,
+            "core_selector_reason": "REJECT_NO_TARGET",
+            "core_selector_source": null,
+            "core_selector_source_id": null,
+            "core_selector_tier": null,
+            "kind": "high",
+            "known_at_index": 97,
+            "price": 63113.99,
+            "reason": "PRIMARY_UNAVAILABLE_H1_FALLBACK",
+            "source": "fx_discovery.features.swings",
+            "structure_note": null,
+            "swing_index": 95,
+            "tier": "FALLBACK_H1_SWING"
+          },
+          "target_tier": "FALLBACK_H1_SWING",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "state": "OPPORTUNITY",
+        "window_bars": {
+          "D1": 7,
+          "H1": 137,
+          "M5": 300
+        },
+        "window_first": {
+          "D1": "2026-08-10T21:00:00+00:00",
+          "H1": "2026-08-11T00:00:00+00:00",
+          "M5": "2026-08-16T08:20:00+00:00"
+        }
+      },
+      "before": {
+        "m5_row": 1633,
+        "now": "2026-08-17T09:10:00+00:00",
+        "operational_state": "REJECTED",
+        "opportunity": {
+          "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "choch_index": 197,
+          "choch_level": 62925.14,
+          "choch_time": "2026-08-17T00:40:00+00:00",
+          "direction": "LONG",
+          "economic_status": "NOT_EVALUATED",
+          "entry_reference": 62939.68,
+          "expires_at": "2026-08-17T16:00:00+00:00",
+          "invalidated_time": null,
+          "opp_id": "BTCUSD:H1:FVG:LONG:2026-08-14T15:00:00+00:00|2026-08-17T00:25:00+00:00|2026-08-17T00:40:00+00:00",
+          "pip_size": 0.1,
+          "pip_source": "10*point host_captured 2026-09-30T15:12:03.313685+00:00",
+          "poi_id": "BTCUSD:H1:FVG:LONG:2026-08-14T15:00:00+00:00",
+          "reward_risk": 2.062171602954372,
+          "reward_risk_reason": null,
+          "stop_c10": 62725.99264276519,
+          "stop_reason": null,
+          "sweep_extreme": 62750.46,
+          "sweep_time": "2026-08-17T00:25:00+00:00",
+          "target_c11": 63380.34,
+          "target_reason": null,
+          "target_selection": {
+            "c11_source": "PRIMARY_EXTERNAL_LIQUIDITY",
+            "core_selector_reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+            "core_selector_source": "liquidity.hierarchy.external_swing_liquidity",
+            "core_selector_source_id": "BTCUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:63380.34000000",
+            "core_selector_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+            "evidence_timestamp": "2026-08-16T16:30:00+00:00",
+            "price": 63380.34,
+            "reason": "PRIMARY_TIER_OPPOSING_EXTERNAL_UNSWEPT_LIQUIDITY",
+            "source": "liquidity.hierarchy.external_swing_liquidity",
+            "source_id": "BTCUSD:M5:BUY_SIDE:EXTERNAL_SWING_HIGH:63380.34000000",
+            "status_at_selection": "UNSWEPT",
+            "structure_note": null,
+            "tier": "PRIMARY_EXTERNAL_LIQUIDITY"
+          },
+          "target_tier": "PRIMARY_EXTERNAL_LIQUIDITY",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "state": "OPPORTUNITY",
+        "window_bars": {
+          "D1": 7,
+          "H1": 137,
+          "M5": 300
+        },
+        "window_first": {
+          "D1": "2026-08-10T21:00:00+00:00",
+          "H1": "2026-08-11T00:00:00+00:00",
+          "M5": "2026-08-16T08:15:00+00:00"
+        }
+      },
+      "reproduced": true
+    }
+  ]
+}

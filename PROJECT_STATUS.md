@@ -8,10 +8,10 @@ review_by: 2026-11-07
 
 ## Current snapshot (2026-10-11)
 
-C14 DST reset R2 (2026-10-14, offline preparation): runtime VT-day assignment to
-risk snapshots remains **MISSING**. A shared metadata-gated helper is added without
-execution wiring; missing evidence is BLOCKED. Winter +2 is **DERIVED_NOT_OBSERVED**
-pending the post-2026-11-01 [host-acceptance checklist](docs/status/CODEX_AGP_DST_RESET_R2_2026-10-14.md).
+Dated historical evidence — C24 1.1.2 (2026-10-14, #213; SUPERSEDED): interrupted
+full-window replay remains NOT_RUN_RESOURCE; static C11 target ENGINE_DEFECT and
+partial observations are retained. L5 is INSUFFICIENT (no accepted cost evidence;
+OD1011-L5), registration eligible = No. [Historical record](docs/status/AGP_C24_LSMC_V112_VERIFY_R2_2026-10-14.md).
 
 Canonical DEMO broker adapter (2026-10-14, unit-tested with a fake terminal only, never host-run; AGP-AUTODEMO-B1, C14): `src/demo_execution/mt5_canonical_adapter.py` is the single `order_check`/`order_send` call site, reachable only behind `guarded_adapter`. Before each broker call it re-validates the guard's single-use step authorization, the enabled scope, the live pinned DEMO account (suffix/server/trade_mode) and an OWNER_APPROVED order shape; a send also requires the durable SENDING claim and, while `per_order_confirm_required` is true, a consumed owner confirmation. An unknown send outcome HALTs and is reconciled, never resubmitted. Inert as committed: every scope `enabled: false`, `demo_authorized: false`, order shape `PILOT_FULL_TP1` PROPOSED_PENDING_OWNER (deviation tag + analytics exclusion; margin mode UNKNOWN until host-verified), no standing authorization in the repo. `AGENTS.md` point 3 and `INVARIANTS.md` rewritten to C14 in the same change; zero-call-site test replaced by `test_exactly_one_order_send_call_site`; bypass tests cover scanner, Telegram callback, skills and assistant/API. Live disabled.
 

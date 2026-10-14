@@ -1,0 +1,17 @@
+{
+  "TOTAL_RAM_MB": 9991,
+  "AVAILABLE_RAM_MB": 9390,
+  "R0_GATE": "PASS",
+  "R1_GATE": "PASS",
+  "R2_GATE": "PASS",
+  "R3_GATE": "PASS",
+  "LOCK_PATH": "/workspace/AG-profit-trading-assit/artifacts/runtime/resource_lock.json",
+  "LOCK_STATUS": "ACTIVE_LOCK",
+  "LOCK_REASON": "owner pid 29382 exists, heartbeat 121s old",
+  "LOCK_OWNER": "CODEX_LOCAL",
+  "LOCK_MISSION": "AGP-C24-LSMC-V112-VERIFY-R2",
+  "LOCK_RESOURCE_CLASS": "R1",
+  "LOCK_PID": 29382,
+  "LOCK_HEARTBEAT_AT_UTC": "2026-10-13T22:40:16Z",
+  "OTHER_HEAVY_JOB_DETECTED": "FALSE_PER_LOCK"
+}

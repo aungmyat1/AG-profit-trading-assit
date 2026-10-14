@@ -115,3 +115,9 @@ def main(args):
         print(json.dumps(released, sort_keys=True))
         if not released['RELEASED']:
             raise RuntimeError('C21 resource lock release failed')
+
+
+if __name__ == '__main__':
+    # Standalone C24 evidence entry point; the C21 bounded main(args) stays unchanged.
+    from lsmc_v112_60d_replay import cli
+    raise SystemExit(cli())

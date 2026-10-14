@@ -1,0 +1,280 @@
+{
+  "ETHUSD": "NOT_RUN_RESOURCE (not reached)",
+  "L5_interpretation": "INSUFFICIENT (no accepted cost evidence; OD1011-L5)",
+  "branches": {
+    "INSUFFICIENT_H1_M5|NONE|NONE|NO_TARGET_OR_NO_OPPORTUNITY": {
+      "full_window_completed": false,
+      "gates_partial_only": {
+        "L1": {
+          "PASS": 359
+        },
+        "L2": {
+          "PASS": 359
+        },
+        "L3": {
+          "PASS": 359
+        },
+        "L4": {
+          "FAIL": 359
+        },
+        "L5": {
+          "INSUFFICIENT (no accepted cost evidence; OD1011-L5)": 359
+        },
+        "L6": {
+          "PASS": 359
+        }
+      },
+      "persisted_partial_scans": 359,
+      "priced_scans_partial_only": 0,
+      "qualifies_for_proposal": false,
+      "verdict": "NOT_RUN_RESOURCE"
+    },
+    "SHORT_D1|LONG|FVG|CONFIRMED_OPPOSING_H1_SWING": {
+      "full_window_completed": false,
+      "gates_partial_only": {
+        "L1": {
+          "PASS": 288
+        },
+        "L2": {
+          "PASS": 288
+        },
+        "L3": {
+          "PASS": 288
+        },
+        "L4": {
+          "PASS": 288
+        },
+        "L5": {
+          "INSUFFICIENT (no accepted cost evidence; OD1011-L5)": 288
+        },
+        "L6": {
+          "PASS": 288
+        }
+      },
+      "persisted_partial_scans": 288,
+      "priced_scans_partial_only": 288,
+      "qualifies_for_proposal": false,
+      "verdict": "NOT_RUN_RESOURCE"
+    },
+    "SHORT_D1|LONG|FVG|PRIMARY_EXTERNAL_LIQUIDITY": {
+      "full_window_completed": false,
+      "gates_partial_only": {
+        "L1": {
+          "PASS": 132
+        },
+        "L2": {
+          "PASS": 132
+        },
+        "L3": {
+          "PASS": 132
+        },
+        "L4": {
+          "PASS": 132
+        },
+        "L5": {
+          "INSUFFICIENT (no accepted cost evidence; OD1011-L5)": 132
+        },
+        "L6": {
+          "PASS": 132
+        }
+      },
+      "persisted_partial_scans": 132,
+      "priced_scans_partial_only": 132,
+      "qualifies_for_proposal": false,
+      "verdict": "NOT_RUN_RESOURCE"
+    },
+    "SHORT_D1|LONG|OB_PIVOT|CONFIRMED_OPPOSING_H1_SWING": {
+      "full_window_completed": false,
+      "gates_partial_only": {
+        "L1": {
+          "PASS": 120
+        },
+        "L2": {
+          "PASS": 120
+        },
+        "L3": {
+          "PASS": 120
+        },
+        "L4": {
+          "PASS": 120
+        },
+        "L5": {
+          "INSUFFICIENT (no accepted cost evidence; OD1011-L5)": 120
+        },
+        "L6": {
+          "PASS": 120
+        }
+      },
+      "persisted_partial_scans": 120,
+      "priced_scans_partial_only": 120,
+      "qualifies_for_proposal": false,
+      "verdict": "NOT_RUN_RESOURCE"
+    },
+    "SHORT_D1|NONE|FVG|NO_TARGET_OR_NO_OPPORTUNITY": {
+      "full_window_completed": false,
+      "gates_partial_only": {
+        "L1": {
+          "PASS": 424
+        },
+        "L2": {
+          "PASS": 424
+        },
+        "L3": {
+          "PASS": 424
+        },
+        "L4": {
+          "PASS": 424
+        },
+        "L5": {
+          "INSUFFICIENT (no accepted cost evidence; OD1011-L5)": 424
+        },
+        "L6": {
+          "PASS": 424
+        }
+      },
+      "persisted_partial_scans": 424,
+      "priced_scans_partial_only": 0,
+      "qualifies_for_proposal": false,
+      "verdict": "NOT_RUN_RESOURCE"
+    },
+    "SHORT_D1|NONE|NONE|NO_TARGET_OR_NO_OPPORTUNITY": {
+      "full_window_completed": false,
+      "gates_partial_only": {
+        "L1": {
+          "PASS": 41
+        },
+        "L2": {
+          "PASS": 41
+        },
+        "L3": {
+          "PASS": 41
+        },
+        "L4": {
+          "PASS": 41
+        },
+        "L5": {
+          "INSUFFICIENT (no accepted cost evidence; OD1011-L5)": 41
+        },
+        "L6": {
+          "PASS": 41
+        }
+      },
+      "persisted_partial_scans": 41,
+      "priced_scans_partial_only": 0,
+      "qualifies_for_proposal": false,
+      "verdict": "NOT_RUN_RESOURCE"
+    },
+    "SHORT_D1|NONE|OB_PIVOT|NO_TARGET_OR_NO_OPPORTUNITY": {
+      "full_window_completed": false,
+      "gates_partial_only": {
+        "L1": {
+          "PASS": 9
+        },
+        "L2": {
+          "PASS": 9
+        },
+        "L3": {
+          "PASS": 9
+        },
+        "L4": {
+          "PASS": 9
+        },
+        "L5": {
+          "INSUFFICIENT (no accepted cost evidence; OD1011-L5)": 9
+        },
+        "L6": {
+          "PASS": 9
+        }
+      },
+      "persisted_partial_scans": 9,
+      "priced_scans_partial_only": 0,
+      "qualifies_for_proposal": false,
+      "verdict": "NOT_RUN_RESOURCE"
+    },
+    "SHORT_D1|NONE|OB_SHADOW|NO_TARGET_OR_NO_OPPORTUNITY": {
+      "full_window_completed": false,
+      "gates_partial_only": {
+        "L1": {
+          "PASS": 16
+        },
+        "L2": {
+          "PASS": 16
+        },
+        "L3": {
+          "PASS": 16
+        },
+        "L4": {
+          "PASS": 16
+        },
+        "L5": {
+          "INSUFFICIENT (no accepted cost evidence; OD1011-L5)": 16
+        },
+        "L6": {
+          "PASS": 16
+        }
+      },
+      "persisted_partial_scans": 16,
+      "priced_scans_partial_only": 0,
+      "qualifies_for_proposal": false,
+      "verdict": "NOT_RUN_RESOURCE"
+    },
+    "SHORT_D1|SHORT|FVG|CONFIRMED_OPPOSING_H1_SWING": {
+      "full_window_completed": false,
+      "gates_partial_only": {
+        "L1": {
+          "PASS": 262
+        },
+        "L2": {
+          "PASS": 262
+        },
+        "L3": {
+          "PASS": 262
+        },
+        "L4": {
+          "PASS": 262
+        },
+        "L5": {
+          "INSUFFICIENT (no accepted cost evidence; OD1011-L5)": 262
+        },
+        "L6": {
+          "PASS": 262
+        }
+      },
+      "persisted_partial_scans": 262,
+      "priced_scans_partial_only": 0,
+      "qualifies_for_proposal": false,
+      "verdict": "NOT_RUN_RESOURCE"
+    },
+    "SHORT_D1|SHORT|FVG|PRIMARY_EXTERNAL_LIQUIDITY": {
+      "full_window_completed": false,
+      "gates_partial_only": {
+        "L1": {
+          "PASS": 79
+        },
+        "L2": {
+          "PASS": 79
+        },
+        "L3": {
+          "PASS": 79
+        },
+        "L4": {
+          "PASS": 79
+        },
+        "L5": {
+          "INSUFFICIENT (no accepted cost evidence; OD1011-L5)": 79
+        },
+        "L6": {
+          "PASS": 79
+        }
+      },
+      "persisted_partial_scans": 79,
+      "priced_scans_partial_only": 0,
+      "qualifies_for_proposal": false,
+      "verdict": "NOT_RUN_RESOURCE"
+    }
+  },
+  "counts_classification": "partial observations",
+  "full_window_status": "NOT_RUN_RESOURCE",
+  "registration_eligible": false,
+  "symbol": "BTCUSD"
+}

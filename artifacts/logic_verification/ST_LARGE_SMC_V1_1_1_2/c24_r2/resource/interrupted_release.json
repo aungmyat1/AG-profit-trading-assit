@@ -1,0 +1,7 @@
+{
+  "AGENT": "CODEX_LOCAL",
+  "MISSION": "AGP-C24-LSMC-V112-VERIFY-R2",
+  "LOCK_PATH": "/workspace/AG-profit-trading-assit/artifacts/runtime/resource_lock.json",
+  "REASON": "owner verified",
+  "RELEASED": true
+}
