@@ -315,8 +315,9 @@ ExecutionDecision -> owner-originated authorization proof -> order_check -> orde
 ```
 
 First inspect and reuse existing authorization mechanisms
-(`assistant.commands.execute_command()`'s `user_confirmed=True` gate per
-`AGENTS.md` Authority order point 3) before preregistering any new
+(the `demo_execution.guarded_adapter` single-use step authorization in front of the canonical
+adapter, per `AGENTS.md` Authority order point 3; the earlier `execute_command()` /
+`user_confirmed=True` path is archived) before preregistering any new
 cryptographic-token architecture. Required invariants: AI cannot authorize;
 scheduler cannot authorize; stale authorization cannot authorize; authorization
 for trade A cannot execute trade B; authorization cannot be replayed. This is

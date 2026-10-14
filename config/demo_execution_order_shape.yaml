@@ -1,0 +1,21 @@
+# DEMO order shape for the canonical MT5 adapter (src/demo_execution/mt5_canonical_adapter.py, B1).
+# Ships PROPOSED: the adapter refuses every broker call (ORDER_SHAPE_NOT_APPROVED) until the owner
+# records a decision and sets status: OWNER_APPROVED with that decision id. No owner decision text has
+# been supplied, so this stays PROPOSED_PENDING_OWNER.
+# Proposed shape PILOT_FULL_TP1: one market DEAL on the guard-planned volume, SL = ticket stop,
+# TP = leg 1 on the full volume (the contract's 75%/25% leg split is NOT reproduced), filling IOC, GTC,
+# deviation = scope slippage limit, magic = contract magic. Every order carries the deviation tag in its
+# comment ("AG " + sha256(ticket_id)[:16] + " " + tag) and every result is flagged analytics_exclusion,
+# so pilot fills never enter strategy statistics.
+schema: AGP_DEMO_ORDER_SHAPE_V1
+status: PROPOSED_PENDING_OWNER
+owner_decision_id: null
+shape_id: PILOT_FULL_TP1
+deviation_tag: SHAPEDEV
+analytics_exclusion: true
+# Hedging vs netting is not host-verified; recorded as UNKNOWN on every result until it is.
+account_margin_mode: UNKNOWN_UNTIL_HOST_VERIFIED
+order:
+  action: DEAL
+  take_profit_leg: 1
+  filling: IOC

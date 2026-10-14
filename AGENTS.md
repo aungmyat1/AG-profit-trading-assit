@@ -53,20 +53,27 @@ Agent skills  -> ADVISORY ONLY
 
 1. `strategy_engine/` decides trade signals. Deterministic; not up for reinterpretation.
 2. `execution/risk.py` decides allowed risk/sizing.
-3. `execution/` controls MT5 orders (via `mt5/`). Entry-side OPEN is implemented
-   (`execution/mt5_gateway.py`, `executor.py`) as of the 2026-08-28 Execution authority
-   restructure (see `PROJECT_STATUS.md`) — reachable ONLY through
-   `assistant.commands.execute_command()`, and only with a separate, non-defaulted
-   `user_confirmed=True` derived from an explicit user instruction that turn. Never call
-   `execution.executor`/`execution.mt5_gateway`/order_check/order_send directly or with
-   `user_confirmed=True` unless the user's own message this turn was an explicit
-   execution command ("execute it", "sell EURUSD 0.31 lots...", "close this position") —
-   analysis or a proposal being generated is never sufficient on its own.
+3. DEMO order placement (C14 standing authorization, ratified 2026-10-11) has exactly one
+   call site: `src/demo_execution/mt5_canonical_adapter.py` (one `order_check`, one
+   `order_send`; tests enforce exactly one each), reachable only behind
+   `demo_execution.guarded_adapter.GuardedCanonicalAdapter`. A broker call happens only when
+   ALL hold: the scope is listed in `config/demo_execution_scopes.yaml` with `enabled: true`;
+   a matching host-local, revocable, strategy-specific standing DEMO authorization record
+   exists (not revoked, no emergency stop); the exact scope is LOGIC_VERIFIED, runtime-bound
+   and READY-authorized; the guard's risk/cost/freshness/idempotency gates pass and it issued
+   the single-use step authorization; the live account read is the pinned DEMO account; the
+   order shape in `config/demo_execution_order_shape.yaml` is OWNER_APPROVED; and, while
+   `per_order_confirm_required` is true, a bound owner Confirm was consumed. DEMO only; LIVE
+   stays disabled. Agents never call the adapter, `order_check`/`order_send` or the guard's
+   `authorize_*` steps themselves, never create or edit a standing authorization record, and
+   never flip `enabled`, READY, `per_order_confirm_required` or the order-shape status — those
+   are owner actions, merged only on owner approval. An unknown outcome HALTs and is
+   reconciled, never resubmitted.
 4. Agent skills (`.agents/skills/` canonical, `.claude/skills/` a runtime-discovery
    mirror — see `docs/architecture/TRADE_ASSISTANT_ARCHITECTURE.md` "Universal skill
    contract") read and explain; they have no
-   *independent* execution authority and never call `execution.executor`,
-   `execution.mt5_gateway`, or any order_check/order_send path themselves, and never
+   *independent* execution authority and never call `demo_execution` broker steps or any
+   order_check/order_send path themselves, and never
    override a strategy engine result. Actual execution is always routed through point 3.
 5. `trade_management/` (Phase 6, manual-entry only) is a separate, independently-gated
    pathway: it manages a position the user already opened by hand and explicitly
