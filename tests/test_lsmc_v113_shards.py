@@ -99,3 +99,21 @@ def test_independent_poi_age_counts_weekday_ny1700_dates():
     assert replay.independent_poi_age(origin,h1,dt.datetime(2026,9,7,20,tzinfo=utc))==0
     assert replay.independent_poi_age(origin,h1,dt.datetime(2026,9,14,20,tzinfo=utc))==5   # weekend not counted
     assert replay.independent_poi_age(origin,h1,dt.datetime(2026,9,14,22,tzinfo=utc))==6
+
+
+def test_l5_recompute_is_insufficient_without_full_login_and_pass_with_it(tmp_path, monkeypatch):
+    import lsmc_v113_l5_recompute as L
+
+    import v1_tickets.manual_ticket as mt
+    shard=tmp_path/'EURUSD'/'shard_00';shard.mkdir(parents=True)
+    (shard/'scans.csv').write_text('signal_state,closed_at_utc,entry,stop\n'
+                                   'OPPORTUNITY,2026-08-03T12:00:00+00:00,1.1000,1.0980\nWATCH,2026-08-03T12:05:00+00:00,,\n')
+    replay._COST.pop('EURUSD',None)
+    assert L.recompute(tmp_path,'EURUSD')['L5']=='INSUFFICIENT'
+    committed=mt.load_owner_config()
+    full={**committed,'commission':{**committed['commission'],'account_login':'1234567999'}}
+    monkeypatch.setattr(mt,'load_owner_config',lambda *a,**k:full)
+    replay._COST.pop('EURUSD',None)
+    out=L.recompute(tmp_path,'EURUSD')
+    replay._COST.pop('EURUSD',None)
+    assert out['L5']=='PASS' and out['priced_opportunity_rows']==1
