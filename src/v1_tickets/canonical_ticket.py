@@ -299,6 +299,12 @@ def build_canonical_ticket(
             "detail": str(ticket["data_error"].get("detail", ""))[:300],
             "layer": str(ticket["data_error"].get("layer", "OTHER"))[:80],
         }
+    # AGP-S1-BLOCK-REASON-FIX-R1: archive the source ticket's own reason detail and the engine's emitted
+    # regime/setup (additive, informational; never an authority).
+    engine_detail = {k: ticket.get(k) for k in ("reason_code", "detail", "regime", "setup", "emitted_branch")
+                     if ticket.get(k) is not None}
+    if engine_detail:
+        canonical["engine_detail"] = {k: (str(v)[:300] if k == "detail" else v) for k, v in engine_detail.items()}
     canonical.update(_scope_fields(canonical))
     canonical["structure_visual"] = render_structure_visual(canonical)
     canonical["checklist"] = _checklist_summary(ticket, canonical)

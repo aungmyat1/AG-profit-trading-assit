@@ -290,3 +290,77 @@ def load_scope_policy(
         account_login_suffix=login_suffix,
         host_magic_registry_path=magic_file,
     )
+
+
+# ------------------------------------------------------------------------------ N scopes (A')
+# The committed scope manifest lists one scope config per admitted scope; S1 keeps its own file
+# (config/demo_execution_s1.yaml) byte-identical. Every listed scope is loaded by the same
+# fail-closed `load_scope_policy`; a scope manifest grants no authority by itself.
+_SCOPES_MANIFEST = _REPO_ROOT / "config" / "demo_execution_scopes.yaml"
+_SCOPES_SCHEMA = "AGP_C14_DEMO_SCOPES_V1"
+
+
+def _scope_key(strategy_id: Any, version: Any, symbol: Any, session: Any) -> tuple[str, str, str, str]:
+    return (str(strategy_id), str(version), str(symbol), str(session))
+
+
+def load_scope_policies(
+    manifest_path: Optional[str | Path] = None,
+    *,
+    repo_root: Optional[str | Path] = None,
+    **overrides: Any,
+) -> tuple[ScopePolicy, ...]:
+    """Load every scope the manifest lists, in manifest order. Fails closed on an empty list,
+    a duplicate (strategy, version, symbol, session) key, or scopes bound to different DEMO
+    accounts/servers (one account, one identity pin)."""
+    root = Path(repo_root).resolve() if repo_root is not None else _REPO_ROOT
+    manifest_file = _as_path(manifest_path or _SCOPES_MANIFEST.relative_to(_REPO_ROOT), root)
+    raw = _load_yaml(manifest_file, "EXECUTION_SCOPE_UNREADABLE")
+    configs = raw.get("scope_configs")
+    if raw.get("schema") != _SCOPES_SCHEMA or not isinstance(configs, list) or not configs \
+            or not all(isinstance(c, str) and c.strip() for c in configs):
+        raise ScopePolicyError("EXECUTION_SCOPE_INVALID", "scope manifest schema/scope_configs malformed")
+    policies, seen = [], set()
+    for rel in configs:
+        cfg = _under_root(_as_path(rel, root), root, "scope_configs")
+        policy = load_scope_policy(cfg, repo_root=root, **overrides)
+        key = _scope_key(policy.strategy_id, policy.strategy_version, policy.symbol, policy.session)
+        if key in seen:
+            raise ScopePolicyError("EXECUTION_SCOPE_DUPLICATE", "/".join(key))
+        seen.add(key)
+        policies.append(policy)
+    if len({(p.account_login_suffix, p.broker_server) for p in policies}) != 1:
+        raise ScopePolicyError("ACCOUNT_IDENTITY_CONFLICT", "all scopes must pin one DEMO account and server")
+    return tuple(policies)
+
+
+def select_scope(policies: tuple[ScopePolicy, ...], *, strategy_id: Any, strategy_version: Any,
+                 symbol: Any, session: Any) -> ScopePolicy:
+    """The scope whose identity tuple matches exactly; otherwise the manifest's first scope, whose
+    own scope checks then report the precise mismatch reasons (no wildcard, never a default grant)."""
+    if not policies:
+        raise ScopePolicyError("EXECUTION_SCOPE_INVALID", "no scopes configured")
+    key = _scope_key(strategy_id, strategy_version, symbol, session)
+    for policy in policies:
+        if _scope_key(policy.strategy_id, policy.strategy_version, policy.symbol, policy.session) == key:
+            return policy
+    return policies[0]
+
+
+def resolve_ticket_scope_policy(
+    ticket: Any,
+    *,
+    config_path: Optional[str | Path] = None,
+    manifest_path: Optional[str | Path] = None,
+    repo_root: Optional[str | Path] = None,
+    **overrides: Any,
+) -> ScopePolicy:
+    """An explicit single-scope config keeps the original one-scope behaviour; otherwise the
+    scope is selected from the manifest by the ticket's own identity tuple."""
+    if config_path is not None:
+        return load_scope_policy(config_path, repo_root=repo_root, **overrides)
+    policies = load_scope_policies(manifest_path, repo_root=repo_root, **overrides)
+    ticket = ticket if isinstance(ticket, Mapping) else {}
+    return select_scope(policies, strategy_id=ticket.get("strategy_id"),
+                        strategy_version=ticket.get("strategy_version"), symbol=ticket.get("symbol"),
+                        session=ticket.get("cycle", ticket.get("session")))

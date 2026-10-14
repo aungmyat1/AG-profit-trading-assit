@@ -305,6 +305,7 @@ def run_canonical_fx_cycle(
                 verified = False
                 verify_error_class = type(exc).__name__
         store_state = _store_status(result, verified)
+        kind = "ticket"
         if store_state == "FAILED":
             delivery_state, error_class = "persistence_failed", None
         else:
@@ -320,9 +321,13 @@ def run_canonical_fx_cycle(
             try:
                 delivery_state = sender.send_ticket(result.canonical)
                 error_class = None
+                # No silent S1 session: a scheduled S1 cycle that produced no alert sends its compact status.
+                if delivery_state == "summary_only" and (result.instrument, result.session) == ("GBPUSD", "ASIAN_LONDON"):
+                    kind = "cycle"
+                    delivery_state = sender.send_cycle_status(result.canonical)
             except Exception as exc:  # noqa: BLE001 -- classify only; never blind-retry here
                 delivery_state, error_class = "delivery_exception", type(exc).__name__
-        attempts = sender.delivery_attempts("ticket", [result.ticket_id])
+        attempts = sender.delivery_attempts(kind, [result.ticket_id])
         delivery_metadata = attempts[-1] if attempts else {}
         if delivery_state == "sent" and not delivery_metadata.get("message_id"):
             delivery_state = "failed"
