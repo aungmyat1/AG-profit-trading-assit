@@ -10,6 +10,19 @@ review_by: 2026-11-07
 
 S1 block reasons (2026-10-14, unit-tested only, not host-verified; AGP-S1-BLOCK-REASON-FIX-R1): the shared `LOGIC_SCOPE_NOT_VERIFIED` code on the runtime S1 path is split into `SCOPE_NOT_S1` (symbol/session outside GBPUSD x ASIAN_LONDON), `SCOPE_IDENTITY_MISMATCH` (S1 contract/engine identity != registry record) and `BRANCH_OUTSIDE_VERIFIED_SCOPE` (engine emitted a non RANGE_SWEEP branch; `emitted_branch` recorded); all stay BLOCKED. The split is applied at the evaluator boundary (`daily_evaluator.scope_block_reason`); `src/v1_tickets/fx.py` stays byte-identical because it is in the ASW v1.1.3 logic identity set. Every scheduled S1 cycle that produces no alert now sends one compact ASCII cycle status (decision, reason, detail, engine regime/setup; existing dedupe) instead of ending summary-only; the canonical archive carries `engine_detail`. Demo-execution admission keeps its own `LOGIC_SCOPE_NOT_VERIFIED`. No READY, registry, contract or flag change. Tests: `tests/test_s1_block_reasons.py`.
 
+OD1014 C20/C21 closeout and Telegram acceptance (2026-10-14): **PARTIAL**, historical
+host checkpoint only. [Closeout](docs/status/AGP_OD1014_C20_C21_CLOSEOUT_2026-10-14.md)
+and [TG acceptance](docs/status/AGP_OD1014_TG_ACCEPT_2026-10-14.md) retain observed
+LSMC messages, ASW silent-cycle FAIL and pending CCFD/LNY checks. Ratification is
+solely #217; the C21 1.1.2 registration discussion is superseded by its version-selection decision.
+
+OD1014 / OD1014-FAST ratification (owner Aung, 2026-10-14, AGP-OD1014-RATIFY-R1):
+[register](docs/governance/OWNER_DECISION_REGISTER.md) records RATIFIED, including FAST D1–D5
+and D8/D9 as applied in #212. `AGP-C24-LSMC-VERSION-SELECTION` selects 1.1.3 (#216) as
+the next Large-SMC registration candidate; Large-SMC 1.1.2 remains REPORT_ONLY observation and its C21 registration
+proposal is SUPERSEDED. Frozen identities and per-scope verification remain separate; no status
+transfer, READY approval or broker execution authorization is granted.
+
 C23 registry apply (2026-10-14, off-host, unit-tested only): OD1014-FAST D8 re-records the CCFD 1.0.0 identity (`b8188dfb…` → `7a0946e4…`, verdicts identical on the same recorded 60d data) and D9 registers ASW v1.1.3 as a candidate (EURUSD/GBPUSD × ASIAN_LONDON/LONDON_NEWYORK LOGIC_VERIFIED; USDJPY/XAUUSD not verified). `registry.yaml` is outside every identity set; no identity moved. Report-lane stamps follow the registry and stay REPORT_ONLY; CCFD per-ticket stamps stay UNVERIFIED (`WINDOW_NOT_IN_SCOPE`, no weekday/weekend window recorded). Ledger: LOGIC_VERIFIED 2 (S1 v1.1.2, EURUSD × ASIAN_LONDON v1.1.3), UNVERIFIED 16. No READY, demo, live or runtime-binding change. [Status](docs/status/C23_REGISTRY_APPLY_2026-10-14.md).
 
 C21 Large-SMC 1.1.2 candidate (2026-10-14, off-host): separate append-only engine and report-version
@@ -21,8 +34,8 @@ R1 replay and frozen 1.1.0 full audit byte parity passed. Scope/evidence and pro
 [registration proposal](docs/proposals/C21_LSMC_V112_REGISTRATION.md). Frozen 1.1.0 and scheduler
 bytes remain unchanged; no broker contact or authorization change.
 
-OD1014 opportunity lanes (2026-10-13, unit-tested only, not host-verified; OD1014 owner-directed, pending
-ratification): on the REPORT_ONLY lane a CCFD row blocked only by `LOGIC_STATUS_NOT_VERIFIED` with a complete
+OD1014 opportunity lanes (2026-10-13, unit-tested only, not host-verified; OD1014 ratified by owner Aung on 2026-10-14;
+see the owner decision register): on the REPORT_ONLY lane a CCFD row blocked only by `LOGIC_STATUS_NOT_VERIFIED` with a complete
 priced plan is reported as a non-executable `OPPORTUNITY` CANDIDATE stamped with its own 1.0.0 registry status;
 any other reason stays BLOCKED. LSMC runs pass the fresh read-only MT5 tick (stale/missing -> `MISSING_SPREAD`).
 CANDIDATE reports show a display-only lot preview / cost-in-R (host-captured metadata, balance from the
@@ -341,7 +354,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `ddd9eac826a61d3ffd8c2cdc41e61b448af730e549555ba8757158bb8f5e4e0b`.
+inputs_sha256: `c43cdedeef29a0784ee68c11df789bd6e494bb5362bfa43d36e066ff86969445`.
 <!-- [[[end]]] -->
 
 ### Objective
