@@ -28,8 +28,13 @@ from demo_execution.mt5_canonical_adapter import (  # noqa: E402
 ADAPTER = REPO / "src/demo_execution/mt5_canonical_adapter.py"
 
 
-def test_committed_order_shape_is_not_approved():
-    assert load_order_shape()["approved"] is False
+def test_committed_order_shape_is_owner_approved_pilot():
+    shape = load_order_shape()
+    assert shape["approved"] is True
+    assert shape["owner_decision_id"] == "AGP-S1-ORDER-SHAPE-PILOT"
+    assert (shape["shape_id"], shape["deviation_tag"], shape["analytics_exclusion"]) == (
+        "PILOT_FULL_TP1", "SHAPEDEV", True)
+    assert shape["account_margin_mode"] == "UNKNOWN_UNTIL_HOST_VERIFIED"
 
 
 class FakeMT5:
