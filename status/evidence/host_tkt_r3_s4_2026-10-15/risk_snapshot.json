@@ -1,0 +1,74 @@
+{
+  "evaluated_at_utc": "2026-10-14T19:10:36.570604+00:00",
+  "code_sha": "90cf1a79a7b9e1188825efb1a0175c5edac5dcb0",
+  "account": {
+    "server": "VTMarkets-Demo",
+    "login_suffix": "999",
+    "trade_mode": 0,
+    "pinned_demo": true
+  },
+  "scopes": [
+    "ST_ASIAN_SWEEP_5R_V1@1.1.2:GBPUSD:ASIAN_LONDON"
+  ],
+  "build": {
+    "status": "OK",
+    "reason_code": null,
+    "server_day": "2026-10-14",
+    "observed_at_utc": "2026-10-14 19:10:36.570604+00:00",
+    "account": {
+      "realized_pnl": 0.0,
+      "open_pnl": 0.0,
+      "carried_adverse_pnl": 0.0,
+      "total_pnl": 0.0,
+      "realized_R": 0.0,
+      "open_R": 0.0,
+      "carried_adverse_R": 0.0,
+      "total_R": 0.0,
+      "total_pct": 0.0,
+      "daily_loss_R": 0.0,
+      "daily_loss_pct": 0.0,
+      "equity": 10000.0,
+      "open_positions": 0
+    },
+    "scopes": {
+      "ST_ASIAN_SWEEP_5R_V1@1.1.2:GBPUSD:ASIAN_LONDON": {
+        "realized_pnl": 0.0,
+        "open_pnl": 0.0,
+        "carried_adverse_pnl": 0.0,
+        "total_pnl": 0.0,
+        "realized_R": 0.0,
+        "open_R": 0.0,
+        "carried_adverse_R": 0.0,
+        "total_R": 0.0,
+        "total_pct": 0.0,
+        "daily_loss_R": 0.0,
+        "daily_loss_pct": 0.0,
+        "trades_today": 0,
+        "magic_number": 777001,
+        "snapshot": {
+          "observed_at_utc": "2026-10-14 19:10:36.570604+00:00",
+          "server_day": "2026-10-14",
+          "demo_equity": 10000.0,
+          "strategy_daily_loss_pct": 0.0,
+          "account_daily_loss_pct": 0.0,
+          "strategy_trades_today": 0,
+          "open_positions": [],
+          "positions_complete": true,
+          "daily_metrics_complete": true,
+          "symbol_meta": null,
+          "daily_reset_basis": "VT_SERVER_DAY"
+        }
+      }
+    }
+  },
+  "mt5_calls": [
+    "account_info",
+    "history_deals_get",
+    "initialize",
+    "last_error",
+    "positions_get",
+    "terminal_info"
+  ],
+  "refused_calls": [],
+  "order_api_calls": 0
+}

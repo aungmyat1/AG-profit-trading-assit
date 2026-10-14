@@ -1,0 +1,28 @@
+{
+  "schema": "AGP_HOST_EVIDENCE_V1",
+  "mission": "AGP-TKT-HOST-R3 step 4 only",
+  "host_tree_sha": "1a2024fdc84f0ea4e79f252afaf61101ed88e907",
+  "run_tree": "<HOST_SCRATCHPAD>/agp-tkt-host-r1 (separate worktree; live tree not modified)",
+  "account": {"server": "VTMarkets-Demo", "login_suffix": "999", "trade_mode": "DEMO", "pinned": true},
+  "order_api_calls": 0, "order_check_calls": 0, "broker_mutations": 0, "telegram_sends": 0,
+  "mt5_access": "allowlist proxy; refused_calls=[] in both MT5 sub-steps",
+  "substeps": {
+    "4a_risk_snapshot": {"result": "PASS", "ram_mb_before": 1282, "at_utc": "2026-10-14T19:10:05Z",
+      "build_status": "OK", "server_day": "2026-10-14",
+      "scopes": ["ST_ASIAN_SWEEP_5R_V1@1.1.2:GBPUSD:ASIAN_LONDON"],
+      "account_daily_loss_pct": 0.0, "open_positions": 0, "scope_trades_today": 0,
+      "note": "snapshot.symbol_meta is null in the builder output",
+      "file": "risk_snapshot.json"},
+    "4b_symbol_info_5d_spreads": {"result": "PASS", "ram_mb_before": 1391, "at_utc": "2026-10-14T19:10:59Z",
+      "USDJPY": {"broker_symbol": "USDJPY-VIP", "digits": 3, "median_spread_points_each_day": 16, "max_spread_points": 122},
+      "XAUUSD": {"broker_symbol": "XAUUSD-VIP", "digits": 2, "median_spread_points_each_day": 27, "max_spread_points": 32, "trade_stops_level": 20},
+      "server_days": ["2026-10-08", "2026-10-09", "2026-10-12", "2026-10-13", "2026-10-14 (partial)"],
+      "file": "asw_l5_symbol_spread_capture.json"},
+    "4c_telegram_acceptance_render_only": {"result": "PASS", "ram_mb_before": 1337, "at_utc": "2026-10-14T19:12:26Z",
+      "command": "python -m pytest -q -p no:cacheprovider tests/test_report_delivery.py tests/test_report_lanes.py tests/test_s1_block_reasons.py -rA (TELEGRAM_* env unset)",
+      "outcome": "49 passed in 124.75s",
+      "covers": ["ASW S1 scheduled cycle never ends summary-only (silent-cycle), LIVE+REPLAY", "CCFD lane decisions preserved / never omits an instrument / non-executable candidates", "report rendering ASCII REPORT_ONLY"],
+      "file": "telegram_acceptance_pytest.txt"}
+  },
+  "held": {"steps_1_3": "owner_ticket.yaml absent in config/local; #232 OPEN"}
+}
