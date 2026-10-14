@@ -1,10 +1,14 @@
 ---
 class: evidence
-state: DESIGN
+state: SUPERSEDED
 owner_reviewed: null
 review_by: 2026-11-07
 ---
 # C24 Large-SMC 1.1.2 verification (2026-10-14)
+
+Superseded by owner decision AGP-C24-LSMC-VERSION-SELECTION: 1.1.2 stays REPORT_ONLY observation; registration candidate is 1.1.3 (see C24 1.1.3 closeout PR). This record is historical evidence for the static C11 target ENGINE_DEFECT and the interrupted replay.
+
+C24 1.1.3 implementation/closeout lineage: [PR #216](https://github.com/aungmyat1/AG-profit-trading-assit/pull/216); subsequent closeout evidence remains separately attributed.
 
 Mission AGP-C24-LSMC-V112-VERIFY-R2, owner amendment: **60 days only**.
 Evidence and proposal scope; no engine, contract, registry, READY, scheduler or flag change.
@@ -37,7 +41,7 @@ before this termination, is not represented as a completed run.
 The owned R1 lock was explicitly released after recording termination evidence.
 
 Partial BTC gates: L1/L2/L3/L6 PASS 1,730 each; L4 PASS 1,371 and FAIL 359
-(insufficient-history bootstrap); L5 WARN 1,730 (declared incomplete cost evidence).
+(insufficient-history bootstrap); L5 **INSUFFICIENT (no accepted cost evidence; OD1011-L5)**: 1,730 partial observations.
 These counts are **partial observations, not full-scope PASS**.
 Ten observed branches, including short-D1 LONG/SHORT, FVG/OB_PIVOT/OB_SHADOW,
 primary/H1 fallback and warmup, are enumerated in `partial_branch_matrix.json`;
@@ -176,3 +180,16 @@ Artifact root: `artifacts/logic_verification/ST_LARGE_SMC_V1_1_1_2/c24_r2/`.
 Per-phase logs, divergence inventory, branch matrix, signal events, scan plans,
 resource interruption/release and machine campaign summary remain attributable
 to their original inputs and incomplete/completed status.
+
+## CODEX-AGP-PR213-FIX-R1 errata (2026-10-14)
+
+Merged current main without force-push. Main's rolling snapshot and docs index text
+are retained; #213 is linked as dated historical evidence. No new replay was run.
+Raw `p1_crypto/scans.csv` and `p1_crypto/audit.json` retain their historical L5
+`WARN` codes byte-for-byte. The report and summary branch matrix relabel those
+partial observations as **INSUFFICIENT (no accepted cost evidence; OD1011-L5)**.
+This is an evidence-label correction, not a passing or accepted-cost verdict.
+All full-window replay verdicts remain NOT_RUN_RESOURCE; registration eligible = No.
+Counts remain partial observations, not completed scopes. Historical FX PENDING_D1
+is not upgraded by later fixture availability; no new FX replay is claimed.
+Engine, contracts, registry, READY, flags and schedules are unchanged by this fix.

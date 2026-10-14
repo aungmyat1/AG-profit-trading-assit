@@ -1,0 +1,80 @@
+{
+ "broker_symbol": "GBPUSD-VIP",
+ "captured_at_utc": "2026-10-13T23:02:50.282573+00:00",
+ "digits": 5,
+ "files": {
+  "GBPUSD_d1.csv": "d47ec0637d8daa88e8f5e568241c9aa46858c8fd14dbf6325dc8f3d739c29530",
+  "GBPUSD_d1_meta.csv": "283971793110b7f636d776ba9459ad09a7ec07b5640c425713b24998d470cb34",
+  "GBPUSD_h1.csv": "c88ec475e2deb32a429bd2bfc8e880a38b474b830a77cdc075c15fd718f98629",
+  "GBPUSD_h1_meta.csv": "6473739df0719a534d8dda13b4685b67f93e7f1af47bf100355e9fbd7f9b09dd",
+  "GBPUSD_m5.csv": "293e340292047b076220767f1244ef3b7fc938d3c4b41e4c8ca7ed23e52d388f",
+  "GBPUSD_m5_meta.csv": "6eb4d4e9b211390bcb84816e19fcdc3e6317868b9fadcdc2c7942e0118d42cbe"
+ },
+ "login_suffix": "999",
+ "mission": "AGP-D1-VT-60D-FX-EXPORT-R2",
+ "peak_working_set_mb": 41.6,
+ "point_host": 1e-05,
+ "point_live": 1e-05,
+ "recorded": true,
+ "server": "VTMarkets-Demo",
+ "server_utc_offset_rule": "SERVER_MIDNIGHT_EQUALS_NEW_YORK_1700: server_utc_offset_hours = America/New_York UTC offset + 7",
+ "source": "MT5_VT_MARKETS_DEMO",
+ "spread_source": "MqlRates spread (points) x host_captured point",
+ "symbol": "GBPUSD",
+ "terminal": "<HOST_SCRATCHPAD>/terminal64.exe",
+ "timeframes": {
+  "D1": {
+   "bars": 52,
+   "first_bar_utc": "2026-08-02T21:00:00+00:00",
+   "gaps": [],
+   "last_bar_utc": "2026-10-12T21:00:00+00:00",
+   "market_closed_runs": 10,
+   "warmup_bars": 10,
+   "window_bars": 42
+  },
+  "H1": {
+   "bars": 1248,
+   "first_bar_utc": "2026-08-02T21:00:00+00:00",
+   "gaps": [],
+   "last_bar_utc": "2026-10-13T20:00:00+00:00",
+   "market_closed_runs": 10,
+   "warmup_bars": 240,
+   "window_bars": 1008
+  },
+  "M5": {
+   "bars": 14964,
+   "first_bar_utc": "2026-08-02T21:00:00+00:00",
+   "gaps": [
+    {
+     "from_utc": "2026-08-09T21:00:00+00:00",
+     "kind": "GAP",
+     "missing": 1,
+     "to_utc": "2026-08-09T21:00:00+00:00"
+    },
+    {
+     "from_utc": "2026-08-28T14:30:00+00:00",
+     "kind": "GAP",
+     "missing": 2,
+     "to_utc": "2026-08-28T14:35:00+00:00"
+    },
+    {
+     "from_utc": "2026-10-07T20:15:00+00:00",
+     "kind": "GAP",
+     "missing": 9,
+     "to_utc": "2026-10-07T20:55:00+00:00"
+    }
+   ],
+   "last_bar_utc": "2026-10-13T20:55:00+00:00",
+   "market_closed_runs": 10,
+   "warmup_bars": 2879,
+   "window_bars": 12085
+  }
+ },
+ "warmup_derivation": "rules.poi.max_age_trading_days 5 + D1 SW-A fractal 2k+1 = 5 bars (rules.swings.k 2); covers ATR14 M5/H1 and sweep_to_choch_window_m5_bars 12",
+ "warmup_end_utc": "2026-08-14T21:00:00+00:00",
+ "warmup_start_utc": "2026-08-02T21:00:00+00:00",
+ "warmup_trading_dates": 10,
+ "window_days": 60,
+ "window_end_utc": "2026-10-13T21:00:00+00:00",
+ "window_start_utc": "2026-08-14T21:00:00+00:00"
+}

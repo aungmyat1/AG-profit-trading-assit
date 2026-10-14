@@ -19,7 +19,11 @@ from demo_execution.notification import (
     notification_gate,
 )
 from demo_execution.risk import RiskSnapshot, evaluate_risk_caps
-from demo_execution.scope import ScopePolicy, ScopePolicyError, load_scope_policy
+from demo_execution.scope import (
+    ScopePolicy,
+    ScopePolicyError,
+    resolve_ticket_scope_policy,
+)
 from ticket_store.store import TicketStore
 
 
@@ -235,8 +239,9 @@ def evaluate_pre_send_gates(
 ) -> AdmissionResult:
     """Evaluate ordered broker-free gates and report every applicable block reason."""
     try:
-        policy = scope or load_scope_policy(
-            scope_config_path,
+        policy = scope or resolve_ticket_scope_policy(
+            ticket,
+            config_path=scope_config_path,
             repo_root=repo_root,
             registry_path=registry_path,
             broker_symbol_map_path=broker_symbol_map_path,
@@ -413,8 +418,9 @@ def prepare_canonical_handoff(
 ) -> AdmissionResult:
     """Apply final guards, but stop before the intentionally absent C11 broker adapter."""
     try:
-        policy = scope or load_scope_policy(
-            scope_paths.get("scope_config_path"),
+        policy = scope or resolve_ticket_scope_policy(
+            ticket,
+            config_path=scope_paths.get("scope_config_path"),
             repo_root=scope_paths.get("repo_root"),
             registry_path=scope_paths.get("registry_path"),
             broker_symbol_map_path=scope_paths.get("broker_symbol_map_path"),

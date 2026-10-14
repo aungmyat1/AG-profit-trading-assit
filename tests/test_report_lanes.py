@@ -71,12 +71,12 @@ def test_asw_s1_is_left_to_the_canonical_path():
 
 
 def test_asw_eurusd_asian_london_uses_v113_on_the_lane_only():
-    """OD1014-FAST D3: evaluated with the v1.1.3 identity, stamped NOT_VERIFIED; the registry still
+    """OD1014-FAST D3/D9: evaluated with the v1.1.3 identity, stamped from its own registry entry; the registry still
     records the v1.1.2 scope as SUSPENDED (never presented as verified)."""
     from v1_tickets.scope_status import resolve_ticket_scope
     c = asw_lane.evaluate_scope("EURUSD", "ASIAN_LONDON", now=NOW, day=DAY, candle_provider=provider(),
                                 policy=SIGNED_POLICY)
-    assert c["strategy_version"] == "1.1.3" and c["verification_status"] == "NOT_VERIFIED"
+    assert c["strategy_version"] == "1.1.3" and c["verification_status"] == "LOGIC_VERIFIED"
     assert c["scope_route"] == "REPORT_ONLY" and c["decision"] != "WATCH_READY"
     assert c["execution_authorization"] is False and "SUSPENDED_L3_REPAINT" not in c["reason_codes"]
     registry = resolve_ticket_scope("ST_ASIAN_SWEEP_5R_V1", "1.1.2", "EURUSD", "ASIAN_LONDON", "LONG")
@@ -160,7 +160,8 @@ def test_ccfd_priced_ready_is_a_non_executable_candidate():
     c = ccfd_lane.observe_row(ccfd_row("READY", direction="SHORT", entry=62000.0, stop_loss=62400.0,
                                        tp1=61600.0, tp2=60000.0), now=NOW, policy=SIGNED_POLICY)
     assert c["report_class"] == "CANDIDATE" and c["decision"] != "WATCH_READY"
-    assert c["scope_verification_status"] == "STALE_IDENTITY"         # BTCUSD SHORT recorded, identity stale
+    # D8 re-recorded the identity, but the registry records no window: never LOGIC_VERIFIED per ticket
+    assert (c["scope_verification_status"], c["scope_reason"]) == ("UNVERIFIED", "WINDOW_NOT_IN_SCOPE")
 
 
 def test_ccfd_direction_outside_the_recorded_branches_is_unverified():

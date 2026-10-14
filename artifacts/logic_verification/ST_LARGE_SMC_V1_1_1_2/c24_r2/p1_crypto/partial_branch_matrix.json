@@ -1,5 +1,6 @@
 {
   "ETHUSD": "NOT_RUN_RESOURCE (not reached)",
+  "L5_interpretation": "INSUFFICIENT (no accepted cost evidence; OD1011-L5)",
   "branches": {
     "INSUFFICIENT_H1_M5|NONE|NONE|NO_TARGET_OR_NO_OPPORTUNITY": {
       "full_window_completed": false,
@@ -17,7 +18,7 @@
           "FAIL": 359
         },
         "L5": {
-          "WARN": 359
+          "INSUFFICIENT (no accepted cost evidence; OD1011-L5)": 359
         },
         "L6": {
           "PASS": 359
@@ -44,7 +45,7 @@
           "PASS": 288
         },
         "L5": {
-          "WARN": 288
+          "INSUFFICIENT (no accepted cost evidence; OD1011-L5)": 288
         },
         "L6": {
           "PASS": 288
@@ -71,7 +72,7 @@
           "PASS": 132
         },
         "L5": {
-          "WARN": 132
+          "INSUFFICIENT (no accepted cost evidence; OD1011-L5)": 132
         },
         "L6": {
           "PASS": 132
@@ -98,7 +99,7 @@
           "PASS": 120
         },
         "L5": {
-          "WARN": 120
+          "INSUFFICIENT (no accepted cost evidence; OD1011-L5)": 120
         },
         "L6": {
           "PASS": 120
@@ -125,7 +126,7 @@
           "PASS": 424
         },
         "L5": {
-          "WARN": 424
+          "INSUFFICIENT (no accepted cost evidence; OD1011-L5)": 424
         },
         "L6": {
           "PASS": 424
@@ -152,7 +153,7 @@
           "PASS": 41
         },
         "L5": {
-          "WARN": 41
+          "INSUFFICIENT (no accepted cost evidence; OD1011-L5)": 41
         },
         "L6": {
           "PASS": 41
@@ -179,7 +180,7 @@
           "PASS": 9
         },
         "L5": {
-          "WARN": 9
+          "INSUFFICIENT (no accepted cost evidence; OD1011-L5)": 9
         },
         "L6": {
           "PASS": 9
@@ -206,7 +207,7 @@
           "PASS": 16
         },
         "L5": {
-          "WARN": 16
+          "INSUFFICIENT (no accepted cost evidence; OD1011-L5)": 16
         },
         "L6": {
           "PASS": 16
@@ -233,7 +234,7 @@
           "PASS": 262
         },
         "L5": {
-          "WARN": 262
+          "INSUFFICIENT (no accepted cost evidence; OD1011-L5)": 262
         },
         "L6": {
           "PASS": 262
@@ -260,7 +261,7 @@
           "PASS": 79
         },
         "L5": {
-          "WARN": 79
+          "INSUFFICIENT (no accepted cost evidence; OD1011-L5)": 79
         },
         "L6": {
           "PASS": 79
@@ -272,6 +273,8 @@
       "verdict": "NOT_RUN_RESOURCE"
     }
   },
+  "counts_classification": "partial observations",
   "full_window_status": "NOT_RUN_RESOURCE",
+  "registration_eligible": false,
   "symbol": "BTCUSD"
 }

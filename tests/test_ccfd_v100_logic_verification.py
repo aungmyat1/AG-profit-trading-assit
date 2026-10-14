@@ -267,7 +267,7 @@ def test_c15_candidate_identity_is_separate_and_unadmitted():
     registry = yaml.safe_load((ROOT / "strategies/registry.yaml").read_text(encoding="utf-8"))
     old = registry["strategies"]["ST_CRYPTO_CFD_SWEEP_RETEST_V1"]["candidate_versions"]["1.0.0"]
     assert candidate["version"] == "1.1.0" and identity["digest"]
-    assert old["logic_status"] == "STALE_IDENTITY"
+    assert old["logic_status"] == "LOGIC_VERIFIED" and old["re_recorded_decision"] == "OD1014-FAST D8"
     assert "1.1.0" not in registry["strategies"]["ST_CRYPTO_CFD_SWEEP_RETEST_V1"]["candidate_versions"]
     strategy = registry["strategies"]["ST_CRYPTO_CFD_SWEEP_RETEST_V1"]
     assert strategy["active"] is False and strategy["demo_authorized"] is False and strategy["live_authorized"] is False

@@ -147,14 +147,23 @@ def _lsmc(entry: Dict[str, Any], symbol: str) -> Tuple[str, str, str]:
     return UNVERIFIED, ENTRY_LOGIC_NOT_VERIFIED, f"detection={LOGIC_VERIFIED if detected else 'NOT_VERIFIED'}"
 
 
+# Additional versions a report lane may run for a family (OD1014-FAST D3/D9: EURUSD x ASIAN_LONDON on ASW v1.1.3).
+# Each is resolved strictly against its own registry candidate entry; nothing is borrowed across versions.
+REPORT_LANE_VERSIONS = {SESSION_FX_GOLD: ("1.1.3",)}
+
+
 def scope_status(family: str, symbol: str, session: str, *,
-                 registry: Optional[Dict[str, Any]] = None) -> ScopeStatus:
+                 registry: Optional[Dict[str, Any]] = None, version: Optional[str] = None) -> ScopeStatus:
     """Fail-closed status for one scope. Unknown family/pair/session raises ValueError (caller bug);
     every registry/identity problem returns UNVERIFIED / REGISTRY_ENTRY_MISSING instead."""
     spec = FAMILIES.get(family)
     if spec is None or symbol not in spec["pairs"] or session not in spec["sessions"]:
         raise ValueError(f"unknown scope {family}/{symbol}/{session}")
-    strategy_id, version = spec["strategy_id"], spec["strategy_version"]
+    strategy_id = spec["strategy_id"]
+    if version is None:
+        version = spec["strategy_version"]
+    elif version != spec["strategy_version"] and version not in REPORT_LANE_VERSIONS.get(family, ()):
+        raise ValueError(f"unknown scope version {family}/{version}")
     try:
         if registry is None:
             from v1_tickets.authority import load_registry
@@ -237,14 +246,14 @@ def resolve_ticket_scope(strategy_id: Any, strategy_version: Any, symbol: Any, s
             registry = load_registry()
         except Exception:  # noqa: BLE001 -- fails closed below
             registry = {}
-    if str(strategy_version) != spec["strategy_version"]:
+    version = str(strategy_version)
+    if version != spec["strategy_version"] and version not in REPORT_LANE_VERSIONS.get(family, ()):
         out["scope_reason"] = f"{VERSION_NOT_IN_SCOPE}:{strategy_version}"
         return out
-    status = scope_status(family, symbol, scope_session, registry=registry)
+    status = scope_status(family, symbol, scope_session, registry=registry, version=version)
     out.update(scope_verification_status=status.verification_status, scope_reason=status.route_reason,
                scope_detail=status.detail,
-               verification_identity=_recorded_identity(family, spec["strategy_id"], spec["strategy_version"],
-                                                        registry))
+               verification_identity=_recorded_identity(family, spec["strategy_id"], version, registry))
     if family == CRYPTO_CFD and status.verification_status in (LOGIC_VERIFIED, STALE_IDENTITY):
         branches = status.detail.split("=", 1)[1].split(",") if "=" in status.detail else []
         if direction is not None and direction not in branches:

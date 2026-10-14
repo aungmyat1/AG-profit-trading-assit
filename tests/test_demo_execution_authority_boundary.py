@@ -1004,14 +1004,24 @@ def test_the_demo_execution_package_never_calls_a_broker_api():
         "position_close", "position_modify", "history_orders_get", "history_deals_get",
         "symbol_select", "account_info", "initialize", "login", "execute_command",
     }
+    # B' (C14): the single canonical adapter may make exactly its sanctioned broker calls -- one
+    # order_check, one order_send, the live account_info re-read and the read-only reconcile lookup.
+    # Every other module of the package stays broker-free; nothing imports MetaTrader5 (injected).
+    sanctioned = {"mt5_canonical_adapter.py": {"order_check": 1, "order_send": 1, "account_info": 1,
+                                               "history_deals_get": 1}}
     for path in sorted((REPO / "src" / "demo_execution").glob("*.py")):
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        allowed, seen = sanctioned.get(path.name, {}), {}
         for node in ast.walk(tree):
             if isinstance(node, ast.Call):
                 name = (node.func.attr if isinstance(node.func, ast.Attribute)
                         else getattr(node.func, "id", None))
+                if name in allowed:
+                    seen[name] = seen.get(name, 0) + 1
+                    continue
                 assert name not in forbidden_calls, f"{path.name}:{node.lineno} calls {name}"
             if isinstance(node, ast.Import):
                 assert not any(alias.name.split(".")[0] == "MetaTrader5" for alias in node.names), path.name
             if isinstance(node, ast.ImportFrom) and node.module:
                 assert node.module.split(".")[0] != "MetaTrader5", path.name
+        assert seen == allowed, f"{path.name}: sanctioned broker calls {seen} != {allowed}"

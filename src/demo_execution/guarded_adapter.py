@@ -1,9 +1,9 @@
 """Authority-guarded boundary in front of the host's canonical C11 execution adapter.
 
-This module owns refusal, not submission. It contains no MT5 import and no order call site
-(``tests/test_manual_ticket_report_and_boundary.py::test_no_order_send_call_site_anywhere_in_repo``
-scans for them): the host supplies both the read-only live account read and the already-reviewed
-canonical adapter that performs the broker operations
+This module owns refusal, not submission. It contains no MT5 import and no order call site: the
+only order_check/order_send call sites are in :mod:`demo_execution.mt5_canonical_adapter`
+(``tests/test_demo_execution_canonical_adapter.py`` enforces exactly one each), which re-validates
+this guard's single-use step authorization again before it touches the broker
 (:class:`demo_execution.broker_adapter.CanonicalBrokerAdapter`).
 
 Every call takes an :class:`~demo_execution.authority.ExecutionAuthority` and re-validates it
@@ -73,7 +73,11 @@ from demo_execution.lifecycle import (
 )
 from demo_execution.notification import notification_gate
 from demo_execution.risk import RiskSnapshot
-from demo_execution.scope import ScopePolicy, ScopePolicyError, load_scope_policy
+from demo_execution.scope import (
+    ScopePolicy,
+    ScopePolicyError,
+    resolve_ticket_scope_policy,
+)
 from ticket_store.store import TicketStore
 
 LiveAccountReader = Callable[[], Mapping[str, Any]]
@@ -177,10 +181,13 @@ class GuardedCanonicalAdapter:
         }
 
     # ------------------------------------------------------------------ re-validation
-    def _load_scope(self) -> tuple[Optional[ScopePolicy], Optional[str]]:
-        """The scope is re-read from the committed config on every call, never taken on trust."""
+    def _load_scope(self, authority: Any = None) -> tuple[Optional[ScopePolicy], Optional[str]]:
+        """The scope is re-read from the committed config on every call, never taken on trust; with
+        several configured scopes it is selected by the authority's own identity tuple (A')."""
+        paths = dict(self._scope_paths)
+        binding = {k: getattr(authority, k, None) for k in ("strategy_id", "strategy_version", "symbol", "session")}
         try:
-            return load_scope_policy(**self._scope_paths), None
+            return resolve_ticket_scope_policy(binding, config_path=paths.pop("config_path"), **paths), None
         except ScopePolicyError as exc:
             return None, exc.reason_code
 
@@ -218,7 +225,7 @@ class GuardedCanonicalAdapter:
             return list(shape), details, None, LifecycleTrail(())
         assert isinstance(authority, ExecutionAuthority)
         details["ticket_id"] = authority.ticket_id
-        scope, scope_reason = self._load_scope()
+        scope, scope_reason = self._load_scope(authority)
         if scope is None or scope_reason is not None:
             return [scope_reason or "EXECUTION_SCOPE_INVALID"], details, None, LifecycleTrail(())
         details["scope_enabled"] = scope.enabled

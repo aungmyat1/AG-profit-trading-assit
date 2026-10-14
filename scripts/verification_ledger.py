@@ -38,6 +38,7 @@ NEXT_ACTION = {
     "STALE_IDENTITY": "OWNER_DECISION",           # re-record the identity (C20 T2 proposal)
     "SUSPENDED": "ENGINEERING",                   # fix lives in a candidate version (v1.1.3, C20 T3)
     "DIRECTION_NOT_IN_SCOPE": "DATA_INSUFFICIENT",  # branch never exercised on the recorded dataset
+    "WINDOW_NOT_IN_SCOPE": "OWNER_DECISION",      # verified record, but no weekday/weekend window recorded
     "ENTRY_LOGIC_NOT_VERIFIED": "ENGINEERING",    # entry/proposal layer has no verification yet
     "LOGIC_NOT_VERIFIED": "ENGINEERING",          # L1-L6 not passed for this scope
 }
@@ -71,24 +72,40 @@ def _ccfd_gates(evidence: Optional[Dict[str, Any]], symbol: str, branch: str) ->
     return {g: str(gates.get(g, UNKNOWN)) for g in GATES}
 
 
+def lane_version(family: str, symbol: str, session: str, default: str) -> str:
+    """Contract version the report lane evaluates for this scope; S1 stays on its canonical v1.1.2 path."""
+    if family != "session_fx_gold":
+        return default
+    import yaml
+
+    from reporting.asw_lane import strategy_path_for
+    spec = yaml.safe_load((ROOT / strategy_path_for(symbol, session)).read_text(encoding="utf-8")) or {}
+    return str(spec.get("version") or default)
+
+
 def build() -> Dict[str, Any]:
     from v1_tickets.authority import load_registry, logic_identity
     from v1_tickets.scope_status import FAMILIES, resolve_ticket_scope
 
     registry = load_registry()
-    asw_ev_path = "docs/status/AGP_ASW_V112_S1_60D_2026-10-11.json"
-    asw_ev = _load_json(asw_ev_path)
+    # 60d L1-L6 matrix per ASW version the report lane runs (v1.1.2 S1 run; v1.1.3 C17 run, OD1014-FAST D9).
+    asw_ev_paths = {"1.1.2": "docs/status/AGP_ASW_V112_S1_60D_2026-10-11.json",
+                    "1.1.3": "artifacts/logic_verification/ST_ASIAN_SWEEP_5R_V1_1_1_3/c17_2026-10-13/"
+                             "asw_v113_60d_run1.json"}
+    asw_ev = {v: _load_json(p) for v, p in asw_ev_paths.items()}
     rows: List[Dict[str, Any]] = []
     for family in sorted(FAMILIES):
         spec = FAMILIES[family]
-        sid, version = spec["strategy_id"], spec["strategy_version"]
+        sid = spec["strategy_id"]
         entry = registry.get(sid) or {}
-        candidate = (entry.get("candidate_versions") or {}).get(version) or {}
-        source = candidate.get("config_source") or entry.get("config_source")
-        identity = logic_identity(sid, version)
         sessions = (CCFD_SESSION_LABEL,) if family == "crypto_cfd" else tuple(spec["sessions"])
         for symbol in spec["pairs"]:
             for session in sessions:
+                # The version this scope's report lane actually runs (ASW: per-scope contract, OD1014-FAST D3).
+                version = lane_version(family, symbol, session, spec["strategy_version"])
+                candidate = (entry.get("candidate_versions") or {}).get(version) or {}
+                source = candidate.get("config_source") or entry.get("config_source")
+                identity = logic_identity(sid, version)
                 for branch in BRANCHES[family]:
                     resolve_session = spec["sessions"][0] if family == "crypto_cfd" else session
                     direction = branch if branch in ("LONG", "SHORT") else None
@@ -100,7 +117,8 @@ def build() -> Dict[str, Any]:
                     if family == "session_fx_gold":
                         # Gates: the committed 60d matrix for this version/identity. Evidence: what the registry
                         # records for this scope (verified or suspended); none recorded -> UNKNOWN.
-                        gates_source, gates = asw_ev_path, _asw_gates(asw_ev, symbol, session)
+                        gates_source = asw_ev_paths.get(version)
+                        gates = _asw_gates(asw_ev.get(version), symbol, session)
                         for item in candidate.get("logic_verified_scopes") or []:
                             if item.get("symbol") == symbol and item.get("session") == session:
                                 evidence_path, recorded_contract = item.get("evidence"), item.get("contract_hash")

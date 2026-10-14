@@ -130,8 +130,10 @@ Agent skills  -> advisory and explanatory only
 
 - `strategy_engine/` owns deterministic trade signals.
 - `execution/risk.py` owns entry-side sizing and risk constraints.
-- New orders reach MT5 only through `assistant.commands.execute_command()` and require
-  an explicit, non-defaulted `user_confirmed=True` for that user instruction.
+- New DEMO orders reach MT5 only through the single canonical adapter
+  (`src/demo_execution/mt5_canonical_adapter.py`) behind the guarded adapter, under C14 standing
+  authorization; every scope ships `enabled: false` and the order shape ships unapproved (see
+  `AGENTS.md` authority point 3).
 - Manual-entry position management is a separate, ticket-claimed pathway. It can
   modify or reduce an existing position but cannot open one.
 - Live trading and live trade management are disabled by default in

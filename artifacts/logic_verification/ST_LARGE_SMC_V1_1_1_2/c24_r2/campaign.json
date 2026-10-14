@@ -1,4 +1,5 @@
 {
+  "L5_interpretation": "INSUFFICIENT (no accepted cost evidence; OD1011-L5)",
   "P1": "NOT_RUN_RESOURCE",
   "P2": "COMPLETED_REFERENCE_DIVERGENT",
   "P3": "PENDING_D1",
@@ -27,6 +28,7 @@
     "remote_CI": "See final head of PR213",
     "slow_live_host": "NOT_RUN"
   },
+  "counts_classification": "partial observations",
   "declared_rule_paths": 77,
   "engine_contract_config_registry_flags_unchanged": true,
   "engine_defect": "C24-C11-STATIC-ROLLING-WINDOW",
@@ -40,6 +42,7 @@
   "oracle_engine_defects": 0,
   "order_api_calls": 0,
   "protected_paths": 361,
+  "registration_eligible": false,
   "rule_diff": "PASS",
   "scope_days": 60
 }
