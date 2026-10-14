@@ -78,9 +78,15 @@ def test_eurusd_d1r2_window_shards_cover_every_window_row_once():
     assert layouts[0]['warmup_start_row']['M5'] < layouts[0]['core_start_row']   # real recorded warmup rows
 
 
-def test_fx_commission_binds_only_to_matching_capture_account():
+def test_fx_commission_requires_full_account_binding(monkeypatch):
+    import v1_tickets.manual_ticket as mt
     prov=json.loads((replay.FX_DATASET/'EURUSD_provenance.json').read_text())
-    assert replay.fx_commission_binding(prov)['policy']=='OD1009-D2'
+    committed=mt.load_owner_config()
+    assert committed['commission'].get('account_login') is None            # suffix-only in the repo
+    assert replay.fx_commission_binding(prov) is None                       # -> L5 INSUFFICIENT, never PASS
+    full={**committed,'commission':{**committed['commission'],'account_login':'1234567999'}}
+    monkeypatch.setattr(mt,'load_owner_config',lambda *a,**k:full)
+    assert replay.fx_commission_binding(prov)['binding']=='FULL_ACCOUNT_LOGIN'
     assert replay.fx_commission_binding({**prov,'login_suffix':'985'}) is None
     assert replay.fx_commission_binding({**prov,'server':'Other'}) is None
 

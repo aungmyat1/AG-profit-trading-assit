@@ -381,7 +381,8 @@ def _l5_fx_gold(case: Dict[str, Any], ev: Dict[str, Any], risk: float, insuffici
     from v1_tickets.logic_gate import l5_cost
     from v1_tickets.manual_ticket import cost_at_or_above_block, load_owner_config
     binding = ev.get("commission_binding")
-    if not binding or binding.get("source") != "OD1011-COMMISSION" or binding.get("policy") != "OD1009-D2":
+    if (not binding or binding.get("source") != "OD1011-COMMISSION" or binding.get("policy") != "OD1009-D2"
+            or binding.get("binding") != "FULL_ACCOUNT_LOGIN"):          # suffix-only is never a binding
         return insufficient("COMMISSION_EVIDENCE_MISSING")
     spread = ev.get("spread")
     if spread is None or risk <= 0:

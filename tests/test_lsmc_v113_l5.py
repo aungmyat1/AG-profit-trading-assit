@@ -47,7 +47,7 @@ def test_no_priced_opportunity_is_not_applicable():
     assert l5_od1011(_case(), _sig(stop=None))["status"] == NOT_APPLICABLE
 
 
-FX_BINDING = {"value": 0.0, "source": "OD1011-COMMISSION", "policy": "OD1009-D2"}
+FX_BINDING = {"value": 0.0, "source": "OD1011-COMMISSION", "policy": "OD1009-D2", "binding": "FULL_ACCOUNT_LOGIN"}
 
 
 @pytest.mark.parametrize("spread,action", [(0.0001, "OK"), (0.0003, "WARN"), (0.0006, "BLOCK")])
@@ -61,3 +61,5 @@ def test_fx_gold_without_od1009_d2_binding_stays_insufficient():
     sig = _sig(entry=1.1000, stop=1.0980)
     assert l5_od1011(_case(spread=0.0001, binding=BINDING, symbol="XAUUSD"), sig)["status"] == INSUFFICIENT
     assert l5_od1011(_case(spread=None, binding=FX_BINDING, symbol="GBPUSD"), sig)["status"] == INSUFFICIENT
+    suffix_only = {**FX_BINDING, "binding": "SUFFIX_ONLY"}
+    assert l5_od1011(_case(spread=0.0001, binding=suffix_only, symbol="EURUSD"), sig)["status"] == INSUFFICIENT

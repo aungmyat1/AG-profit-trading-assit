@@ -50,19 +50,22 @@ def cost_source(symbol):
 
 
 def fx_commission_binding(provenance):
-    """OD1011-COMMISSION (FX and gold, OD1012-ACCOUNT ...999): 0 only for the committed owner_ticket block whose
-    login suffix and server match the recorded capture; anything else -> None (L5 INSUFFICIENT)."""
-    import yaml
-    block = ((yaml.safe_load((ROOT/'config/owner_ticket.yaml').read_text()) or {}).get('owner_ticket') or {}).get('commission')
-    if not isinstance(block, dict):
+    """OD1011-COMMISSION (FX and gold, OD1012-ACCOUNT): FULL account binding only, via the canonical
+    manual_ticket.resolve_commission. The full login lives only in gitignored config/local/owner_ticket.yaml and
+    must end with the capture's recorded login suffix on the same server; a committed suffix alone is never a
+    binding (-> None -> L5 INSUFFICIENT, never PASS)."""
+    from v1_tickets.manual_ticket import load_owner_config, resolve_commission
+    owner = load_owner_config()
+    full = (owner.get('commission') or {}).get('account_login')
+    suffix = str(provenance.get('login_suffix') or '')
+    if (full is None or not suffix or not str(full).endswith(suffix) or provenance.get('server') != 'VTMarkets-Demo'
+            or provenance.get('source') != 'MT5_VT_MARKETS_DEMO'):
         return None
-    value, suffix = block.get('commission_R'), str(block.get('account_login_suffix') or '')
-    bound = (block.get('decision_id') == 'OD1011-COMMISSION' and type(value) in (int, float) and value == 0
-             and suffix.isdigit() and 3 <= len(suffix) <= 4 and str(provenance.get('login_suffix')) == suffix
-             and provenance.get('server') == 'VTMarkets-Demo' and provenance.get('source') == 'MT5_VT_MARKETS_DEMO')
+    value = resolve_commission(owner, full)
+    if type(value) not in (int, float) or value != 0:
+        return None
     return {'value': 0.0, 'source': 'OD1011-COMMISSION', 'policy': 'OD1009-D2', 'bound_server': 'VTMarkets-Demo',
-            'account_login_suffix': suffix, 'config': 'config/owner_ticket.yaml'} if bound else None
-
+            'account_login_suffix': suffix, 'binding': 'FULL_ACCOUNT_LOGIN'}
 
 def digest(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
