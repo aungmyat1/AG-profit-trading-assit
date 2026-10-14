@@ -140,3 +140,24 @@ def test_scheduled_s1_cycle_never_ends_summary_only(tmp_path, monkeypatch, make_
     assert len(sent) == 1
     status = [m for _, m in calls if m.startswith("S1 CYCLE | GBPUSD ASIAN_LONDON")]
     assert not status or f"decision: {s1.decision}" in status[0]
+
+
+@pytest.mark.parametrize("make,code", [
+    (lambda mp: mp.setattr(fx_tickets, "symbol_scope_verified", lambda *a, **k: False), "SCOPE_IDENTITY_MISMATCH"),
+    (lambda mp: mp.setattr(fx_tickets, "evaluate", lambda *a, **k: _sig(regime="TREND", setup="TREND")),
+     "BRANCH_OUTSIDE_VERIFIED_SCOPE"),
+])
+def test_remap_rewrites_primary_and_block_reasons_end_to_end(tmp_path, monkeypatch, make, code):
+    """Raw ticket, canonical ticket and the stored evaluation all carry the new code; never the old one."""
+    make(monkeypatch)
+    t = de.scope_block_reason(_ticket())
+    assert (t["reason_code"], t["primary_block_reason"], t["block_reasons"]) == (code, code, [code])
+    send, _ = h.sender(tmp_path, enabled=False)
+    results, _, journal, _, _ = h.run(tmp_path, send=send, source="LIVE")
+    s1 = next(r for r in results if (r.instrument, r.session) == ("GBPUSD", "ASIAN_LONDON"))
+    assert s1.decision == "BLOCKED" and code in s1.canonical["reason_codes"]
+    assert "LOGIC_SCOPE_NOT_VERIFIED" not in s1.canonical["reason_codes"]
+    from ticket_store.store import TicketStore
+    rows = [r for r in TicketStore(str(Path(journal) / "ticket_store")).evaluations() if r["symbol"] == "GBPUSD"]
+    assert rows and all(code in r["block_reasons"] and "LOGIC_SCOPE_NOT_VERIFIED" not in r["block_reasons"]
+                        for r in rows)

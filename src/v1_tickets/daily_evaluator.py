@@ -41,16 +41,18 @@ def scope_block_reason(ticket: Dict[str, Any]) -> Dict[str, Any]:
         return ticket
     if ticket.get("regime") is not None or ticket.get("setup") is not None:
         branch = f"{ticket.get('regime')}_{ticket.get('setup')}"
-        return {**ticket, "reason_code": BRANCH_OUTSIDE_VERIFIED_SCOPE, "emitted_branch": branch,
-                "detail": f"emitted branch {branch} is outside verified S1 scope (RANGE_SWEEP)"}
-    s1 = (ticket.get("symbol"), ticket.get("cycle")) == ("GBPUSD", "ASIAN_LONDON")
-    code = SCOPE_IDENTITY_MISMATCH if s1 else SCOPE_NOT_S1
-    out = {**ticket, "reason_code": code,
-           "detail": ("S1 contract or engine identity does not match the registry record" if s1
-                      else f"{ticket.get('symbol')}/{ticket.get('cycle')} outside S1 (GBPUSD/ASIAN_LONDON)")}
-    if "primary_block_reason" in ticket:
-        out["primary_block_reason"], out["block_reasons"] = code, [code]
-    return out
+        code, extra = BRANCH_OUTSIDE_VERIFIED_SCOPE, {"emitted_branch": branch}
+        detail = f"emitted branch {branch} is outside verified S1 scope (RANGE_SWEEP)"
+    else:
+        s1 = (ticket.get("symbol"), ticket.get("cycle")) == ("GBPUSD", "ASIAN_LONDON")
+        code, extra = (SCOPE_IDENTITY_MISMATCH if s1 else SCOPE_NOT_S1), {}
+        detail = ("S1 contract or engine identity does not match the registry record" if s1
+                  else f"{ticket.get('symbol')}/{ticket.get('cycle')} outside S1 (GBPUSD/ASIAN_LONDON)")
+    # Every path rewrites the primary and the full block-reason list: the shared code never survives.
+    return {**ticket, **extra, "reason_code": code, "detail": detail,
+            "primary_block_reason": code, "block_reasons": [code]}
+
+
 SCOPED_CANDIDATE_PATH = v1_fx.SCOPED_CANDIDATE_PATH
 
 FX_PAIRS: List[Tuple[str, str]] = [

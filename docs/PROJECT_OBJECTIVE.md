@@ -124,7 +124,7 @@ No scope is `LOGIC_VERIFIED` or `EXECUTION_ELIGIBLE` by this section. No runtime
 
 ## Verification-phase opportunity tickets (OD1014, 2026-10-14)
 
-This section is an additive reporting-policy clarification; it does not override any authorization, risk, guard or routing rule above. Register entries `OD1014` and `OD1014-FAST` (`OWNER_DIRECTED_PENDING_RATIFICATION`).
+This section is an additive reporting-policy clarification; it does not override any authorization, risk, guard or routing rule above. Ratification is recorded in the [owner decision register](governance/OWNER_DECISION_REGISTER.md), entries `OD1014` and `OD1014-FAST` (owner Aung, 2026-10-14, `AGP-OD1014-RATIFY-R1`).
 
 A priced OPPORTUNITY contains strategy-generated prices calculated from validated VT Markets MT5 market data. These are observational strategy outputs, not fabricated examples, but their trading correctness has not necessarily been verified. They are non-actionable and carry no execution authority.
 
