@@ -1,0 +1,276 @@
+--- S7.py
++++ final.py
+@@ -9,9 +9,10 @@
+    session box, CCFD previous-UTC-day reference) is cross-checked with pandas-ta donchian.
+ 2. Sweep oracle (CCFD): smartmoneyconcepts previous_high_low("1D") / swing_highs_lows vs our sweep and MSS
+    evidence.
+-3. Causality (L3) fuzz: per emitted signal, (a) bars after the signal close removed -> identical, (b) future
+-   bars perturbed -> identical, (c) signal bar perturbed -> identical, or absent exactly when the perturbed
+-   bar no longer satisfies the setup's touch condition. Any other change is a repaint FAIL.
++3. Causality (L3) fuzz, owner definition: per emitted signal, (a) bars after the signal close removed ->
++   identical to the emitted signal, (b) future bars perturbed -> identical, (c) the last bar of the truncated
++   input (the signal bar) perturbed -> identical or absent. Any change is a FAIL. Supplementary, not the
++   verdict: the latest bar after the signal bar perturbed. Harness history: docs/status/C25_HARNESS_CHANGE_LOG.md.
+ 
+     python scripts/c25_oss_differential.py --out artifacts/oss_differential/c25_report.json
+ """
+@@ -25,7 +26,7 @@
+ import runpy
+ import sys
+ from pathlib import Path
+-from typing import Any, Dict, List, Optional
++from typing import Any, Dict, List
+ 
+ ROOT = Path(__file__).resolve().parents[1]
+ sys.path.insert(0, str(ROOT / "src"))
+@@ -153,6 +154,7 @@
+ 
+ def run_asw(rng: random.Random) -> Dict[str, Any]:
+     from v1_tickets.outcome import resolve_levels
++    from v1_tickets.target_geometry import geometry_violation
+     h = _asw_harness()
+     rows, fuzz, gated = [], [], []
+     for symbol in ASW_SYMBOLS:
+@@ -171,23 +173,33 @@
+                 signal_open = dt.datetime.fromisoformat(t["signal_timestamp"])
+                 signal_close = signal_open + M15
+                 tp1 = t["targets"][0]["price"]
+-                if not all(h.geometry_ok(t).values()):     # the engine's own L2/L4 gates block this ticket
+-                    gated.append({"symbol": symbol, "cycle": cycle, "day": ds, "geometry": h.geometry_ok(t)})
+-                    fuzz.append(_asw_fuzz(h, symbol, cycle, day, session, post, t, signal_open, rng))
+-                    continue
+                 horizon = dt.datetime.combine(day, dt.time(15, 0), tzinfo=UTC)   # time_invalidation_gmt 15:00
+                 engine = resolve_levels(direction=t["direction"], entry=t["entry"], sl=t["stop_loss"], tp1=tp1,
+                                         start=signal_close, horizon=horizon, bars=candles, tf=M15,
+                                         now=horizon + M15, cost_r=None)
+                 oracle = oracle_outcome(t["direction"], t["entry"], t["stop_loss"], tp1, signal_open, candles,
+                                         horizon, M15)
++                comparison = compare(engine, oracle, direction=t["direction"], tp=tp1)
++                if not all(h.geometry_ok(t).values()):     # the engine's own target-order gate blocks this ticket
++                    tp2 = next((x["price"] for x in t["targets"] if x.get("leg") == 2), None)
++                    reason = geometry_violation(t["entry"], t["stop_loss"], tp1, tp2, t["direction"])
++                    if reason == "TP1_NOT_BEYOND_ENTRY" and oracle.get("result") == "ORACLE_REJECT":
++                        comparison = {"class": "SPEC_DIFFERENCE",
++                                      "note": "bracket invalid by construction (TP1 not beyond entry); engine blocks it"}
++                    gated.append({"symbol": symbol, "cycle": cycle, "day": ds, "geometry": h.geometry_ok(t),
++                                  "signal_timestamp": t["signal_timestamp"], "direction": t["direction"],
++                                  "entry": t["entry"], "sl": t["stop_loss"], "tp1": tp1, "tp2": tp2,
++                                  "guard_reason": reason, "engine": engine, "oracle": oracle,
++                                  "comparison_supplementary": comparison})
++                    fuzz.append(_asw_fuzz(h, symbol, cycle, day, session, post, t, signal_open, rng))
++                    continue
+                 box = donchian([c.high for c in session], [c.low for c in session])
+                 box_ok = (math.isclose(box["high"], t["box"]["high"], abs_tol=1e-9)
+                           and math.isclose(box["low"], t["box"]["low"], abs_tol=1e-9))
+                 rows.append({"symbol": symbol, "cycle": cycle, "day": ds, "direction": t["direction"],
+                              "entry": t["entry"], "sl": t["stop_loss"], "tp1": tp1, "engine": engine,
+                              "oracle": oracle,
+-                             "comparison": compare(engine, oracle, direction=t["direction"], tp=tp1),
++                             "comparison": comparison,
+                              "box_engine": t["box"], "box_pandas_ta": box, "box_agree": box_ok})
+                 fuzz.append(_asw_fuzz(h, symbol, cycle, day, session, post, t, signal_open, rng))
+     return {"rows": rows, "fuzz": fuzz, "engine_gated_geometry": gated}
+@@ -207,6 +219,19 @@
+                for c in mutated]
+     future = h.ticket(cycle, day, session, upto + mutated, h.split([], cycle, day)[1], symbol=symbol)
+     b = _signal_key(future) == key
++    # (c) owner definition (C25 step 3): perturb the last bar of the truncated input -- the signal bar itself --
++    # by shrinking its range 25%; the signal must be identical or absent. Any other change is a FAIL.
++    last = upto[-1]
++    shrink = (last.high - last.low) * 0.25
++    pert = Candle(last.time, last.open, last.high - shrink, last.low + shrink, last.close)
++    pert = Candle(pert.time, pert.open, max(pert.open, pert.high, pert.close), min(pert.open, pert.low, pert.close),
++                  pert.close)
++    perturbed = h.ticket(cycle, day, session, upto[:-1] + [pert], signal_close, symbol=symbol)
++    pk = _signal_key(perturbed)
++    sig_cls = "IDENTICAL" if pk == key else ("ABSENT" if not perturbed.get("direction") else "CHANGED")
++    names = ("direction", "signal_timestamp", "entry", "stop_loss", "targets")
++    changed = [n for n, x, y in zip(names, key, pk) if x != y] if sig_cls == "CHANGED" else []
++    # Supplementary (not the verdict): perturb the last bar of the full input when it closes after the signal bar.
+     full_now = h.split([], cycle, day)[1]
+     if post[-1].time <= signal_open:
+         c_cls = "NOT_APPLICABLE_SIGNAL_BAR_IS_LAST"
+@@ -218,8 +243,9 @@
+         c_cls = ("IDENTICAL" if _signal_key(h.ticket(cycle, day, session, post[:-1] + [pert], full_now,
+                                                       symbol=symbol)) == key else "CHANGED")
+     return {"case": f"{symbol}:{cycle}:{day}", "truncation_identical": a, "future_perturbation_identical": b,
+-            "last_bar_perturbation": c_cls,
+-            "verdict": "PASS" if a and b and c_cls != "CHANGED" else "FAIL"}
++            "signal_bar_perturbation": sig_cls, "signal_bar_changed_fields": changed,
++            "post_signal_bar_perturbation": c_cls,
++            "verdict": "PASS" if a and b and sig_cls != "CHANGED" else "FAIL"}
+ 
+ 
+ # ----------------------------------------------------------------------------------------- CCFD
+@@ -229,6 +255,9 @@
+     return g
+ 
+ 
++CCFD_EXCLUDED: List[Dict[str, Any]] = []
++
++
+ def ccfd_signals(g) -> List[Dict[str, Any]]:
+     path = g["DATASETS"]["recorded_60d"][1] / "tickets.jsonl"
+     seen, out = set(), []
+@@ -237,7 +266,15 @@
+             continue
+         tk = json.loads(line).get("ticket") or {}
+         ev = (tk.get("engine_result") or {}).get("evidence") or {}
+-        if tk.get("entry") is None or not ev.get("retest") or (tk.get("engine_result") or {}).get("result") != "ENTRY_VALID":
++        if tk.get("entry") is None or not ev.get("retest"):
++            continue
++        result = (tk.get("engine_result") or {}).get("result")
++        if result != "ENTRY_VALID":        # not an emitted signal (rules.py RESULT_ENTRY_VALID)
++            key = ("EXCLUDED", tk["symbol"], tk["direction"], ev["retest"]["candle_time_utc"], result)
++            if key not in seen:
++                seen.add(key)
++                CCFD_EXCLUDED.append({"symbol": tk["symbol"], "direction": tk["direction"],
++                                      "retest_time": ev["retest"]["candle_time_utc"], "engine_result": result})
+             continue
+         key = (tk["symbol"], tk["direction"], ev["retest"]["candle_time_utc"])
+         if key in seen:
+@@ -276,7 +313,8 @@
+                      and math.isclose(dc["low"], ref["low"], abs_tol=1e-9)})
+         sweeps.append(_smc_sweep(s, bars))
+         fuzz.append(_ccfd_fuzz(g, data[s["symbol"]], s, rng))
+-    return {"rows": rows, "sweeps": sweeps, "fuzz": fuzz}
++    return {"rows": rows, "sweeps": sweeps, "fuzz": fuzz,
++            "excluded_not_entry_valid": sorted(CCFD_EXCLUDED, key=lambda x: (x["symbol"], x["retest_time"]))}
+ 
+ 
+ def _smc_sweep(s: Dict[str, Any], bars: List[Any]) -> Dict[str, Any]:
+@@ -316,9 +354,10 @@
+     from strategy_engine.session import Candle
+     cfg = load_market_structure_config()
+     retest = dt.datetime.fromisoformat(s["retest_time"])
+-    now = dt.datetime.fromisoformat(s["now"])          # the evaluation time that emitted this ticket
++    now = retest + M5                                   # the signal (retest) bar close: owner L3 definition
++    ticket_now = dt.datetime.fromisoformat(s["now"])    # when the recorded ticket was emitted (supplementary)
+ 
+-    def sig(d):
++    def sig(d, now=now):
+         x = g["closed_inputs"](d, now, CCFD_COUNTS)
+         r = g["engine"](s["symbol"], now, x, cfg)
+         plan = (r.get("evidence") or {}).get("target_plan") or {}
+@@ -326,12 +365,17 @@
+         return (r.get("result"), plan.get("direction"), plan.get("entry"), plan.get("stop_loss"), plan.get("tp1"),
+                 plan.get("tp2"), rt)
+ 
++    recorded = ("ENTRY_VALID", s["direction"], s["entry"], s["sl"], s["tp1"], s["retest_time"])
++
++    def core(x):
++        return (x[0], x[1], x[2], x[3], x[4], x[6])
++
+     base_sig = sig(data)
+     trunc = copy.deepcopy(data)
+     for tf in trunc["bars"]:
+         keep = [b for b in trunc["bars"][tf] if b.time < now]
+         trunc["bars"][tf], trunc["times"][tf] = keep, [b.time for b in keep]
+-    a = sig(trunc) == base_sig
++    a = core(sig(trunc)) == recorded              # emitted signal reproduced with every later bar removed
+     fut = copy.deepcopy(data)
+     for tf in fut["bars"]:
+         out = []
+@@ -344,9 +388,18 @@
+                 out.append(b)
+         fut["bars"][tf] = out
+     b_ok = sig(fut) == base_sig
++    sbar = copy.deepcopy(trunc)
++    i = sbar["times"]["M5"].index(retest)
++    bar = sbar["bars"]["M5"][i]
++    shrink = (bar.high - bar.low) * 0.25
++    nb = Candle(bar.time, bar.open, bar.high - shrink, bar.low + shrink, bar.close)
++    nb = Candle(nb.time, nb.open, max(nb.open, nb.high, nb.close), min(nb.open, nb.low, nb.close), nb.close)
++    sbar["bars"]["M5"][i] = nb
++    ps = sig(sbar)
++    sig_cls = "IDENTICAL" if ps == base_sig else ("ABSENT" if ps[0] != "ENTRY_VALID" else "CHANGED")
+     per = copy.deepcopy(data)
+-    closed = [j for j, t in enumerate(per["times"]["M5"]) if t + M5 <= now]
+-    i = closed[-1]
++    closed = [j for j, t in enumerate(per["times"]["M5"]) if t + M5 <= ticket_now]
++    i = closed[-1]   # supplementary: the latest closed bar at the ticket's emission time
+     if per["times"]["M5"][i] <= retest:
+         c_cls = "NOT_APPLICABLE_SIGNAL_BAR_IS_LAST"
+     else:
+@@ -354,15 +407,57 @@
+         k = 1 + rng.uniform(-0.01, 0.01)
+         o, c = bar.open * k, bar.close * (1 + rng.uniform(-0.01, 0.01))
+         per["bars"]["M5"][i] = Candle(bar.time, o, max(o, c, bar.high * k), min(o, c, bar.low * k), c)
+-        c_cls = "IDENTICAL" if sig(per) == base_sig else "CHANGED"
++        c_cls = "IDENTICAL" if sig(per, ticket_now) == sig(data, ticket_now) else "CHANGED"
+     return {"signal": f"{s['symbol']}:{s['direction']}:{s['retest_time']}", "base_result": base_sig[0],
+-            "truncation_identical": a, "future_perturbation_identical": b_ok, "last_bar_perturbation": c_cls,
+-            "verdict": ("NOT_EVALUABLE" if base_sig[0] != "ENTRY_VALID"
+-                        else "PASS" if a and b_ok and c_cls != "CHANGED" else "FAIL")}
++            "ticket_now": s["now"], "truncation_identical": a, "future_perturbation_identical": b_ok,
++            "signal_bar_perturbation": sig_cls, "post_signal_bar_perturbation": c_cls,
++            "verdict": "PASS" if a and b_ok and sig_cls != "CHANGED" else "FAIL"}
+ 
+ 
+ # ------------------------------------------------------------------------------------------ main
+ 
++def _asw_signal_breakdown(asw: Dict[str, Any]) -> Dict[str, Any]:
++    """One ticket per symbol x cycle x fixture day: every emitted signal is unique (no repeated scan records)."""
++    keys = [(r["symbol"], r["cycle"], r["day"]) for r in asw["rows"] + asw["engine_gated_geometry"]]
++    by_scope: Dict[str, Dict[str, Any]] = {}
++    for r in asw["rows"]:
++        by_scope.setdefault(f"{r['symbol']}x{r['cycle']}", {"signals": 0, "geometry_invalid": 0})["signals"] += 1
++    reasons: Dict[str, int] = {}
++    oracle_classes: Dict[str, int] = {}
++    for g in asw["engine_gated_geometry"]:
++        cell = by_scope.setdefault(f"{g['symbol']}x{g['cycle']}", {"signals": 0, "geometry_invalid": 0})
++        cell["signals"] += 1
++        cell["geometry_invalid"] += 1
++        reasons[str(g["guard_reason"])] = reasons.get(str(g["guard_reason"]), 0) + 1
++        cls = g["comparison_supplementary"]["class"]
++        oracle_classes[cls] = oracle_classes.get(cls, 0) + 1
++    for cell in by_scope.values():
++        cell["geometry_invalid_pct"] = round(100.0 * cell["geometry_invalid"] / cell["signals"], 1)
++    return {"signals": len(keys), "unique_signals": len(set(keys)),
++            "geometry_invalid": len(asw["engine_gated_geometry"]),
++            "geometry_invalid_by_guard_reason": dict(sorted(reasons.items())),
++            "geometry_invalid_oracle_supplementary": dict(sorted(oracle_classes.items())),
++            "by_scope": dict(sorted(by_scope.items()))}
++
++
++def _fuzz_summary(cases: List[Dict[str, Any]]) -> Dict[str, Any]:
++    def count(key):
++        out: Dict[str, int] = {}
++        for f in cases:
++            out[str(f.get(key))] = out.get(str(f.get(key)), 0) + 1
++        return dict(sorted(out.items()))
++    fields: Dict[str, int] = {}
++    for f in cases:
++        for n in f.get("signal_bar_changed_fields") or []:
++            fields[n] = fields.get(n, 0) + 1
++    return {"cases": len(cases), "fail": sum(f["verdict"] == "FAIL" for f in cases),
++            "truncation_not_identical": sum(not f["truncation_identical"] for f in cases),
++            "future_perturbation_not_identical": sum(not f["future_perturbation_identical"] for f in cases),
++            "signal_bar_perturbation": count("signal_bar_perturbation"),
++            "signal_bar_changed_fields": dict(sorted(fields.items())),
++            "post_signal_bar_perturbation_supplementary": count("post_signal_bar_perturbation")}
++
++
+ def summarize(asw: Dict[str, Any], ccfd: Dict[str, Any]) -> Dict[str, Any]:
+     def agree(rows):
+         n = len(rows)
+@@ -375,6 +470,8 @@
+     return {
+         "outcome_oracle": {"ASW_v1.1.3": agree(asw["rows"]), "CCFD_1.0.0": agree(ccfd["rows"]),
+                            "ASW_engine_gated_geometry_excluded": len(asw["engine_gated_geometry"])},
++        "asw_emitted_signals": _asw_signal_breakdown(asw),
++        "ccfd_excluded_not_entry_valid": len(ccfd["excluded_not_entry_valid"]),
+         "range_crosscheck_pandas_ta": {"ASW_box_agree": sum(r["box_agree"] for r in asw["rows"]),
+                                        "ASW_rows": len(asw["rows"]),
+                                        "CCFD_reference_agree": sum(r["reference_agree"] for r in ccfd["rows"]),
+@@ -384,9 +481,7 @@
+                                                             / len(sweeps), 1) if sweeps else None,
+                              "mss_swing_agree_pct": round(100.0 * sum(s["mss_class"] == "AGREE" for s in sweeps)
+                                                           / len(sweeps), 1) if sweeps else None},
+-        "l3_fuzz": {"ASW": {"cases": len(asw["fuzz"]), "fail": sum(f["verdict"] == "FAIL" for f in asw["fuzz"])},
+-                    "CCFD": {"cases": len(ccfd["fuzz"]), "fail": sum(f["verdict"] == "FAIL" for f in ccfd["fuzz"]),
+-                             "not_evaluable": sum(f["verdict"] == "NOT_EVALUABLE" for f in ccfd["fuzz"])}},
++        "l3_fuzz": {"ASW": _fuzz_summary(asw["fuzz"]), "CCFD": _fuzz_summary(ccfd["fuzz"])},
+         "data_insufficient_60d": DATA_INSUFFICIENT_60D,
+     }
+ 

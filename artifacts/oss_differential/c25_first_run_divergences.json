@@ -1,0 +1,8586 @@
+{
+ "asw_fuzz_fail": [
+  {
+   "case": "EURUSD:ASIAN_LONDON:2026-07-21",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:ASIAN_LONDON:2026-07-22",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:ASIAN_LONDON:2026-08-03",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:ASIAN_LONDON:2026-08-05",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:ASIAN_LONDON:2026-08-06",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:ASIAN_LONDON:2026-08-10",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:ASIAN_LONDON:2026-08-12",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:ASIAN_LONDON:2026-08-13",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:ASIAN_LONDON:2026-08-20",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:ASIAN_LONDON:2026-08-21",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:ASIAN_LONDON:2026-08-24",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:ASIAN_LONDON:2026-09-02",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:ASIAN_LONDON:2026-09-03",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:ASIAN_LONDON:2026-09-09",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:ASIAN_LONDON:2026-09-11",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:ASIAN_LONDON:2026-09-16",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:ASIAN_LONDON:2026-09-22",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:ASIAN_LONDON:2026-09-24",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:ASIAN_LONDON:2026-09-25",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:ASIAN_LONDON:2026-09-30",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:ASIAN_LONDON:2026-10-01",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:ASIAN_LONDON:2026-10-02",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:ASIAN_LONDON:2026-10-06",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:ASIAN_LONDON:2026-10-08",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:LONDON_NEWYORK:2026-07-22",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:LONDON_NEWYORK:2026-07-24",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:LONDON_NEWYORK:2026-07-31",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:LONDON_NEWYORK:2026-08-04",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:LONDON_NEWYORK:2026-08-05",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:LONDON_NEWYORK:2026-08-07",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:LONDON_NEWYORK:2026-08-10",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:LONDON_NEWYORK:2026-08-12",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:LONDON_NEWYORK:2026-08-13",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:LONDON_NEWYORK:2026-08-20",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:LONDON_NEWYORK:2026-08-27",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:LONDON_NEWYORK:2026-09-03",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:LONDON_NEWYORK:2026-09-04",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:LONDON_NEWYORK:2026-09-09",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:LONDON_NEWYORK:2026-09-10",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:LONDON_NEWYORK:2026-09-15",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:LONDON_NEWYORK:2026-09-16",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:LONDON_NEWYORK:2026-09-21",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:LONDON_NEWYORK:2026-09-23",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:LONDON_NEWYORK:2026-09-24",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:LONDON_NEWYORK:2026-09-30",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:LONDON_NEWYORK:2026-10-01",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:LONDON_NEWYORK:2026-10-02",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "EURUSD:LONDON_NEWYORK:2026-10-06",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:ASIAN_LONDON:2026-07-21",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:ASIAN_LONDON:2026-07-23",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:ASIAN_LONDON:2026-07-24",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:ASIAN_LONDON:2026-07-29",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:ASIAN_LONDON:2026-08-03",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:ASIAN_LONDON:2026-08-05",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:ASIAN_LONDON:2026-08-10",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:ASIAN_LONDON:2026-08-11",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:ASIAN_LONDON:2026-08-13",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:ASIAN_LONDON:2026-08-18",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:ASIAN_LONDON:2026-08-20",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:ASIAN_LONDON:2026-09-01",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:ASIAN_LONDON:2026-09-02",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:ASIAN_LONDON:2026-09-03",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:ASIAN_LONDON:2026-09-04",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:ASIAN_LONDON:2026-09-09",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:ASIAN_LONDON:2026-09-10",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:ASIAN_LONDON:2026-09-11",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:ASIAN_LONDON:2026-09-18",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:ASIAN_LONDON:2026-09-21",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:ASIAN_LONDON:2026-09-22",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:ASIAN_LONDON:2026-09-25",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:ASIAN_LONDON:2026-10-02",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:ASIAN_LONDON:2026-10-07",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:ASIAN_LONDON:2026-10-08",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:LONDON_NEWYORK:2026-07-29",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:LONDON_NEWYORK:2026-08-05",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:LONDON_NEWYORK:2026-08-06",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:LONDON_NEWYORK:2026-08-11",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:LONDON_NEWYORK:2026-08-12",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:LONDON_NEWYORK:2026-08-27",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:LONDON_NEWYORK:2026-09-01",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:LONDON_NEWYORK:2026-09-03",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:LONDON_NEWYORK:2026-09-11",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:LONDON_NEWYORK:2026-09-14",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:LONDON_NEWYORK:2026-09-15",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:LONDON_NEWYORK:2026-09-17",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:LONDON_NEWYORK:2026-09-18",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:LONDON_NEWYORK:2026-09-21",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:LONDON_NEWYORK:2026-09-23",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:LONDON_NEWYORK:2026-09-24",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:LONDON_NEWYORK:2026-09-25",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:LONDON_NEWYORK:2026-09-29",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "GBPUSD:LONDON_NEWYORK:2026-10-05",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:ASIAN_LONDON:2026-07-22",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:ASIAN_LONDON:2026-07-23",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:ASIAN_LONDON:2026-07-24",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:ASIAN_LONDON:2026-07-27",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:ASIAN_LONDON:2026-07-28",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:ASIAN_LONDON:2026-08-04",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:ASIAN_LONDON:2026-08-05",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:ASIAN_LONDON:2026-08-06",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:ASIAN_LONDON:2026-08-14",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:ASIAN_LONDON:2026-08-17",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:ASIAN_LONDON:2026-08-18",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:ASIAN_LONDON:2026-08-19",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:ASIAN_LONDON:2026-08-21",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:ASIAN_LONDON:2026-08-25",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:ASIAN_LONDON:2026-08-31",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:ASIAN_LONDON:2026-09-01",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:ASIAN_LONDON:2026-09-04",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:ASIAN_LONDON:2026-09-07",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:ASIAN_LONDON:2026-09-08",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:ASIAN_LONDON:2026-09-09",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:ASIAN_LONDON:2026-09-16",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:ASIAN_LONDON:2026-09-17",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:ASIAN_LONDON:2026-09-21",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:ASIAN_LONDON:2026-09-22",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:ASIAN_LONDON:2026-09-24",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:ASIAN_LONDON:2026-09-29",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:ASIAN_LONDON:2026-10-07",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:ASIAN_LONDON:2026-10-09",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:LONDON_NEWYORK:2026-07-24",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:LONDON_NEWYORK:2026-08-04",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:LONDON_NEWYORK:2026-08-05",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:LONDON_NEWYORK:2026-08-14",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:LONDON_NEWYORK:2026-08-19",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:LONDON_NEWYORK:2026-08-20",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:LONDON_NEWYORK:2026-08-25",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:LONDON_NEWYORK:2026-09-10",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:LONDON_NEWYORK:2026-09-17",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:LONDON_NEWYORK:2026-09-21",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:LONDON_NEWYORK:2026-09-23",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:LONDON_NEWYORK:2026-09-25",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:LONDON_NEWYORK:2026-09-29",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:LONDON_NEWYORK:2026-10-01",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:LONDON_NEWYORK:2026-10-06",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "USDJPY:LONDON_NEWYORK:2026-10-08",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:ASIAN_LONDON:2026-07-29",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:ASIAN_LONDON:2026-08-04",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:ASIAN_LONDON:2026-08-10",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:ASIAN_LONDON:2026-08-11",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:ASIAN_LONDON:2026-08-12",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:ASIAN_LONDON:2026-08-13",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:ASIAN_LONDON:2026-08-27",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:ASIAN_LONDON:2026-09-04",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:ASIAN_LONDON:2026-09-11",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:ASIAN_LONDON:2026-09-14",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:ASIAN_LONDON:2026-09-17",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:ASIAN_LONDON:2026-09-18",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:ASIAN_LONDON:2026-09-21",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:ASIAN_LONDON:2026-09-30",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:ASIAN_LONDON:2026-10-05",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:ASIAN_LONDON:2026-10-06",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:LONDON_NEWYORK:2026-07-20",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:LONDON_NEWYORK:2026-07-21",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:LONDON_NEWYORK:2026-07-28",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:LONDON_NEWYORK:2026-08-03",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:LONDON_NEWYORK:2026-08-04",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:LONDON_NEWYORK:2026-08-07",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:LONDON_NEWYORK:2026-08-10",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:LONDON_NEWYORK:2026-08-13",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:LONDON_NEWYORK:2026-08-20",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:LONDON_NEWYORK:2026-08-21",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:LONDON_NEWYORK:2026-08-25",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:LONDON_NEWYORK:2026-08-31",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:LONDON_NEWYORK:2026-09-02",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:LONDON_NEWYORK:2026-09-11",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:LONDON_NEWYORK:2026-09-21",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:LONDON_NEWYORK:2026-09-28",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:LONDON_NEWYORK:2026-09-29",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:LONDON_NEWYORK:2026-09-30",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:LONDON_NEWYORK:2026-10-02",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  },
+  {
+   "case": "XAUUSD:LONDON_NEWYORK:2026-10-09",
+   "future_perturbation_identical": true,
+   "signal_bar_perturbation": "CHANGED",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  }
+ ],
+ "asw_outcome_non_agree": [
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-07-21",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-07-21T09:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 4.0,
+    "mfe_R": 4.8,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.14231,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.14236,
+   "symbol": "EURUSD",
+   "tp1": 1.1409
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-07-22",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-07-22T13:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.6296,
+    "mfe_R": 2.2778,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.14128,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.14182,
+   "symbol": "EURUSD",
+   "tp1": 1.13989
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-07-24",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-07-24T09:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 5.6667,
+    "mfe_R": 20.6667,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.13875,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.13878,
+   "symbol": "EURUSD",
+   "tp1": 1.13753
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-07-27",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-07-27T10:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 3.0,
+    "mfe_R": 10.0,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.13953,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.13947,
+   "symbol": "EURUSD",
+   "tp1": 1.14144
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-07-31",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-07-31T10:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 3.2222,
+    "mfe_R": 4.2222,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.15044,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.15035,
+   "symbol": "EURUSD",
+   "tp1": 1.15266
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-03",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-03T07:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.3636,
+    "mfe_R": 0.8636,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.15268,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.15224,
+   "symbol": "EURUSD",
+   "tp1": 1.15561
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-04",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-04T10:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.0667,
+    "mfe_R": 2.0444,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.15126,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.15171,
+   "symbol": "EURUSD",
+   "tp1": 1.15023
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-05",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-05T11:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 3.1429,
+    "mfe_R": 6.4286,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.15446,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.15467,
+   "symbol": "EURUSD",
+   "tp1": 1.15267
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-06",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-06T07:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.3333,
+    "mfe_R": 0.3333,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.15446,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.15431,
+   "symbol": "EURUSD",
+   "tp1": 1.15597
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-07",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-07T09:00:00+00:00",
+    "cost_R": null,
+    "gross_R": 0.7727,
+    "mae_R": 0.9318,
+    "mfe_R": 1.5,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1.15222,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.15178,
+   "symbol": "EURUSD",
+   "tp1": 1.15256
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-10",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-10T12:15:00+00:00",
+    "cost_R": null,
+    "gross_R": 10.9091,
+    "mae_R": 0.0,
+    "mfe_R": 11.9091,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1.156,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.15611,
+   "symbol": "EURUSD",
+   "tp1": 1.1548
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-12",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-12T12:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.8857,
+    "mfe_R": 1.4714,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.15428,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.15498,
+   "symbol": "EURUSD",
+   "tp1": 1.15322
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-13",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-13T09:15:00+00:00",
+    "cost_R": null,
+    "gross_R": 44.6667,
+    "mae_R": 0.0,
+    "mfe_R": 47.0,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1.1518,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.15177,
+   "symbol": "EURUSD",
+   "tp1": 1.15314
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-18",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-18T14:00:00+00:00",
+    "cost_R": null,
+    "gross_R": 6.9048,
+    "mae_R": 0.2381,
+    "mfe_R": 7.4762,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1.15713,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.15692,
+   "symbol": "EURUSD",
+   "tp1": 1.15858
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-20",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-20T07:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 18.0,
+    "mfe_R": 32.3333,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.1688,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.16883,
+   "symbol": "EURUSD",
+   "tp1": 1.167
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-21",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-21T10:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 19.5,
+    "mfe_R": 28.0,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.17047,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.17049,
+   "symbol": "EURUSD",
+   "tp1": 1.1683
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-24",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-24T07:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 3.0417,
+    "mfe_R": 1.4583,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.16733,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.16709,
+   "symbol": "EURUSD",
+   "tp1": 1.16873
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-26",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-26T11:15:00+00:00",
+    "cost_R": null,
+    "gross_R": 13.7273,
+    "mae_R": 0.0,
+    "mfe_R": 14.1818,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1.16757,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.16768,
+   "symbol": "EURUSD",
+   "tp1": 1.16606
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-27",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-27T07:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.0,
+    "mfe_R": 7.0,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.16522,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.16518,
+   "symbol": "EURUSD",
+   "tp1": 1.16596
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-31",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-31T07:15:00+00:00",
+    "cost_R": null,
+    "gross_R": 1.5526,
+    "mae_R": 0.7368,
+    "mfe_R": 2.0,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1.15886,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.15848,
+   "symbol": "EURUSD",
+   "tp1": 1.15945
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-01",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-01T07:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.9,
+    "mfe_R": 0.0,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.16036,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.16016,
+   "symbol": "EURUSD",
+   "tp1": 1.16244
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-02",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-02T08:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.75,
+    "mfe_R": 22.0,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.15735,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.15731,
+   "symbol": "EURUSD",
+   "tp1": 1.15919
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-03",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-03T10:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 7.0,
+    "mfe_R": 4.1667,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.1601,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.16016,
+   "symbol": "EURUSD",
+   "tp1": 1.15835
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-04",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-04T08:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.5,
+    "mfe_R": 0.4375,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.16228,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.16212,
+   "symbol": "EURUSD",
+   "tp1": 1.16332
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-09",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-09T09:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 16.1429,
+    "mae_R": 0.0,
+    "mfe_R": 23.4286,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1.16389,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.16396,
+   "symbol": "EURUSD",
+   "tp1": 1.16276
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-10",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-10T10:30:00+00:00",
+    "cost_R": null,
+    "gross_R": 11.4,
+    "mae_R": 0.5,
+    "mfe_R": 17.6,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1.16409,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.16419,
+   "symbol": "EURUSD",
+   "tp1": 1.16295
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-11",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-11T09:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.4,
+    "mfe_R": 2.9,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.15976,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.15966,
+   "symbol": "EURUSD",
+   "tp1": 1.16176
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-16",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-16T11:00:00+00:00",
+    "cost_R": null,
+    "gross_R": 28.7143,
+    "mae_R": 0.0,
+    "mfe_R": 29.8571,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1.15519,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.15526,
+   "symbol": "EURUSD",
+   "tp1": 1.15318
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-17",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-17T08:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.0,
+    "mfe_R": 14.25,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.14731,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.14735,
+   "symbol": "EURUSD",
+   "tp1": 1.14562
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-21",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-21T08:30:00+00:00",
+    "cost_R": null,
+    "gross_R": 8.1875,
+    "mae_R": 0.5,
+    "mfe_R": 8.4375,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1.14727,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.14711,
+   "symbol": "EURUSD",
+   "tp1": 1.14858
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-22",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-22T10:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.2222,
+    "mfe_R": 10.4444,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.14615,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.14606,
+   "symbol": "EURUSD",
+   "tp1": 1.14783
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-24",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-24T10:15:00+00:00",
+    "cost_R": null,
+    "gross_R": 4.3953,
+    "mae_R": 0.0,
+    "mfe_R": 6.0698,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1.13878,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.13921,
+   "symbol": "EURUSD",
+   "tp1": 1.13689
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-25",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-25T07:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 3.875,
+    "mfe_R": 2.875,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.13826,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.13834,
+   "symbol": "EURUSD",
+   "tp1": 1.13683
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-28",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-28T08:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.2778,
+    "mfe_R": 7.3889,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.13774,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.13756,
+   "symbol": "EURUSD",
+   "tp1": 1.13912
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-30",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-30T08:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.1111,
+    "mfe_R": 12.6667,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.13536,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.13545,
+   "symbol": "EURUSD",
+   "tp1": 1.13289
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-10-01",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-10-01T07:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.9474,
+    "mfe_R": 0.6579,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.13154,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.13116,
+   "symbol": "EURUSD",
+   "tp1": 1.13368
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-10-02",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-10-02T10:15:00+00:00",
+    "cost_R": null,
+    "gross_R": 40.3333,
+    "mae_R": 0.0,
+    "mfe_R": 45.1667,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1.12557,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.12563,
+   "symbol": "EURUSD",
+   "tp1": 1.12315
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-10-06",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-10-06T07:30:00+00:00",
+    "cost_R": null,
+    "gross_R": 2.8493,
+    "mae_R": 0.0,
+    "mfe_R": 2.8767,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1.12103,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.1203,
+   "symbol": "EURUSD",
+   "tp1": 1.12311
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-10-08",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-10-08T07:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 3.5,
+    "mfe_R": 33.0,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.119,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.11898,
+   "symbol": "EURUSD",
+   "tp1": 1.12127
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-07-21",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-07-21T14:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.2881,
+    "mfe_R": 0.2203,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.14173,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.14114,
+   "symbol": "EURUSD",
+   "tp1": 1.14287
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-07-22",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-07-22T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 2.3243,
+    "mae_R": 0.1622,
+    "mfe_R": 2.7297,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 1.14179,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.14216,
+   "symbol": "EURUSD",
+   "tp1": 1.14005
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-07-24",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-07-24T12:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.5714,
+    "mfe_R": 1.1429,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.13747,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.13719,
+   "symbol": "EURUSD",
+   "tp1": 1.14012
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-07-28",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-07-28T14:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.0588,
+    "mfe_R": 0.9412,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.13724,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.13741,
+   "symbol": "EURUSD",
+   "tp1": 1.13534
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-04",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-04T13:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 33.0,
+    "mfe_R": 125.0,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.15218,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.15219,
+   "symbol": "EURUSD",
+   "tp1": 1.15034
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-05",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-05T13:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.3913,
+    "mfe_R": 2.3478,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.15479,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.15502,
+   "symbol": "EURUSD",
+   "tp1": 1.15311
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-06",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-06T14:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.3333,
+    "mfe_R": 2.8333,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.15381,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.15357,
+   "symbol": "EURUSD",
+   "tp1": 1.15517
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-07",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-07T12:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 107.5,
+    "mfe_R": 15.5,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.15343,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.15347,
+   "symbol": "EURUSD",
+   "tp1": 1.15178
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-10",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-10T13:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.1333,
+    "mfe_R": 4.4,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.15471,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.15456,
+   "symbol": "EURUSD",
+   "tp1": 1.15657
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-11",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-11T13:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.3333,
+    "mfe_R": 0.037,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.15415,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.15442,
+   "symbol": "EURUSD",
+   "tp1": 1.15314
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-12",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-12T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 4.8696,
+    "mae_R": 0.0435,
+    "mfe_R": 6.6087,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 1.15543,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.15566,
+   "symbol": "EURUSD",
+   "tp1": 1.15325
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-13",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-13T14:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.75,
+    "mfe_R": 4.65,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.15399,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.15419,
+   "symbol": "EURUSD",
+   "tp1": 1.15118
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-20",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-20T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 8.3077,
+    "mae_R": 0.0,
+    "mfe_R": 10.0,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 1.16722,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.16709,
+   "symbol": "EURUSD",
+   "tp1": 1.17106
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-21",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-21T13:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.1915,
+    "mfe_R": 0.2979,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.16898,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.16851,
+   "symbol": "EURUSD",
+   "tp1": 1.17114
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-25",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-25T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 0.6571,
+    "mae_R": 0.8286,
+    "mfe_R": 1.5714,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 1.16719,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.16754,
+   "symbol": "EURUSD",
+   "tp1": 1.16512
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-27",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-27T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 10.3077,
+    "mae_R": 0.0,
+    "mfe_R": 10.4615,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 1.16582,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.16595,
+   "symbol": "EURUSD",
+   "tp1": 1.16385
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-02",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-02T13:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 8.4375,
+    "mfe_R": 2.0938,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.15823,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.15855,
+   "symbol": "EURUSD",
+   "tp1": 1.15663
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-03",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-03T12:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 3.1944,
+    "mfe_R": 1.4167,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.16134,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.1617,
+   "symbol": "EURUSD",
+   "tp1": 1.15963
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-04",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-04T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.625,
+    "mfe_R": 7.0,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.16156,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.16148,
+   "symbol": "EURUSD",
+   "tp1": 1.16302
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-09",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-09T14:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.5,
+    "mfe_R": 48.5,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.16523,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.16525,
+   "symbol": "EURUSD",
+   "tp1": 1.1622
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-10",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-10T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 5.2667,
+    "mae_R": 0.0,
+    "mfe_R": 5.3333,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 1.16215,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.162,
+   "symbol": "EURUSD",
+   "tp1": 1.16419
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-15",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-15T12:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.0,
+    "mfe_R": 1.1111,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.15403,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.15421,
+   "symbol": "EURUSD",
+   "tp1": 1.1527
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-16",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-16T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 2.3438,
+    "mae_R": 0.1562,
+    "mfe_R": 3.0625,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 1.15315,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.15283,
+   "symbol": "EURUSD",
+   "tp1": 1.15566
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-17",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-17T12:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 8.0625,
+    "mfe_R": 0.75,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.14829,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.14845,
+   "symbol": "EURUSD",
+   "tp1": 1.14656
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-21",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-21T14:00:00+00:00",
+    "cost_R": null,
+    "gross_R": 53.0,
+    "mae_R": 0.0,
+    "mfe_R": 68.0,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1.1487,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.14873,
+   "symbol": "EURUSD",
+   "tp1": 1.14711
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-23",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-23T13:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 9.0909,
+    "mfe_R": 13.5455,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.14011,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.14,
+   "symbol": "EURUSD",
+   "tp1": 1.14285
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-24",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-24T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 47.0,
+    "mae_R": 0.0,
+    "mfe_R": 63.3333,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 1.13595,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.13592,
+   "symbol": "EURUSD",
+   "tp1": 1.13992
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-28",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-28T13:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.0,
+    "mfe_R": 0.0952,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.137,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.13658,
+   "symbol": "EURUSD",
+   "tp1": 1.13907
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-30",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-30T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 7.3182,
+    "mae_R": 0.0,
+    "mfe_R": 13.0,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 1.13744,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.13766,
+   "symbol": "EURUSD",
+   "tp1": 1.13422
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-10-02",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-10-02T13:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 10.5476,
+    "mae_R": 0.0,
+    "mfe_R": 12.0714,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1.12251,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.12209,
+   "symbol": "EURUSD",
+   "tp1": 1.12694
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-10-06",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-10-06T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 7.9,
+    "mfe_R": 3.0,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.12503,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.12513,
+   "symbol": "EURUSD",
+   "tp1": 1.1203
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-07-21",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-07-21T09:00:00+00:00",
+    "cost_R": null,
+    "gross_R": 43.8,
+    "mae_R": 0.0,
+    "mfe_R": 47.0,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1.34489,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.34494,
+   "symbol": "GBPUSD",
+   "tp1": 1.3427
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-07-22",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-07-22T07:15:00+00:00",
+    "cost_R": null,
+    "gross_R": 3.1562,
+    "mae_R": 0.0,
+    "mfe_R": 3.4062,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1.33796,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.33764,
+   "symbol": "GBPUSD",
+   "tp1": 1.33897
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-07-23",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-07-23T07:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.1064,
+    "mfe_R": 0.8085,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.33762,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.33715,
+   "symbol": "GBPUSD",
+   "tp1": 1.33932
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-07-24",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-07-24T10:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 5.5,
+    "mfe_R": 72.5,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.33275,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.33277,
+   "symbol": "GBPUSD",
+   "tp1": 1.33065
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-07-28",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-07-28T07:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.1053,
+    "mfe_R": 3.0,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.33029,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.33048,
+   "symbol": "GBPUSD",
+   "tp1": 1.32857
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-07-29",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-07-29T08:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.64,
+    "mfe_R": 2.12,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.33021,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.33046,
+   "symbol": "GBPUSD",
+   "tp1": 1.32818
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-07-31",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-07-31T08:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.4583,
+    "mfe_R": 1.8333,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.34424,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.344,
+   "symbol": "GBPUSD",
+   "tp1": 1.34649
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-03",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-03T07:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.6207,
+    "mfe_R": 1.8966,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.34607,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.34578,
+   "symbol": "GBPUSD",
+   "tp1": 1.35028
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-04",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-04T07:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 4.375,
+    "mfe_R": 0.625,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.34318,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.34334,
+   "symbol": "GBPUSD",
+   "tp1": 1.34196
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-05",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-05T08:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.5238,
+    "mfe_R": 4.4762,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.34671,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.34692,
+   "symbol": "GBPUSD",
+   "tp1": 1.3444
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-06",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-06T09:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.7742,
+    "mfe_R": 2.5484,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.34582,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.34551,
+   "symbol": "GBPUSD",
+   "tp1": 1.34726
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-07",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-07T08:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 3.1111,
+    "mfe_R": 2.6667,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.34475,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.34466,
+   "symbol": "GBPUSD",
+   "tp1": 1.34564
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-10",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-10T07:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.3571,
+    "mfe_R": 1.1429,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.34949,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.34977,
+   "symbol": "GBPUSD",
+   "tp1": 1.34832
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-11",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-11T09:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 9.3333,
+    "mfe_R": 19.0,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.35017,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.35014,
+   "symbol": "GBPUSD",
+   "tp1": 1.35154
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-12",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-12T08:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.0,
+    "mfe_R": 5.875,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.35107,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.35115,
+   "symbol": "GBPUSD",
+   "tp1": 1.35017
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-13",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-13T10:30:00+00:00",
+    "cost_R": null,
+    "gross_R": 24.875,
+    "mae_R": 0.0,
+    "mfe_R": 25.25,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1.34808,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.348,
+   "symbol": "GBPUSD",
+   "tp1": 1.35007
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-17",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-17T07:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 5.0714,
+    "mfe_R": 0.4286,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.35585,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.35599,
+   "symbol": "GBPUSD",
+   "tp1": 1.35463
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-18",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-18T09:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.6667,
+    "mfe_R": 2.6667,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.35295,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.35283,
+   "symbol": "GBPUSD",
+   "tp1": 1.35541
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-20",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-20T07:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 9.6667,
+    "mfe_R": 3.8667,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.36166,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.36181,
+   "symbol": "GBPUSD",
+   "tp1": 1.35946
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-21",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-21T08:30:00+00:00",
+    "cost_R": null,
+    "gross_R": 2.7358,
+    "mae_R": 0.5094,
+    "mfe_R": 3.3774,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1.36408,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.36355,
+   "symbol": "GBPUSD",
+   "tp1": 1.36553
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-26",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-26T08:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.8667,
+    "mfe_R": 3.4,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.36318,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.36303,
+   "symbol": "GBPUSD",
+   "tp1": 1.36489
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-27",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-27T08:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 6.1111,
+    "mfe_R": 0.5556,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.35859,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.3585,
+   "symbol": "GBPUSD",
+   "tp1": 1.35974
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-31",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-31T08:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 4.04,
+    "mfe_R": 1.48,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.35456,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.35481,
+   "symbol": "GBPUSD",
+   "tp1": 1.35337
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-01",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-01T11:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.1081,
+    "mfe_R": 3.7838,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.35346,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.35309,
+   "symbol": "GBPUSD",
+   "tp1": 1.35593
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-02",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-02T09:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.2258,
+    "mfe_R": 7.0645,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.34927,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.34896,
+   "symbol": "GBPUSD",
+   "tp1": 1.35149
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-03",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-03T07:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.1667,
+    "mfe_R": 0.3929,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.34949,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.35033,
+   "symbol": "GBPUSD",
+   "tp1": 1.34805
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-04",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-04T09:15:00+00:00",
+    "cost_R": null,
+    "gross_R": 24.1111,
+    "mae_R": 0.0,
+    "mfe_R": 24.2222,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1.35467,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.35476,
+   "symbol": "GBPUSD",
+   "tp1": 1.3525
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-08",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-08T07:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 4.8824,
+    "mfe_R": 2.1765,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.35347,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.3533,
+   "symbol": "GBPUSD",
+   "tp1": 1.35498
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-09",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-09T09:00:00+00:00",
+    "cost_R": null,
+    "gross_R": 59.3333,
+    "mae_R": 0.0,
+    "mfe_R": 61.6667,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1.35592,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.35595,
+   "symbol": "GBPUSD",
+   "tp1": 1.35414
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-10",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-10T10:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.6364,
+    "mfe_R": 2.4242,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.35449,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.35416,
+   "symbol": "GBPUSD",
+   "tp1": 1.35602
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-11",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-11T12:30:00+00:00",
+    "cost_R": null,
+    "gross_R": 43.0,
+    "mae_R": 0.8,
+    "mfe_R": 70.8,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1.35171,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.35176,
+   "symbol": "GBPUSD",
+   "tp1": 1.34956
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-17",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-17T08:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 5.5625,
+    "mfe_R": 4.9375,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.33871,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.33887,
+   "symbol": "GBPUSD",
+   "tp1": 1.33695
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-18",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-18T11:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.9184,
+    "mfe_R": 1.9592,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.33547,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.33498,
+   "symbol": "GBPUSD",
+   "tp1": 1.33758
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-21",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-21T11:30:00+00:00",
+    "cost_R": null,
+    "gross_R": 29.4286,
+    "mae_R": 0.0,
+    "mfe_R": 33.7143,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1.33726,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.33719,
+   "symbol": "GBPUSD",
+   "tp1": 1.33932
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-22",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-22T07:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.3944,
+    "mfe_R": 0.2817,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.33644,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.33573,
+   "symbol": "GBPUSD",
+   "tp1": 1.33872
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-24",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-24T07:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.0,
+    "mfe_R": 2.5714,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.32446,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.32467,
+   "symbol": "GBPUSD",
+   "tp1": 1.32232
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-25",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-25T07:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.3793,
+    "mfe_R": 2.069,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.32245,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.32274,
+   "symbol": "GBPUSD",
+   "tp1": 1.32089
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-29",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-29T09:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.2923,
+    "mfe_R": 1.1846,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.32337,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.32272,
+   "symbol": "GBPUSD",
+   "tp1": 1.32557
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-10-02",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-10-02T07:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 4.375,
+    "mfe_R": 8.5,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.32147,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.32155,
+   "symbol": "GBPUSD",
+   "tp1": 1.31812
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-10-06",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-10-06T07:30:00+00:00",
+    "cost_R": null,
+    "gross_R": 2.4839,
+    "mae_R": 0.0,
+    "mfe_R": 2.9839,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1.32164,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.32102,
+   "symbol": "GBPUSD",
+   "tp1": 1.32318
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-10-07",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-10-07T07:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.6818,
+    "mfe_R": 0.6818,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.32477,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.32411,
+   "symbol": "GBPUSD",
+   "tp1": 1.32683
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-10-08",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-10-08T09:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.2651,
+    "mfe_R": 2.0241,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.31957,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.31874,
+   "symbol": "GBPUSD",
+   "tp1": 1.32224
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-07-20",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-07-20T12:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.2759,
+    "mfe_R": 0.1034,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.34584,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.34555,
+   "symbol": "GBPUSD",
+   "tp1": 1.34812
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-07-22",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-07-22T12:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.0625,
+    "mfe_R": 3.4375,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.33672,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.33656,
+   "symbol": "GBPUSD",
+   "tp1": 1.33951
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-07-24",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-07-24T12:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.8235,
+    "mfe_R": 2.5294,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.33088,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.33071,
+   "symbol": "GBPUSD",
+   "tp1": 1.33443
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-07-29",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-07-29T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.1321,
+    "mfe_R": 3.1132,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.32878,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.32825,
+   "symbol": "GBPUSD",
+   "tp1": 1.33089
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-07-31",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-07-31T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 1.6535,
+    "mae_R": 0.0,
+    "mfe_R": 1.9921,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 1.34353,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.34226,
+   "symbol": "GBPUSD",
+   "tp1": 1.34679
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-03",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-03T14:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.6667,
+    "mfe_R": 1.1795,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.34515,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.34476,
+   "symbol": "GBPUSD",
+   "tp1": 1.34779
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-05",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-05T14:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 4.9286,
+    "mfe_R": 10.8571,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.3475,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.34764,
+   "symbol": "GBPUSD",
+   "tp1": 1.3451
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-06",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-06T12:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.4286,
+    "mfe_R": 7.8571,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.34685,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.34692,
+   "symbol": "GBPUSD",
+   "tp1": 1.34521
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-10",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-10T13:15:00+00:00",
+    "cost_R": null,
+    "gross_R": 6.8571,
+    "mae_R": 0.2381,
+    "mfe_R": 7.3333,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1.34923,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.34902,
+   "symbol": "GBPUSD",
+   "tp1": 1.35067
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-11",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-11T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 11.4615,
+    "mae_R": 0.4615,
+    "mfe_R": 12.6923,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 1.34934,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.34921,
+   "symbol": "GBPUSD",
+   "tp1": 1.35159
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-12",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-12T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 8.9687,
+    "mae_R": 0.0,
+    "mfe_R": 10.5625,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 1.35378,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.3541,
+   "symbol": "GBPUSD",
+   "tp1": 1.35027
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-13",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-13T14:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 4.8462,
+    "mfe_R": 2.0,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.35009,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.35022,
+   "symbol": "GBPUSD",
+   "tp1": 1.34743
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-18",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-18T14:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.4375,
+    "mfe_R": 1.2708,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.35389,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.35437,
+   "symbol": "GBPUSD",
+   "tp1": 1.35196
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-21",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-21T13:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.0978,
+    "mfe_R": 0.163,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.36444,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.36352,
+   "symbol": "GBPUSD",
+   "tp1": 1.36756
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-24",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-24T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 7.2632,
+    "mae_R": 0.0526,
+    "mfe_R": 7.9474,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 1.36477,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.36496,
+   "symbol": "GBPUSD",
+   "tp1": 1.36211
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-25",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-25T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 2.3279,
+    "mae_R": 0.2951,
+    "mfe_R": 3.1639,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 1.36469,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.3653,
+   "symbol": "GBPUSD",
+   "tp1": 1.36219
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-27",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-27T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 10.3529,
+    "mae_R": 0.0,
+    "mfe_R": 11.3529,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 1.35994,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.36011,
+   "symbol": "GBPUSD",
+   "tp1": 1.35708
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-31",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-31T12:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.0385,
+    "mfe_R": 3.1923,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.35385,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.35359,
+   "symbol": "GBPUSD",
+   "tp1": 1.35557
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-01",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-01T14:00:00+00:00",
+    "cost_R": null,
+    "gross_R": 202.0,
+    "mae_R": 0.0,
+    "mfe_R": 238.0,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1.35284,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.35283,
+   "symbol": "GBPUSD",
+   "tp1": 1.35486
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-02",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-02T12:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.4545,
+    "mfe_R": 5.8182,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.34773,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.34762,
+   "symbol": "GBPUSD",
+   "tp1": 1.35146
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-03",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-03T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 5.875,
+    "mfe_R": 5.9375,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.3511,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.35126,
+   "symbol": "GBPUSD",
+   "tp1": 1.34835
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-08",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-08T12:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.6875,
+    "mfe_R": 1.5,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.35513,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.35529,
+   "symbol": "GBPUSD",
+   "tp1": 1.35215
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-11",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-11T13:00:00+00:00",
+    "cost_R": null,
+    "gross_R": 0.6816,
+    "mae_R": 0.0075,
+    "mfe_R": 0.7828,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1.35084,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.34817,
+   "symbol": "GBPUSD",
+   "tp1": 1.35266
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-14",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-14T13:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.0588,
+    "mfe_R": 2.6471,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.34729,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.34712,
+   "symbol": "GBPUSD",
+   "tp1": 1.35057
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-15",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-15T12:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 6.5,
+    "mfe_R": 15.5,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.34848,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.3485,
+   "symbol": "GBPUSD",
+   "tp1": 1.34641
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-17",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-17T14:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 5.4167,
+    "mfe_R": 21.3333,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.33697,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.33685,
+   "symbol": "GBPUSD",
+   "tp1": 1.34063
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-18",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-18T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 16.8571,
+    "mae_R": 0.0,
+    "mfe_R": 24.8571,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 1.33486,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.33479,
+   "symbol": "GBPUSD",
+   "tp1": 1.33749
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-21",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-21T14:00:00+00:00",
+    "cost_R": null,
+    "gross_R": 82.0,
+    "mae_R": 0.0,
+    "mfe_R": 82.3333,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1.33932,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.33935,
+   "symbol": "GBPUSD",
+   "tp1": 1.33686
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-23",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-23T13:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 37.0,
+    "mfe_R": 57.0,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.3266,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.32656,
+   "symbol": "GBPUSD",
+   "tp1": 1.33225
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-25",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-25T12:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.88,
+    "mfe_R": 0.68,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.32505,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.3253,
+   "symbol": "GBPUSD",
+   "tp1": 1.32172
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-28",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-28T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 2.6765,
+    "mae_R": 0.2059,
+    "mfe_R": 4.1765,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 1.32688,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.32756,
+   "symbol": "GBPUSD",
+   "tp1": 1.32312
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-29",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-29T13:30:00+00:00",
+    "cost_R": null,
+    "gross_R": 26.5,
+    "mae_R": 0.0,
+    "mfe_R": 30.0,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1.32475,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.32485,
+   "symbol": "GBPUSD",
+   "tp1": 1.3221
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-10-02",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-10-02T12:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 4.2222,
+    "mfe_R": 8.5556,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.31999,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.3199,
+   "symbol": "GBPUSD",
+   "tp1": 1.32215
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-10-05",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-10-05T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 4.9524,
+    "mae_R": 0.0476,
+    "mfe_R": 5.1905,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 1.31995,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.31953,
+   "symbol": "GBPUSD",
+   "tp1": 1.32391
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-10-08",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-10-08T13:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.625,
+    "mfe_R": 9.0625,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 1.32119,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.32135,
+   "symbol": "GBPUSD",
+   "tp1": 1.31845
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-10-09",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-10-09T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 0.377,
+    "mae_R": 0.1639,
+    "mfe_R": 1.6885,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 1.32223,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 1.32162,
+   "symbol": "GBPUSD",
+   "tp1": 1.32472
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-07-22",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-07-22T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 5.0588,
+    "mae_R": 0.0294,
+    "mfe_R": 5.6471,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 162.944,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 162.91,
+   "symbol": "USDJPY",
+   "tp1": 163.206
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-07-23",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-07-23T07:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.9,
+    "mfe_R": 0.0,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 163.135,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 163.155,
+   "symbol": "USDJPY",
+   "tp1": 162.996
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-07-24",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-07-24T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 2.2414,
+    "mae_R": 0.5862,
+    "mfe_R": 6.4828,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 163.692,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 163.663,
+   "symbol": "USDJPY",
+   "tp1": 163.937
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-07-27",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-07-27T12:00:00+00:00",
+    "cost_R": null,
+    "gross_R": 106.6667,
+    "mae_R": 0.0,
+    "mfe_R": 117.0,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 163.334,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 163.331,
+   "symbol": "USDJPY",
+   "tp1": 163.654
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-07-28",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-07-28T09:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.1667,
+    "mfe_R": 2.5833,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 163.841,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 163.853,
+   "symbol": "USDJPY",
+   "tp1": 163.676
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-04",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-04T07:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 6.6429,
+    "mfe_R": 9.7143,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 157.748,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 157.762,
+   "symbol": "USDJPY",
+   "tp1": 157.226
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-05",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-05T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 34.3333,
+    "mae_R": 0.7778,
+    "mfe_R": 55.1111,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 157.807,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 157.816,
+   "symbol": "USDJPY",
+   "tp1": 157.306
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-06",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-06T07:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 24.3333,
+    "mfe_R": 9.3333,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 157.797,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 157.8,
+   "symbol": "USDJPY",
+   "tp1": 157.587
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-11",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-11T07:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.0385,
+    "mfe_R": 1.3846,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 159.297,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 159.323,
+   "symbol": "USDJPY",
+   "tp1": 158.918
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-14",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-14T09:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.5455,
+    "mfe_R": 5.9091,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 159.13,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 159.119,
+   "symbol": "USDJPY",
+   "tp1": 159.504
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-17",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-17T08:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 4.3333,
+    "mfe_R": 23.0,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 158.953,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 158.95,
+   "symbol": "USDJPY",
+   "tp1": 159.247
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-18",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-18T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 10.6667,
+    "mae_R": 0.5,
+    "mfe_R": 17.6111,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 159.745,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 159.763,
+   "symbol": "USDJPY",
+   "tp1": 159.311
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-19",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-19T07:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.7143,
+    "mfe_R": 1.0536,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 159.223,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 159.167,
+   "symbol": "USDJPY",
+   "tp1": 159.555
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-21",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-21T07:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.3896,
+    "mfe_R": 0.0649,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 158.841,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 158.764,
+   "symbol": "USDJPY",
+   "tp1": 159.134
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-25",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-25T07:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.9333,
+    "mfe_R": 6.2,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 159.409,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 159.424,
+   "symbol": "USDJPY",
+   "tp1": 159.092
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-27",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-27T09:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 5.5882,
+    "mfe_R": 0.1176,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 159.395,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 159.412,
+   "symbol": "USDJPY",
+   "tp1": 159.114
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-31",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-31T11:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.3226,
+    "mfe_R": 3.6774,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 159.663,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 159.632,
+   "symbol": "USDJPY",
+   "tp1": 160.118
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-01",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-01T09:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.5263,
+    "mfe_R": 1.8947,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 159.927,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 159.946,
+   "symbol": "USDJPY",
+   "tp1": 159.636
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-04",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-04T12:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 67.25,
+    "mfe_R": 118.0,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 156.48,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 156.484,
+   "symbol": "USDJPY",
+   "tp1": 155.297
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-07",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-07T07:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 11.5833,
+    "mfe_R": 13.1667,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 155.661,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 155.649,
+   "symbol": "USDJPY",
+   "tp1": 156.256
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-08",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-08T07:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.4091,
+    "mfe_R": 6.8182,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 153.939,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 153.961,
+   "symbol": "USDJPY",
+   "tp1": 152.885
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-09",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-09T07:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.1379,
+    "mfe_R": 7.4828,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 153.155,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 153.126,
+   "symbol": "USDJPY",
+   "tp1": 153.83
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-10",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-10T09:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.9375,
+    "mfe_R": 1.3437,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 153.714,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 153.746,
+   "symbol": "USDJPY",
+   "tp1": 153.281
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-15",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-15T07:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.5,
+    "mfe_R": 4.2857,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 154.912,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 154.926,
+   "symbol": "USDJPY",
+   "tp1": 154.404
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-16",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-16T10:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.1351,
+    "mfe_R": 1.7297,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 155.134,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 155.097,
+   "symbol": "USDJPY",
+   "tp1": 155.489
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-17",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-17T09:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 19.3333,
+    "mfe_R": 86.3333,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 155.616,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 155.613,
+   "symbol": "USDJPY",
+   "tp1": 156.277
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-21",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-21T08:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.2821,
+    "mfe_R": 1.4103,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 157.158,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 157.197,
+   "symbol": "USDJPY",
+   "tp1": 156.578
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-22",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-22T08:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 12.5882,
+    "mae_R": 0.0,
+    "mfe_R": 24.6176,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 157.692,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 157.726,
+   "symbol": "USDJPY",
+   "tp1": 157.264
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-24",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-24T08:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.9412,
+    "mfe_R": 6.3333,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 158.395,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 158.446,
+   "symbol": "USDJPY",
+   "tp1": 157.798
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-29",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-29T10:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 25.7778,
+    "mae_R": 0.0,
+    "mfe_R": 26.1111,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 157.665,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 157.683,
+   "symbol": "USDJPY",
+   "tp1": 157.201
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-10-06",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-10-06T08:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.0385,
+    "mfe_R": 1.2564,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 158.154,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 158.232,
+   "symbol": "USDJPY",
+   "tp1": 157.77
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-10-07",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-10-07T07:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 6.8974,
+    "mfe_R": 0.5897,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 158.306,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 158.267,
+   "symbol": "USDJPY",
+   "tp1": 158.51
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-10-08",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-10-08T10:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.6471,
+    "mfe_R": 2.0588,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 158.272,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 158.289,
+   "symbol": "USDJPY",
+   "tp1": 157.584
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-10-09",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-10-09T09:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 12.25,
+    "mfe_R": 49.0,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 158.287,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 158.291,
+   "symbol": "USDJPY",
+   "tp1": 157.758
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-07-24",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-07-24T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 3.5556,
+    "mae_R": 0.7778,
+    "mfe_R": 5.8148,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 163.853,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 163.88,
+   "symbol": "USDJPY",
+   "tp1": 163.654
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-03",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-03T14:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.4681,
+    "mfe_R": 5.6596,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 156.352,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 156.305,
+   "symbol": "USDJPY",
+   "tp1": 157.136
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-04",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-04T12:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 4.0,
+    "mfe_R": 30.5,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 157.46,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 157.456,
+   "symbol": "USDJPY",
+   "tp1": 157.958
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-05",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-05T13:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 3.3462,
+    "mfe_R": 5.3462,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 157.511,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 157.485,
+   "symbol": "USDJPY",
+   "tp1": 157.875
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-06",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-06T13:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.8148,
+    "mfe_R": 0.4444,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 157.896,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 157.923,
+   "symbol": "USDJPY",
+   "tp1": 157.725
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-11",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-11T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 0.25,
+    "mae_R": 0.7917,
+    "mfe_R": 1.5,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 159.221,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 159.173,
+   "symbol": "USDJPY",
+   "tp1": 159.389
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-13",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-13T12:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.5957,
+    "mfe_R": 0.0426,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 159.296,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 159.249,
+   "symbol": "USDJPY",
+   "tp1": 159.445
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-14",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-14T13:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 13.8571,
+    "mfe_R": 25.7143,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 158.913,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 158.906,
+   "symbol": "USDJPY",
+   "tp1": 159.312
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-18",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-18T14:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.4912,
+    "mfe_R": 0.0175,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 159.622,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 159.565,
+   "symbol": "USDJPY",
+   "tp1": 159.778
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-19",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-19T12:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 7.7611,
+    "mfe_R": 0.0,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 159.039,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 158.926,
+   "symbol": "USDJPY",
+   "tp1": 159.296
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-20",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-20T13:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.4783,
+    "mfe_R": 1.0783,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 158.665,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 158.78,
+   "symbol": "USDJPY",
+   "tp1": 158.201
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-21",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-21T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 0.7931,
+    "mae_R": 0.8276,
+    "mfe_R": 2.5862,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 158.979,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 159.008,
+   "symbol": "USDJPY",
+   "tp1": 158.355
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-25",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-25T13:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.3962,
+    "mfe_R": 1.0566,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 159.246,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 159.193,
+   "symbol": "USDJPY",
+   "tp1": 159.491
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-26",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-26T12:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 3.2766,
+    "mae_R": 0.0,
+    "mfe_R": 6.0426,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 158.969,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 158.922,
+   "symbol": "USDJPY",
+   "tp1": 159.123
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-01",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-01T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 0.6129,
+    "mae_R": 0.8065,
+    "mfe_R": 3.5484,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 160.113,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 160.175,
+   "symbol": "USDJPY",
+   "tp1": 159.865
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-10",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-10T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 9.1389,
+    "mae_R": 0.0,
+    "mfe_R": 10.2778,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 154.218,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 154.254,
+   "symbol": "USDJPY",
+   "tp1": 153.322
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-11",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-11T12:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -0.0535,
+    "mae_R": 0.0,
+    "mfe_R": 0.8627,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 153.924,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 154.485,
+   "symbol": "USDJPY",
+   "tp1": 153.954
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-16",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-16T13:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.4722,
+    "mfe_R": 0.6944,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 155.22,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 155.256,
+   "symbol": "USDJPY",
+   "tp1": 154.885
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-17",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-17T12:15:00+00:00",
+    "cost_R": null,
+    "gross_R": 9.2368,
+    "mae_R": 0.0,
+    "mfe_R": 14.2632,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 155.878,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 155.916,
+   "symbol": "USDJPY",
+   "tp1": 155.527
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-21",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-21T13:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.0526,
+    "mfe_R": 4.1053,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 157.348,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 157.367,
+   "symbol": "USDJPY",
+   "tp1": 156.989
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-23",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-23T13:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 9.5,
+    "mfe_R": 17.75,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 157.956,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 157.96,
+   "symbol": "USDJPY",
+   "tp1": 157.624
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-25",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-25T12:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.7647,
+    "mfe_R": 3.4314,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 157.592,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 157.541,
+   "symbol": "USDJPY",
+   "tp1": 158.293
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-29",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-29T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 17.1923,
+    "mae_R": 0.0,
+    "mfe_R": 17.5,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 157.13,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 157.104,
+   "symbol": "USDJPY",
+   "tp1": 157.713
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-30",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-30T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 16.88,
+    "mae_R": 0.0,
+    "mfe_R": 19.64,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 156.676,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 156.651,
+   "symbol": "USDJPY",
+   "tp1": 157.098
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-10-01",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-10-01T14:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.5556,
+    "mfe_R": 11.2222,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 157.91,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 157.892,
+   "symbol": "USDJPY",
+   "tp1": 158.451
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-10-02",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-10-02T14:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.0426,
+    "mfe_R": 3.9362,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 157.473,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 157.426,
+   "symbol": "USDJPY",
+   "tp1": 157.922
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-10-06",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-10-06T13:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 5.1765,
+    "mfe_R": 12.5882,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 158.002,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 157.985,
+   "symbol": "USDJPY",
+   "tp1": 158.245
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-10-08",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-10-08T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 10.9231,
+    "mae_R": 0.0,
+    "mfe_R": 11.3846,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 158.063,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 158.05,
+   "symbol": "USDJPY",
+   "tp1": 158.3
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-07-20",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-07-20T11:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.525,
+    "mfe_R": 1.393,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4024.04,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4030.63,
+   "symbol": "XAUUSD",
+   "tp1": 3982.65
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-07-24",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-07-24T07:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.4356,
+    "mfe_R": 1.4554,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4048.73,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4050.75,
+   "symbol": "XAUUSD",
+   "tp1": 4021.94
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-07-29",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-07-29T12:30:00+00:00",
+    "cost_R": null,
+    "gross_R": 53.0476,
+    "mae_R": 0.0,
+    "mfe_R": 54.7778,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 4043.7,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4044.33,
+   "symbol": "XAUUSD",
+   "tp1": 4010.28
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-03",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-03T10:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.0787,
+    "mfe_R": 0.9179,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4052.56,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4046.59,
+   "symbol": "XAUUSD",
+   "tp1": 4078.92
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-04",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-04T11:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 3.3996,
+    "mfe_R": 4.7696,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4068.09,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4072.82,
+   "symbol": "XAUUSD",
+   "tp1": 4042.53
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-10",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-10T07:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.1159,
+    "mfe_R": 10.9275,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4358.05,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4358.74,
+   "symbol": "XAUUSD",
+   "tp1": 4313.38
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-11",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-11T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 4.8973,
+    "mae_R": 0.0,
+    "mfe_R": 6.5976,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 4364.97,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4359.03,
+   "symbol": "XAUUSD",
+   "tp1": 4435.07
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-12",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-12T12:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.1374,
+    "mfe_R": 0.7738,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4413.14,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4424.06,
+   "symbol": "XAUUSD",
+   "tp1": 4366.46
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-13",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-13T13:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 3.1854,
+    "mfe_R": 14.5298,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4379.98,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4378.47,
+   "symbol": "XAUUSD",
+   "tp1": 4449.69
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-19",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-19T10:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.1659,
+    "mfe_R": 0.8811,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4356.7,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4363.09,
+   "symbol": "XAUUSD",
+   "tp1": 4324.61
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-26",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-26T07:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.0,
+    "mfe_R": 1.4344,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4631.31,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4628.87,
+   "symbol": "XAUUSD",
+   "tp1": 4670.69
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-08-27",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-27T07:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 3.9419,
+    "mfe_R": 2.064,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4600.24,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4598.52,
+   "symbol": "XAUUSD",
+   "tp1": 4642.98
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-04",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-04T07:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 17.6131,
+    "mae_R": 0.0,
+    "mfe_R": 20.2701,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 4462.91,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4461.54,
+   "symbol": "XAUUSD",
+   "tp1": 4487.04
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-07",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-07T11:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.1346,
+    "mfe_R": 0.8956,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4391.65,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4388.01,
+   "symbol": "XAUUSD",
+   "tp1": 4429.5
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-11",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-11T08:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.3525,
+    "mfe_R": 4.2983,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4353.18,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4356.13,
+   "symbol": "XAUUSD",
+   "tp1": 4300.78
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-14",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-14T07:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.2783,
+    "mfe_R": 0.4478,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4322.13,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4317.53,
+   "symbol": "XAUUSD",
+   "tp1": 4355.29
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-15",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-15T07:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.654,
+    "mfe_R": 2.0969,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4283.86,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4280.97,
+   "symbol": "XAUUSD",
+   "tp1": 4317.35
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-17",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-17T10:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.9748,
+    "mfe_R": 9.5723,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4320.27,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4321.86,
+   "symbol": "XAUUSD",
+   "tp1": 4266.31
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-18",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-18T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 35.5102,
+    "mae_R": 0.6939,
+    "mfe_R": 45.9694,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 4387.75,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4388.73,
+   "symbol": "XAUUSD",
+   "tp1": 4334.31
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-21",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-21T07:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.5374,
+    "mfe_R": 0.3643,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4353.01,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4345.79,
+   "symbol": "XAUUSD",
+   "tp1": 4383.31
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-25",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-25T09:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.1535,
+    "mfe_R": 0.1023,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4293.38,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4297.29,
+   "symbol": "XAUUSD",
+   "tp1": 4256.34
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-29",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-29T07:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 3.8,
+    "mfe_R": 1.0154,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4143.89,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4145.19,
+   "symbol": "XAUUSD",
+   "tp1": 4113.37
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-09-30",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-30T11:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 5.2581,
+    "mfe_R": 45.7742,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4190.59,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4190.9,
+   "symbol": "XAUUSD",
+   "tp1": 4165.63
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-10-02",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-10-02T08:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.9095,
+    "mfe_R": 0.6211,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4187.34,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4192.09,
+   "symbol": "XAUUSD",
+   "tp1": 4133.74
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-10-05",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-10-05T08:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.484,
+    "mfe_R": 0.2101,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4160.3,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4166.25,
+   "symbol": "XAUUSD",
+   "tp1": 4124.63
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "ASIAN_LONDON",
+   "day": "2026-10-06",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-10-06T09:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.5906,
+    "mfe_R": 4.2913,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4155.41,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4156.68,
+   "symbol": "XAUUSD",
+   "tp1": 4104.24
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-07-20",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-07-20T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 13.4444,
+    "mae_R": 0.0,
+    "mfe_R": 27.0741,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 3998.83,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 3998.29,
+   "symbol": "XAUUSD",
+   "tp1": 4030.63
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-07-21",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-07-21T12:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.4444,
+    "mfe_R": 53.9444,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4055.96,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4055.78,
+   "symbol": "XAUUSD",
+   "tp1": 4084.1
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-07-22",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-07-22T13:30:00+00:00",
+    "cost_R": null,
+    "gross_R": 3.6444,
+    "mae_R": 0.0131,
+    "mfe_R": 5.5269,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 4112.79,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4106.66,
+   "symbol": "XAUUSD",
+   "tp1": 4135.13
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-07-27",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-07-27T12:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 4.5312,
+    "mfe_R": 1.0547,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4087.57,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4086.29,
+   "symbol": "XAUUSD",
+   "tp1": 4105.93
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-07-28",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-07-28T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 0.2107,
+    "mae_R": 0.3221,
+    "mfe_R": 0.6788,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 4022.2,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4011.52,
+   "symbol": "XAUUSD",
+   "tp1": 4055.17
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-03",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-03T13:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 3.645,
+    "mfe_R": 5.0592,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4044.93,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4043.24,
+   "symbol": "XAUUSD",
+   "tp1": 4071.92
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-04",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-04T12:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 10.6364,
+    "mfe_R": 15.7614,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4074.97,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4075.85,
+   "symbol": "XAUUSD",
+   "tp1": 4045.53
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-06",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-06T13:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 18.0463,
+    "mfe_R": 5.1296,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4250.18,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4249.1,
+   "symbol": "XAUUSD",
+   "tp1": 4284.7
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-07",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-07T12:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 12.0024,
+    "mfe_R": 4.7397,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4321.22,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4325.33,
+   "symbol": "XAUUSD",
+   "tp1": 4278.41
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-10",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-10T13:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.4394,
+    "mfe_R": 1.163,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4332.38,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4325.94,
+   "symbol": "XAUUSD",
+   "tp1": 4361.95
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-12",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-12T12:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -0.0491,
+    "mae_R": 0.2178,
+    "mfe_R": 0.2752,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 4426.17,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4383.19,
+   "symbol": "XAUUSD",
+   "tp1": 4424.06
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-13",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-13T12:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.0813,
+    "mfe_R": 0.044,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4392.01,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4401.11,
+   "symbol": "XAUUSD",
+   "tp1": 4364.02
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-17",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-17T12:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 4.5702,
+    "mfe_R": 2.0638,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4393.92,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4391.57,
+   "symbol": "XAUUSD",
+   "tp1": 4411.32
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-20",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-20T14:30:00+00:00",
+    "cost_R": null,
+    "gross_R": 11.1535,
+    "mae_R": 0.0,
+    "mfe_R": 12.1909,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 4471.73,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4469.32,
+   "symbol": "XAUUSD",
+   "tp1": 4498.61
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-21",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-21T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 21.6604,
+    "mae_R": 0.0,
+    "mfe_R": 42.3962,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 4603.09,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4603.62,
+   "symbol": "XAUUSD",
+   "tp1": 4545.5
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-24",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-24T12:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.1026,
+    "mfe_R": 2.6282,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4657.76,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4660.1,
+   "symbol": "XAUUSD",
+   "tp1": 4628.76
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-25",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-25T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 6.8773,
+    "mae_R": 0.9964,
+    "mfe_R": 8.4838,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 4616.5,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4613.73,
+   "symbol": "XAUUSD",
+   "tp1": 4653.42
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-26",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-26T12:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.1393,
+    "mfe_R": 0.3781,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4622.48,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4612.43,
+   "symbol": "XAUUSD",
+   "tp1": 4641.35
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-27",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-27T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 2.589,
+    "mae_R": 0.5315,
+    "mfe_R": 3.5397,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 4572.32,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4565.02,
+   "symbol": "XAUUSD",
+   "tp1": 4611.78
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-08-31",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-31T13:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 17.5949,
+    "mae_R": 0.0,
+    "mfe_R": 26.2278,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 4457.11,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4458.69,
+   "symbol": "XAUUSD",
+   "tp1": 4429.31
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-02",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-02T13:00:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 2.0739,
+    "mfe_R": 0.7269,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4334.3,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4339.17,
+   "symbol": "XAUUSD",
+   "tp1": 4301.74
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-07",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-07T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 513.0,
+    "mae_R": 0.0,
+    "mfe_R": 571.8333,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 4385.26,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4385.2,
+   "symbol": "XAUUSD",
+   "tp1": 4423.79
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-08",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-08T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 1.0688,
+    "mae_R": 0.4172,
+    "mfe_R": 3.2906,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 4391.75,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4385.35,
+   "symbol": "XAUUSD",
+   "tp1": 4420.08
+  },
+  {
+   "comparison": {
+    "class": "SPEC_DIFFERENCE",
+    "note": "TP1 and SL in the same bar: repo=AMBIGUOUS (by design), oracle=ORACLE_REJECT"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-11",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-11T12:30:00+00:00",
+    "gross_R": null,
+    "mae_R": 60.1379,
+    "mfe_R": 59.6034,
+    "net_R": null,
+    "reason": "TP1_AND_SL_SAME_BAR",
+    "result": "AMBIGUOUS"
+   },
+   "entry": 4327.92,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4327.34,
+   "symbol": "XAUUSD",
+   "tp1": 4360.89
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-15",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-15T13:45:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.4869,
+    "mfe_R": 1.2566,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4290.37,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4295.71,
+   "symbol": "XAUUSD",
+   "tp1": 4261.26
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-18",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-18T12:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 6.9056,
+    "mfe_R": 0.979,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4373.47,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4370.61,
+   "symbol": "XAUUSD",
+   "tp1": 4399.5
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-21",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-21T14:00:00+00:00",
+    "cost_R": null,
+    "gross_R": 17.491,
+    "mae_R": 0.0,
+    "mfe_R": 27.8623,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 4369.2,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4370.87,
+   "symbol": "XAUUSD",
+   "tp1": 4339.99
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-22",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-22T12:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.2899,
+    "mfe_R": 0.8899,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4336.84,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4342.29,
+   "symbol": "XAUUSD",
+   "tp1": 4291.49
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-28",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-28T14:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 3.4431,
+    "mfe_R": 3.2794,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4142.09,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4136.47,
+   "symbol": "XAUUSD",
+   "tp1": 4181.37
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-29",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-29T12:30:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.0076,
+    "mfe_R": 0.9312,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4153.44,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4158.67,
+   "symbol": "XAUUSD",
+   "tp1": 4135.92
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-09-30",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-30T14:00:00+00:00",
+    "cost_R": null,
+    "gross_R": 22.2437,
+    "mae_R": 0.0,
+    "mfe_R": 23.9076,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 4202.59,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4203.78,
+   "symbol": "XAUUSD",
+   "tp1": 4176.12
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-10-02",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-10-02T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 6.7717,
+    "mae_R": 0.0,
+    "mfe_R": 8.1759,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 4217.65,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4225.27,
+   "symbol": "XAUUSD",
+   "tp1": 4166.05
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-10-05",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-10-05T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 2.6792,
+    "mae_R": 0.6769,
+    "mfe_R": 2.9906,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 4135.6,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4131.36,
+   "symbol": "XAUUSD",
+   "tp1": 4170.31
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-10-08",
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-10-08T14:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.9206,
+    "mfe_R": 2.1534,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 4129.99,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4133.77,
+   "symbol": "XAUUSD",
+   "tp1": 4109.86
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "cycle": "LONDON_NEWYORK",
+   "day": "2026-10-09",
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-10-09T14:45:00+00:00",
+    "cost_R": null,
+    "gross_R": 5.5391,
+    "mae_R": 0.0,
+    "mfe_R": 16.4531,
+    "net_R": null,
+    "result": "EXPIRY"
+   },
+   "entry": 4175.39,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "sl": 4174.11,
+   "symbol": "XAUUSD",
+   "tp1": 4201.7
+  }
+ ],
+ "ccfd_fuzz_fail": [
+  {
+   "base_result": "NO_TRADE_DIRECTION",
+   "future_perturbation_identical": true,
+   "perturbed_bar_still_touches_entry": false,
+   "signal": "BTCUSD:LONG:2026-09-13T17:05:00+00:00",
+   "signal_bar_perturbation": "IDENTICAL",
+   "truncation_identical": true,
+   "verdict": "FAIL"
+  }
+ ],
+ "ccfd_outcome_non_agree": [
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-08-27T13:55:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 3.0906,
+    "mfe_R": 2.0816,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 79250.39,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "retest_time": "2026-08-27T13:45:00+00:00",
+   "sl": 79351.33,
+   "symbol": "BTCUSD",
+   "tp1": 78424.56
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-09-13T17:10:00+00:00",
+    "cost_R": null,
+    "gross_R": -0.1464,
+    "mae_R": 0.0,
+    "mfe_R": 0.35,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 77314.5,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "retest_time": "2026-09-13T17:05:00+00:00",
+   "sl": 77048.77,
+   "symbol": "BTCUSD",
+   "tp1": 77275.6
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "direction": "SHORT",
+   "engine": {
+    "reason": "BARS_END_BEFORE_HORIZON",
+    "result": "DATA_INSUFFICIENT"
+   },
+   "entry": 82393.84,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "retest_time": "2026-10-09T18:40:00+00:00",
+   "sl": 83520.29,
+   "symbol": "BTCUSD",
+   "tp1": 81948.13500000001
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-13T05:15:00+00:00",
+    "cost_R": null,
+    "gross_R": 1.5106,
+    "mae_R": 0.0663,
+    "mfe_R": 1.5937,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 1882.36,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "retest_time": "2026-08-13T03:20:00+00:00",
+   "sl": 1871.95,
+   "symbol": "ETHUSD",
+   "tp1": 1898.085
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-08-28T14:00:00+00:00",
+    "cost_R": null,
+    "gross_R": 1.5491,
+    "mae_R": 0.7478,
+    "mfe_R": 1.6157,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 2494.52,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "retest_time": "2026-08-28T05:50:00+00:00",
+   "sl": 2476.28,
+   "symbol": "ETHUSD",
+   "tp1": 2522.7749999999996
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-06T12:15:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.0198,
+    "mfe_R": 1.1172,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 2497.45,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "retest_time": "2026-09-06T07:20:00+00:00",
+   "sl": 2503.51,
+   "symbol": "ETHUSD",
+   "tp1": 2467.64
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "direction": "SHORT",
+   "engine": {
+    "bar": "2026-09-09T13:20:00+00:00",
+    "cost_R": null,
+    "gross_R": -1.0,
+    "mae_R": 1.0389,
+    "mfe_R": 0.1593,
+    "net_R": null,
+    "result": "SL"
+   },
+   "entry": 2485.55,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "retest_time": "2026-09-09T10:55:00+00:00",
+   "sl": 2512.8,
+   "symbol": "ETHUSD",
+   "tp1": 2473.6
+  },
+  {
+   "comparison": {
+    "class": "ORACLE_DEFECT",
+    "note": "backtesting.py rejected the bracket: None"
+   },
+   "direction": "LONG",
+   "engine": {
+    "bar": "2026-10-05T20:30:00+00:00",
+    "cost_R": null,
+    "gross_R": 0.3463,
+    "mae_R": 0.0592,
+    "mfe_R": 0.3573,
+    "net_R": null,
+    "result": "TP1"
+   },
+   "entry": 2704.74,
+   "oracle": {
+    "reason": null,
+    "result": "ORACLE_REJECT"
+   },
+   "retest_time": "2026-10-05T18:05:00+00:00",
+   "sl": 2684.31,
+   "symbol": "ETHUSD",
+   "tp1": 2711.815
+  }
+ ],
+ "schema": "AGP_C25_FIRST_RUN_RAW_DIVERGENCES_V1",
+ "smc_sweep_non_agree": [
+  {
+   "mss_class": "AGREE",
+   "mss_swing_in_smc_swings": true,
+   "signal": "BTCUSD:SHORT:2026-08-27T13:45:00+00:00",
+   "smc_broken_flag": true,
+   "sweep_class": "SPEC_DIFFERENCE",
+   "sweep_level_engine": 79230.81,
+   "sweep_level_smc": 79230.8125
+  },
+  {
+   "mss_class": "AGREE",
+   "mss_swing_in_smc_swings": true,
+   "signal": "BTCUSD:SHORT:2026-10-09T18:40:00+00:00",
+   "smc_broken_flag": true,
+   "sweep_class": "SPEC_DIFFERENCE",
+   "sweep_level_engine": 83510.69,
+   "sweep_level_smc": 83510.6875
+  },
+  {
+   "mss_class": "AGREE",
+   "mss_swing_in_smc_swings": true,
+   "signal": "ETHUSD:LONG:2026-08-13T03:20:00+00:00",
+   "smc_broken_flag": true,
+   "sweep_class": "SPEC_DIFFERENCE",
+   "sweep_level_engine": 1872.18,
+   "sweep_level_smc": 1872.1800537109375
+  },
+  {
+   "mss_class": "AGREE",
+   "mss_swing_in_smc_swings": true,
+   "signal": "ETHUSD:LONG:2026-08-28T05:50:00+00:00",
+   "smc_broken_flag": true,
+   "sweep_class": "SPEC_DIFFERENCE",
+   "sweep_level_engine": 2480.43,
+   "sweep_level_smc": 2480.429931640625
+  },
+  {
+   "mss_class": "AGREE",
+   "mss_swing_in_smc_swings": true,
+   "signal": "ETHUSD:SHORT:2026-09-06T07:20:00+00:00",
+   "smc_broken_flag": true,
+   "sweep_class": "SPEC_DIFFERENCE",
+   "sweep_level_engine": 2491.89,
+   "sweep_level_smc": 2491.889892578125
+  },
+  {
+   "mss_class": "AGREE",
+   "mss_swing_in_smc_swings": true,
+   "signal": "ETHUSD:SHORT:2026-09-09T10:55:00+00:00",
+   "smc_broken_flag": true,
+   "sweep_class": "SPEC_DIFFERENCE",
+   "sweep_level_engine": 2506.77,
+   "sweep_level_smc": 2506.77001953125
+  },
+  {
+   "mss_class": "AGREE",
+   "mss_swing_in_smc_swings": true,
+   "signal": "ETHUSD:LONG:2026-10-05T18:05:00+00:00",
+   "smc_broken_flag": true,
+   "sweep_class": "SPEC_DIFFERENCE",
+   "sweep_level_engine": 2685.31,
+   "sweep_level_smc": 2685.31005859375
+  }
+ ],
+ "source": "harness_history/S0_first_run.py.txt (first run, unmodified)",
+ "summary": {
+  "data_insufficient_60d": [
+   {
+    "family": "ASW v1.1.3",
+    "scope": "USDJPY x ASIAN_LONDON/LONDON_NEWYORK"
+   },
+   {
+    "family": "ASW v1.1.3",
+    "scope": "XAUUSD x ASIAN_LONDON/LONDON_NEWYORK"
+   },
+   {
+    "family": "CCFD 1.0.0",
+    "scope": "BTCUSD LONG"
+   }
+  ],
+  "l3_fuzz": {
+   "ASW": {
+    "cases": 274,
+    "fail": 172
+   },
+   "CCFD": {
+    "cases": 8,
+    "fail": 1
+   }
+  },
+  "outcome_oracle": {
+   "ASW_v1.1.3": {
+    "agreement_pct": 1.1,
+    "classes": {
+     "AGREE": 3,
+     "ORACLE_DEFECT": 270,
+     "SPEC_DIFFERENCE": 1
+    },
+    "signals": 274
+   },
+   "CCFD_1.0.0": {
+    "agreement_pct": 0.0,
+    "classes": {
+     "ORACLE_DEFECT": 8
+    },
+    "signals": 8
+   }
+  },
+  "range_crosscheck_pandas_ta": {
+   "ASW_box_agree": 274,
+   "ASW_rows": 274,
+   "CCFD_reference_agree": 8,
+   "CCFD_rows": 8
+  },
+  "sweep_oracle_smc": {
+   "mss_swing_agree_pct": 100.0,
+   "signals": 8,
+   "sweep_level_agree_pct": 12.5
+  }
+ }
+}

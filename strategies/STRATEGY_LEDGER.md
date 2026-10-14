@@ -478,3 +478,19 @@ Credential Manager, never argv.
   only; London→NY L3 PASS. EURUSD × LONDON_NEWYORK now resolves UNVERIFIED (not suspended, not verified).
 - No other registry change. S1 (GBPUSD × ASIAN_LONDON) and the v1.1.2 identity
   `d7a8ebe5…` are unchanged (`registry.yaml` is not in any logic-identity file set). No READY, demo or live change.
+
+## OD1014-FAST D8 / D9 — registry applied (2026-10-14, AGP-C23)
+
+- **D8** `ST_CRYPTO_CFD_SWEEP_RETEST_V1` 1.0.0: identity re-recorded `b8188dfb…` → `7a0946e4…` per
+  [C20_CCFD_IDENTITY_RERECORD](../docs/proposals/C20_CCFD_IDENTITY_RERECORD.md); `logic_status` STALE_IDENTITY →
+  LOGIC_VERIFIED. Evidence: `artifacts/logic_verification/ST_CRYPTO_CFD_SWEEP_RETEST_V1_1_0_0/c20_rerecord_2026-10-14/replay_report.json`
+  (sha256 `389d1f2f…`), verdicts identical to the recorded `b507e116…` report. Scope unchanged: BTCUSD SHORT,
+  ETHUSD LONG/SHORT; BTCUSD LONG uncovered. The registry records no weekday/weekend window, so per-ticket stamps
+  stay UNVERIFIED (`WINDOW_NOT_IN_SCOPE`). `active` stays false.
+- **D9** `ST_ASIAN_SWEEP_5R_V1` 1.1.3: registered as a candidate per
+  [C20_ASW_V113_REGISTRATION](../docs/proposals/C20_ASW_V113_REGISTRATION.md), identity `7e232429…`;
+  EURUSD/GBPUSD × ASIAN_LONDON/LONDON_NEWYORK (RANGE_SWEEP) LOGIC_VERIFIED; USDJPY/XAUUSD not verified.
+  Runtime binding (v1.1.1/v1.1.2), S1, the v1.1.2 entries and the EURUSD × ASIAN_LONDON v1.1.2 suspension are
+  unchanged; `ticket_ready` PAUSED; no READY, demo or live change.
+- `registry.yaml` is in no logic-identity file set; S1 `d7a8ebe5…`, ASW 1.1.3 `7e232429…` and CCFD 1.0.0
+  `7a0946e4…` are unchanged by these edits.

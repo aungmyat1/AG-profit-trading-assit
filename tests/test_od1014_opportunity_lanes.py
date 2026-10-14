@@ -45,7 +45,7 @@ def test_ccfd_sole_unverified_reason_with_priced_plan_is_candidate():
     assert c["decision"] not in ("READY", "WATCH_READY", "TICKET_READY")
     assert not (c["execution_authorization"] or c["demo_authorized"] or c["live_authorized"])
     # status of the 1.0.0 identity itself (registry), never borrowed from another version
-    assert c["strategy_version"] == "1.0.0" and c["verification_status"] == "STALE_IDENTITY"
+    assert c["strategy_version"] == "1.0.0" and c["verification_status"] == "UNVERIFIED"   # D8: no window recorded
     assert c["opportunity_basis"] == "OD1014_UNVERIFIED_NOT_BLOCKED"
 
 
@@ -247,7 +247,7 @@ def test_rendered_ccfd_candidate_and_blocked_headers():
     c = ccfd_lane.observe_row(ccfd_row("BLOCKED", reason_codes=["LOGIC_STATUS_NOT_VERIFIED"], **PLAN),
                               now=NOW, policy=SIGNED_POLICY)
     text = render_report(c)
-    assert text.splitlines()[0] == "OPPORTUNITY -- REPORT ONLY -- NON-ACTIONABLE (verification: STALE_IDENTITY)"
+    assert text.splitlines()[0] == "OPPORTUNITY -- REPORT ONLY -- NON-ACTIONABLE (verification: UNVERIFIED)"
     assert "sizing: n/a (" in text and text.isascii()
     b = ccfd_lane.observe_row(ccfd_row("BLOCKED", reason_codes=["LOGIC_STATUS_NOT_VERIFIED", "SPREAD_TOO_WIDE"],
                                        **PLAN), now=NOW, policy=SIGNED_POLICY)
@@ -275,18 +275,19 @@ def test_no_order_calls_added_and_runner_still_guarded():
 
 # ------------------------------------------------------------------- B1 CCFD stamps (1.0.0 identity)
 
-@pytest.mark.parametrize("symbol,direction,stamp", [
-    ("BTCUSD", "SHORT", "STALE_IDENTITY"), ("BTCUSD", "LONG", "UNVERIFIED"),
-    ("ETHUSD", "LONG", "STALE_IDENTITY"), ("ETHUSD", "SHORT", "STALE_IDENTITY"),
+@pytest.mark.parametrize("symbol,direction,stamp,reason", [            # after OD1014-FAST D8 (re-recorded)
+    ("BTCUSD", "SHORT", "UNVERIFIED", "WINDOW_NOT_IN_SCOPE"), ("BTCUSD", "LONG", "UNVERIFIED", "DIRECTION_NOT_IN_SCOPE"),
+    ("ETHUSD", "LONG", "UNVERIFIED", "WINDOW_NOT_IN_SCOPE"), ("ETHUSD", "SHORT", "UNVERIFIED", "WINDOW_NOT_IN_SCOPE"),
 ])
-def test_ccfd_candidate_stamp_per_symbol_and_branch(symbol, direction, stamp):
+def test_ccfd_candidate_stamp_per_symbol_and_branch(symbol, direction, stamp, reason):
     sign = -1 if direction == "SHORT" else 1
     plan = dict(PLAN, direction=direction, entry=3000.0, stop_loss=3000.0 - sign * 20,
                 tp1=3000.0 + sign * 20, tp2=3000.0 + sign * 60)
     c = ccfd_lane.observe_row(dict(ccfd_row("BLOCKED", reason_codes=["LOGIC_STATUS_NOT_VERIFIED"], **plan),
                                    symbol=symbol), now=NOW, policy=SIGNED_POLICY)
     assert c["report_class"] == "CANDIDATE" and c["strategy_version"] == "1.0.0"
-    assert c["verification_status"] == stamp
+    assert (c["verification_status"], c["scope_reason"]) == (stamp, reason)
+    assert c["verification_identity"] == "7a0946e41b2e1e79ea5ee8c47df1eb3e99fe94181f29cd36f30eb6ce797dc2a2"
 
 
 # ------------------------------------------------- B2 live sizing inputs (host capture + pin account read)
@@ -319,12 +320,12 @@ def test_asw_eurusd_v113_sized_from_host_capture_and_account():
     from reporting import asw_lane
     c = asw_lane.evaluate_scope("EURUSD", "ASIAN_LONDON", now=NOW, day=DAY, candle_provider=provider(),
                                 policy=SIGNED_POLICY, account=ACCOUNT)
-    assert c["strategy_version"] == "1.1.3" and c["verification_status"] == "NOT_VERIFIED"
+    assert c["strategy_version"] == "1.1.3" and c["verification_status"] == "LOGIC_VERIFIED"   # OD1014-FAST D9
     p = sizing_preview(c, OWNER)
     assert c["report_class"] == "CANDIDATE" and c["scope_route"] == "REPORT_ONLY"
     assert p["lot"] == pytest.approx(0.45) and p["cost_in_R"] > 0             # 50 / (0.0011 * 1e5)
     assert render_report(c).splitlines()[0] == \
-        "OPPORTUNITY -- REPORT ONLY -- NON-ACTIONABLE (verification: NOT_VERIFIED)"
+        "OPPORTUNITY -- REPORT ONLY -- NON-ACTIONABLE (verification: LOGIC_VERIFIED)"
 
 
 @pytest.mark.parametrize("symbol,reason", [("USDJPY", "CONVERSION_UNAVAILABLE"),   # account currency unknown

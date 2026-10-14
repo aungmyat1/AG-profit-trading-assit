@@ -1,0 +1,79 @@
+--- S3.py
++++ S4.py
+@@ -193,16 +193,18 @@
+                for c in mutated]
+     future = h.ticket(cycle, day, session, upto + mutated, h.split([], cycle, day)[1], symbol=symbol)
+     b = _signal_key(future) == key
+-    last = upto[-1]
+-    shrink = (last.high - last.low) * 0.25
+-    pert = Candle(last.time, last.open, last.high - shrink, last.low + shrink, last.close)
+-    pert = Candle(pert.time, pert.open, max(pert.open, pert.high, pert.close), min(pert.open, pert.low, pert.close),
+-                  pert.close)
+-    perturbed = h.ticket(cycle, day, session, upto[:-1] + [pert], signal_close, symbol=symbol)
+-    pk = _signal_key(perturbed)
+-    c_cls = "IDENTICAL" if pk == key else ("ABSENT" if not perturbed.get("direction") else "CHANGED")
++    full_now = h.split([], cycle, day)[1]
++    if post[-1].time <= signal_open:
++        c_cls = "NOT_APPLICABLE_SIGNAL_BAR_IS_LAST"
++    else:
++        last = post[-1]
++        k = 1 + rng.uniform(-0.002, 0.002)
++        o, c = last.open * k, last.close * (1 + rng.uniform(-0.002, 0.002))
++        pert = Candle(last.time, o, max(o, c, last.high * k), min(o, c, last.low * k), c)
++        c_cls = ("IDENTICAL" if _signal_key(h.ticket(cycle, day, session, post[:-1] + [pert], full_now,
++                                                      symbol=symbol)) == key else "CHANGED")
+     return {"case": f"{symbol}:{cycle}:{day}", "truncation_identical": a, "future_perturbation_identical": b,
+-            "signal_bar_perturbation": c_cls,
++            "last_bar_perturbation": c_cls,
+             "verdict": "PASS" if a and b and c_cls != "CHANGED" else "FAIL"}
+ 
+ 
+@@ -328,26 +330,20 @@
+         fut["bars"][tf] = out
+     b_ok = sig(fut) == base_sig
+     per = copy.deepcopy(data)
+-    i = per["times"]["M5"].index(retest)
+-    bar = per["bars"]["M5"][i]
+-    shrink = (bar.high - bar.low) * 0.25
+-    nb = Candle(bar.time, bar.open, bar.high - shrink, bar.low + shrink, bar.close)
+-    nb = Candle(nb.time, nb.open, max(nb.open, nb.high, nb.close), min(nb.open, nb.low, nb.close), nb.close)
+-    per["bars"]["M5"][i] = nb
+-    p = sig(per)
+-    still_touches = nb.low <= s["entry"] <= nb.high
+-    if p == base_sig:
+-        c_cls = "IDENTICAL"
+-    elif p[0] != "ENTRY_VALID":
+-        c_cls = "ABSENT"
++    closed = [j for j, t in enumerate(per["times"]["M5"]) if t + M5 <= now]
++    i = closed[-1]
++    if per["times"]["M5"][i] <= retest:
++        c_cls = "NOT_APPLICABLE_SIGNAL_BAR_IS_LAST"
+     else:
+-        c_cls = "CHANGED"
+-    correct = (c_cls == "IDENTICAL" and still_touches) or (c_cls == "ABSENT" and not still_touches) \
+-        or (c_cls == "ABSENT" and still_touches)
++        bar = per["bars"]["M5"][i]
++        k = 1 + rng.uniform(-0.01, 0.01)
++        o, c = bar.open * k, bar.close * (1 + rng.uniform(-0.01, 0.01))
++        per["bars"]["M5"][i] = Candle(bar.time, o, max(o, c, bar.high * k), min(o, c, bar.low * k), c)
++        c_cls = "IDENTICAL" if sig(per) == base_sig else "CHANGED"
+     return {"signal": f"{s['symbol']}:{s['direction']}:{s['retest_time']}", "base_result": base_sig[0],
+-            "truncation_identical": a, "future_perturbation_identical": b_ok, "signal_bar_perturbation": c_cls,
+-            "perturbed_bar_still_touches_entry": still_touches,
+-            "verdict": "PASS" if a and b_ok and c_cls != "CHANGED" and correct else "FAIL"}
++            "truncation_identical": a, "future_perturbation_identical": b_ok, "last_bar_perturbation": c_cls,
++            "verdict": ("NOT_EVALUABLE" if base_sig[0] != "ENTRY_VALID"
++                        else "PASS" if a and b_ok and c_cls != "CHANGED" else "FAIL")}
+ 
+ 
+ # ------------------------------------------------------------------------------------------ main
+@@ -373,7 +369,8 @@
+                              "mss_swing_agree_pct": round(100.0 * sum(s["mss_class"] == "AGREE" for s in sweeps)
+                                                           / len(sweeps), 1) if sweeps else None},
+         "l3_fuzz": {"ASW": {"cases": len(asw["fuzz"]), "fail": sum(f["verdict"] == "FAIL" for f in asw["fuzz"])},
+-                    "CCFD": {"cases": len(ccfd["fuzz"]), "fail": sum(f["verdict"] == "FAIL" for f in ccfd["fuzz"])}},
++                    "CCFD": {"cases": len(ccfd["fuzz"]), "fail": sum(f["verdict"] == "FAIL" for f in ccfd["fuzz"]),
++                             "not_evaluable": sum(f["verdict"] == "NOT_EVALUABLE" for f in ccfd["fuzz"])}},
+         "data_insufficient_60d": DATA_INSUFFICIENT_60D,
+     }
+ 
