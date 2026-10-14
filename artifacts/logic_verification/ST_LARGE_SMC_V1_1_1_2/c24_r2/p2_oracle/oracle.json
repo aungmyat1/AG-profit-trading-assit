@@ -1,0 +1,346 @@
+{
+  "agreement_metric": "Jaccard: exact normalized event intersection / union; empty union is NOT_APPLICABLE, never 100%",
+  "contract_sha256": "1f9b6cace2e1be33e5b3572e2c13e3e526b992478f91c8f09955b0f44b73024f",
+  "divergence_classes": {
+    "SPEC_DIFFERENCE": 16372
+  },
+  "divergence_log_sha256": "f04942aa0fb7f936c9c1220247dac26fdc664d8d941d430af3ccbe663ccf4637",
+  "engine_defects": [],
+  "mission": "AGP-C24-LSMC-V112-VERIFY-R2",
+  "normalization": "Origin index for swings/FVG/OB; BrokenIndex for BOS/CHOCH; actual Swept index for liquidity. Bookend swings without k=2 confirmation excluded. All other raw library events retained.",
+  "oracle": "smartmoneyconcepts==0.0.27",
+  "oracle_authority": false,
+  "scope_days": 60,
+  "status": "COMPLETED_REFERENCE_DIVERGENT",
+  "strategy_version": "1.1.2",
+  "symbols": {
+    "BTCUSD": {
+      "aggregate": {
+        "BOS_CHOCH": {
+          "agreement_percent": 0.938449,
+          "engine": 1783,
+          "matched": 34,
+          "oracle": 1874,
+          "union": 3623
+        },
+        "FVG": {
+          "agreement_percent": 99.74587,
+          "engine": 4722,
+          "matched": 4710,
+          "oracle": 4710,
+          "union": 4722
+        },
+        "OB": {
+          "agreement_percent": 0.0,
+          "engine": 126,
+          "matched": 0,
+          "oracle": 32,
+          "union": 158
+        },
+        "liquidity_sweeps": {
+          "agreement_percent": 0.0,
+          "engine": 2721,
+          "matched": 0,
+          "oracle": 576,
+          "union": 3297
+        },
+        "swings": {
+          "agreement_percent": 78.896577,
+          "engine": 4945,
+          "matched": 4333,
+          "oracle": 4880,
+          "union": 5492
+        }
+      },
+      "point": 0.01,
+      "point_source": "HOST_CAPTURED",
+      "timeframes": {
+        "D1": {
+          "bars": 60,
+          "categories": {
+            "BOS_CHOCH": {
+              "agreement_percent": 0.0,
+              "engine": 4,
+              "matched": 0,
+              "oracle": 6,
+              "union": 10
+            },
+            "FVG": {
+              "agreement_percent": 100.0,
+              "engine": 11,
+              "matched": 11,
+              "oracle": 11,
+              "union": 11
+            },
+            "OB": {
+              "reason": "Contract OB POIs are H1 only",
+              "status": "NOT_APPLICABLE"
+            },
+            "liquidity_sweeps": {
+              "agreement_percent": 0.0,
+              "engine": 8,
+              "matched": 0,
+              "oracle": 0,
+              "union": 8
+            },
+            "swings": {
+              "agreement_percent": 55.555556,
+              "engine": 16,
+              "matched": 10,
+              "oracle": 12,
+              "union": 18
+            }
+          },
+          "fixture": "tests/fixtures/ccfd_v100/recorded_60d/BTCUSD_d1.csv",
+          "sha256": "85110e81326dba871db5c935c5b352c53a1dc1ebf220f544ad7d295a56546559"
+        },
+        "H1": {
+          "bars": 1412,
+          "categories": {
+            "BOS_CHOCH": {
+              "agreement_percent": 1.754386,
+              "engine": 136,
+              "matched": 5,
+              "oracle": 154,
+              "union": 285
+            },
+            "FVG": {
+              "agreement_percent": 99.630996,
+              "engine": 271,
+              "matched": 270,
+              "oracle": 270,
+              "union": 271
+            },
+            "OB": {
+              "agreement_percent": 0.0,
+              "engine": 126,
+              "matched": 0,
+              "oracle": 32,
+              "union": 158
+            },
+            "liquidity_sweeps": {
+              "agreement_percent": 0.0,
+              "engine": 228,
+              "matched": 0,
+              "oracle": 91,
+              "union": 319
+            },
+            "swings": {
+              "agreement_percent": 78.289474,
+              "engine": 391,
+              "matched": 357,
+              "oracle": 422,
+              "union": 456
+            }
+          },
+          "fixture": "tests/fixtures/ccfd_v100/recorded_60d/BTCUSD_h1.csv",
+          "sha256": "f1d7ba4b6abfe949288bde914969daac61657a33e0b2b832c0596d2418e63127"
+        },
+        "M5": {
+          "bars": 16932,
+          "categories": {
+            "BOS_CHOCH": {
+              "agreement_percent": 0.871394,
+              "engine": 1643,
+              "matched": 29,
+              "oracle": 1714,
+              "union": 3328
+            },
+            "FVG": {
+              "agreement_percent": 99.752252,
+              "engine": 4440,
+              "matched": 4429,
+              "oracle": 4429,
+              "union": 4440
+            },
+            "OB": {
+              "reason": "Contract OB POIs are H1 only",
+              "status": "NOT_APPLICABLE"
+            },
+            "liquidity_sweeps": {
+              "agreement_percent": 0.0,
+              "engine": 2485,
+              "matched": 0,
+              "oracle": 485,
+              "union": 2970
+            },
+            "swings": {
+              "agreement_percent": 79.035472,
+              "engine": 4538,
+              "matched": 3966,
+              "oracle": 4446,
+              "union": 5018
+            }
+          },
+          "fixture": "tests/fixtures/ccfd_v100/recorded_60d/BTCUSD_m5.csv",
+          "sha256": "60a9b5a485d9b70ddf507e8fa27e206236fb14ed836cd20618b7b39377d505bb"
+        }
+      }
+    },
+    "ETHUSD": {
+      "aggregate": {
+        "BOS_CHOCH": {
+          "agreement_percent": 1.362319,
+          "engine": 1672,
+          "matched": 47,
+          "oracle": 1825,
+          "union": 3450
+        },
+        "FVG": {
+          "agreement_percent": 99.8383,
+          "engine": 4329,
+          "matched": 4322,
+          "oracle": 4322,
+          "union": 4329
+        },
+        "OB": {
+          "agreement_percent": 0.0,
+          "engine": 135,
+          "matched": 0,
+          "oracle": 25,
+          "union": 160
+        },
+        "liquidity_sweeps": {
+          "agreement_percent": 0.0,
+          "engine": 2790,
+          "matched": 0,
+          "oracle": 596,
+          "union": 3386
+        },
+        "swings": {
+          "agreement_percent": 78.155693,
+          "engine": 4885,
+          "matched": 4297,
+          "oracle": 4910,
+          "union": 5498
+        }
+      },
+      "point": 0.01,
+      "point_source": "HOST_CAPTURED",
+      "timeframes": {
+        "D1": {
+          "bars": 60,
+          "categories": {
+            "BOS_CHOCH": {
+              "agreement_percent": 0.0,
+              "engine": 3,
+              "matched": 0,
+              "oracle": 4,
+              "union": 7
+            },
+            "FVG": {
+              "agreement_percent": 100.0,
+              "engine": 13,
+              "matched": 13,
+              "oracle": 13,
+              "union": 13
+            },
+            "OB": {
+              "reason": "Contract OB POIs are H1 only",
+              "status": "NOT_APPLICABLE"
+            },
+            "liquidity_sweeps": {
+              "agreement_percent": 0.0,
+              "engine": 11,
+              "matched": 0,
+              "oracle": 1,
+              "union": 12
+            },
+            "swings": {
+              "agreement_percent": 70.0,
+              "engine": 18,
+              "matched": 14,
+              "oracle": 16,
+              "union": 20
+            }
+          },
+          "fixture": "tests/fixtures/ccfd_v100/recorded_60d/ETHUSD_d1.csv",
+          "sha256": "72734a143dc2e57667beff4947f3e7607799860f87d5493d6f184ca68d071fec"
+        },
+        "H1": {
+          "bars": 1412,
+          "categories": {
+            "BOS_CHOCH": {
+              "agreement_percent": 1.858736,
+              "engine": 131,
+              "matched": 5,
+              "oracle": 143,
+              "union": 269
+            },
+            "FVG": {
+              "agreement_percent": 99.590164,
+              "engine": 244,
+              "matched": 243,
+              "oracle": 243,
+              "union": 244
+            },
+            "OB": {
+              "agreement_percent": 0.0,
+              "engine": 135,
+              "matched": 0,
+              "oracle": 25,
+              "union": 160
+            },
+            "liquidity_sweeps": {
+              "agreement_percent": 0.0,
+              "engine": 244,
+              "matched": 0,
+              "oracle": 81,
+              "union": 325
+            },
+            "swings": {
+              "agreement_percent": 78.341014,
+              "engine": 386,
+              "matched": 340,
+              "oracle": 388,
+              "union": 434
+            }
+          },
+          "fixture": "tests/fixtures/ccfd_v100/recorded_60d/ETHUSD_h1.csv",
+          "sha256": "4159be1dd6a0c8683f4a5f142e648803158cc6485965612a22dbd80502e58aeb"
+        },
+        "M5": {
+          "bars": 16932,
+          "categories": {
+            "BOS_CHOCH": {
+              "agreement_percent": 1.323251,
+              "engine": 1538,
+              "matched": 42,
+              "oracle": 1678,
+              "union": 3174
+            },
+            "FVG": {
+              "agreement_percent": 99.852652,
+              "engine": 4072,
+              "matched": 4066,
+              "oracle": 4066,
+              "union": 4072
+            },
+            "OB": {
+              "reason": "Contract OB POIs are H1 only",
+              "status": "NOT_APPLICABLE"
+            },
+            "liquidity_sweeps": {
+              "agreement_percent": 0.0,
+              "engine": 2535,
+              "matched": 0,
+              "oracle": 514,
+              "union": 3049
+            },
+            "swings": {
+              "agreement_percent": 78.172086,
+              "engine": 4481,
+              "matched": 3943,
+              "oracle": 4506,
+              "union": 5044
+            }
+          },
+          "fixture": "tests/fixtures/ccfd_v100/recorded_60d/ETHUSD_m5.csv",
+          "sha256": "7ad856027947482a30e71202b6cc5118e8188cd9ef7746512fa166c064115561"
+        }
+      }
+    }
+  },
+  "timing": "Full-array detection comparison is retrospective reference evidence; it does not certify oracle causality. P1 L1 tests engine decisions at every recorded M5 close.",
+  "volume": "Recorded core CSVs have no volume. Existing dataframe adapter supplies zero; OB geometry only, not volume strength."
+}

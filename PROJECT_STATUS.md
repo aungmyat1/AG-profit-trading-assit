@@ -8,6 +8,11 @@ review_by: 2026-11-07
 
 ## Current snapshot (2026-10-11)
 
+Dated historical evidence — C24 1.1.2 (2026-10-14, #213; SUPERSEDED): interrupted
+full-window replay remains NOT_RUN_RESOURCE; static C11 target ENGINE_DEFECT and
+partial observations are retained. L5 is INSUFFICIENT (no accepted cost evidence;
+OD1011-L5), registration eligible = No. [Historical record](docs/status/AGP_C24_LSMC_V112_VERIFY_R2_2026-10-14.md).
+
 Canonical DEMO broker adapter (2026-10-14, unit-tested with a fake terminal only, never host-run; AGP-AUTODEMO-B1, C14): `src/demo_execution/mt5_canonical_adapter.py` is the single `order_check`/`order_send` call site, reachable only behind `guarded_adapter`. Before each broker call it re-validates the guard's single-use step authorization, the enabled scope, the live pinned DEMO account (suffix/server/trade_mode) and an OWNER_APPROVED order shape; a send also requires the durable SENDING claim and, while `per_order_confirm_required` is true, a consumed owner confirmation. An unknown send outcome HALTs and is reconciled, never resubmitted. Inert as committed: every scope `enabled: false`, `demo_authorized: false`, order shape `PILOT_FULL_TP1` PROPOSED_PENDING_OWNER (deviation tag + analytics exclusion; margin mode UNKNOWN until host-verified), no standing authorization in the repo. `AGENTS.md` point 3 and `INVARIANTS.md` rewritten to C14 in the same change; zero-call-site test replaced by `test_exactly_one_order_send_call_site`; bypass tests cover scanner, Telegram callback, skills and assistant/API. Live disabled.
 
 N-scope DEMO admission (2026-10-14, unit-tested only; A'): `config/demo_execution_scopes.yaml` lists one scope config per admitted scope (today only S1's unchanged `config/demo_execution_s1.yaml`); admission and the guarded adapter select the scope by the ticket/authority identity tuple (no match -> first scope, whose checks report the exact mismatch), so S1 behaviour is byte-identical. The host-local standing authorization may also be a container of exact per-scope/direction records (none -> scope mismatch, several -> invalid). Scopes must share one DEMO account. No scope added, no flag, READY, registry or order path change. Tests: `tests/test_demo_execution_n_scopes.py`.
@@ -358,7 +363,7 @@ facts = json.loads(Path("status/facts.json").read_text(encoding="utf-8"))
 from scripts.generate_live_status import inputs_sha256
 cog.outl(f"inputs_sha256: `{inputs_sha256(Path.cwd())}`.")
 ]]] -->
-inputs_sha256: `334f8fe0df974b337f6ee60c434bb3e8a23cf1709368101a8e27ef480266129f`.
+inputs_sha256: `57bd6bc90af5717c6d06f952e162f200a57482aec7dad29fe701e8bb4552a5e5`.
 <!-- [[[end]]] -->
 
 ### Objective

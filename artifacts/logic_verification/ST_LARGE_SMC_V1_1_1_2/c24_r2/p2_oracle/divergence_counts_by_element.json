@@ -1,0 +1,70 @@
+{
+  "c11_separate_from_detection": {
+    "ENGINE_DEFECT": 1,
+    "witnesses": 3
+  },
+  "elements": {
+    "BOS_CHOCH": {
+      "ENGINE_DEFECT": 0,
+      "ORACLE_DEFECT": 0,
+      "SPEC_DIFFERENCE": 6992
+    },
+    "FVG": {
+      "ENGINE_DEFECT": 0,
+      "ORACLE_DEFECT": 0,
+      "SPEC_DIFFERENCE": 19
+    },
+    "OB": {
+      "ENGINE_DEFECT": 0,
+      "ORACLE_DEFECT": 0,
+      "SPEC_DIFFERENCE": 318
+    },
+    "liquidity_sweeps": {
+      "ENGINE_DEFECT": 0,
+      "ORACLE_DEFECT": 0,
+      "SPEC_DIFFERENCE": 6683
+    },
+    "swings": {
+      "ENGINE_DEFECT": 0,
+      "ORACLE_DEFECT": 0,
+      "SPEC_DIFFERENCE": 2360
+    }
+  },
+  "per_symbol": {
+    "BTCUSD": {
+      "BOS_CHOCH": {
+        "SPEC_DIFFERENCE": 3589
+      },
+      "FVG": {
+        "SPEC_DIFFERENCE": 12
+      },
+      "OB": {
+        "SPEC_DIFFERENCE": 158
+      },
+      "liquidity_sweeps": {
+        "SPEC_DIFFERENCE": 3297
+      },
+      "swings": {
+        "SPEC_DIFFERENCE": 1159
+      }
+    },
+    "ETHUSD": {
+      "BOS_CHOCH": {
+        "SPEC_DIFFERENCE": 3403
+      },
+      "FVG": {
+        "SPEC_DIFFERENCE": 7
+      },
+      "OB": {
+        "SPEC_DIFFERENCE": 160
+      },
+      "liquidity_sweeps": {
+        "SPEC_DIFFERENCE": 3386
+      },
+      "swings": {
+        "SPEC_DIFFERENCE": 1201
+      }
+    }
+  },
+  "replay": "PARTIAL / NOT_RUN_RESOURCE"
+}
