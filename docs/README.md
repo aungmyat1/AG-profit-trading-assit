@@ -6,6 +6,8 @@ review_by: 2026-11-07
 ---
 # Documentation Index
 
+[C14 DST reset helper and winter host acceptance](status/CODEX_AGP_DST_RESET_R2_2026-10-14.md) — unwired metadata-gated helper; winter offset DERIVED_NOT_OBSERVED.
+
 [OD1014 ratification and Large-SMC version selection](status/AGP_OD1014_RATIFY_R1_2026-10-14.md)
 records owner Aung’s ratification, 1.1.3 as the next registration candidate, and supersession
 of the C21 1.1.2 registration proposal; runtime and execution authorization are unchanged.
