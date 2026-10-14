@@ -1,9 +1,9 @@
 """AGP-C24 addendum: LSMC 1.1.3 L5 per OD1011-L5 -- PASS or INSUFFICIENT; a cost-blocked plan is an
 actionability outcome, never an L5 FAIL; missing evidence never PASS."""
 import datetime as dt
+from types import SimpleNamespace
 
 import pytest
-from types import SimpleNamespace
 
 from v1_tickets.lsmc_v113_logic_gate import (
     INSUFFICIENT,
