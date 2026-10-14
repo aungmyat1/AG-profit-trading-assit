@@ -193,3 +193,10 @@ All full-window replay verdicts remain NOT_RUN_RESOURCE; registration eligible =
 Counts remain partial observations, not completed scopes. Historical FX PENDING_D1
 is not upgraded by later fixture availability; no new FX replay is claimed.
 Engine, contracts, registry, READY, flags and schedules are unchanged by this fix.
+
+Fix validation (Linux managed sandbox, 2026-10-14): `python -m pytest -q
+ tests/test_lsmc_c24_oracle.py tests/test_lsmc_v112_60d_replay.py`: **9 passed in
+9.43s**, R1 lock acquired/released. Documentation generators and `check_drift.py`:
+zero blocking errors, four existing allowlist advisories. Fingerprint regenerated;
+untouched generated outputs follow normal post-merge regeneration. Exact-head CI
+must pass before handoff. Full local suite and host/live checks NOT_RUN by this fix.
