@@ -299,6 +299,10 @@ class MT5CanonicalAdapter:
             return {"unknown_outcome": True, "reason_code": BROKER_RESULT_MISSING, **_shape_fields(shape)}
         return {**{k: v for k, v in result.items() if k != "request"}, **_shape_fields(shape)}
 
+    # The orchestration layer uses semantic names so the physical MT5 order call sites stay here.
+    check_order = order_check
+    send_order = order_send
+
     def reconcile(self, *, authority: ExecutionAuthority, ticket_id: str,
                   send_result: Mapping[str, Any]) -> Mapping[str, Any]:
         """Read-only: the deals of the order the send reported, matched by magic + comment.

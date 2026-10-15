@@ -6,6 +6,8 @@ review_by: 2026-11-07
 ---
 # Documentation Index
 
+[C14 dispatch HALT persistence remediation (2026-10-15)](status/AGP_C14_DISPATCH_REMEDIATION_2026-10-15.md) records the false-HALTED fix, single canonical MT5 order-call boundary, focused tests, and host checks still pending; it grants no execution authority.
+
 [Dated C24 1.1.2 historical verification (2026-10-14, SUPERSEDED)](status/AGP_C24_LSMC_V112_VERIFY_R2_2026-10-14.md) — static C11 ENGINE_DEFECT, interrupted replay, partial observations; no registration eligibility.
 
 [OD1014 ratification and Large-SMC version selection](status/AGP_OD1014_RATIFY_R1_2026-10-14.md)
