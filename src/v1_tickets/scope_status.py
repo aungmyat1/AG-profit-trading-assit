@@ -151,6 +151,10 @@ def _lsmc(entry: Dict[str, Any], symbol: str) -> Tuple[str, str, str]:
 # Each is resolved strictly against its own registry candidate entry; nothing is borrowed across versions.
 REPORT_LANE_VERSIONS = {SESSION_FX_GOLD: ("1.1.3",)}
 
+# Observational candidates have no verification identity or execution eligibility.
+REPORT_ONLY_CANDIDATES = {LARGE_SMC: ("1.1.2",)}
+CANDIDATE_NOT_VERIFIED = "CANDIDATE_NOT_VERIFIED"
+
 
 def scope_status(family: str, symbol: str, session: str, *,
                  registry: Optional[Dict[str, Any]] = None, version: Optional[str] = None) -> ScopeStatus:
@@ -240,13 +244,16 @@ def resolve_ticket_scope(strategy_id: Any, strategy_version: Any, symbol: Any, s
     scope_session = _session_for(family, session)
     if symbol not in spec["pairs"] or scope_session is None:
         return out
+    version = str(strategy_version)
+    if version in REPORT_ONLY_CANDIDATES.get(family, ()):
+        out.update(scope_reason=CANDIDATE_NOT_VERIFIED, execution_eligible=False)
+        return out
     if registry is None:
         try:
             from v1_tickets.authority import load_registry
             registry = load_registry()
         except Exception:  # noqa: BLE001 -- fails closed below
             registry = {}
-    version = str(strategy_version)
     if version != spec["strategy_version"] and version not in REPORT_LANE_VERSIONS.get(family, ()):
         out["scope_reason"] = f"{VERSION_NOT_IN_SCOPE}:{strategy_version}"
         return out
