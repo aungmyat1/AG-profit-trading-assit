@@ -48,6 +48,16 @@ def obs(report_class="CANDIDATE", **extra):
     return c
 
 
+def priced_ticket(report_class="CANDIDATE", *, decision="SHADOW_INFO_ONLY", **extra):
+    c = obs(report_class, decision=decision, prices={
+        "entry_reference": "150.100", "entry_reference_raw": 150.1,
+        "sl": "149.900", "sl_raw": 149.9,
+        "tp1": "150.600", "tp1_raw": 150.6,
+    })
+    c.update(extra)
+    return c
+
+
 def test_tracked_policy_enables_report_scopes_and_local_override_only_narrows(tmp_path):
     tracked = scope_policy.resolve(ROOT)["tracked"]
     assert {"REPORT_CANDIDATE", "REPORT_BLOCKED", "REPORT_WATCH"} <= set(tracked)
@@ -103,6 +113,66 @@ def test_delivery_evidence_has_intent_result_and_message_id(tmp_path):
     assert [r["stage"] for r in rows] == ["INTENT", "RESULT"]           # NO_OPPORTUNITY is summary-only
     assert rows[1]["delivery_state"] == "sent" and rows[1]["telegram_message_id"] == "1"
     assert rows[1]["identity"] == report_identity(obs()) and rows[1]["execution_authorized"] is False
+
+
+@pytest.mark.parametrize("canonical,expected", [
+    (priced_ticket("CANDIDATE", candidate_signal_id="candidate-1"), "sent"),
+    (priced_ticket("BLOCKED", decision="BLOCKED", candidate_signal_id="blocked-1"), "sent"),
+    (priced_ticket("BLOCKED", decision="EXPIRED", candidate_signal_id="expired-1"), "sent"),
+    (priced_ticket("DATA_ERROR", decision="INSUFFICIENT_DATA", candidate_signal_id="data-1"), "summary_only"),
+    (priced_ticket("BLOCKED", decision="MISSED", candidate_signal_id="missed-1"), "summary_only"),
+    (priced_ticket("BLOCKED", decision="INFO_ONLY_STALE", candidate_signal_id="stale-1"), "summary_only"),
+    (priced_ticket("CANDIDATE", decision="READY", candidate_signal_id="ready-1"), "summary_only"),
+    (priced_ticket("CANDIDATE", candidate_signal_id="no-tp", prices={
+        "entry_reference_raw": 150.1, "sl_raw": 149.9, "tp1_raw": None}), "summary_only"),
+])
+def test_ticket_setup_policy_routes_only_complete_non_actionable_reports(tmp_path, canonical, expected):
+    s, calls = sender(tmp_path)
+    lines = deliver_observations([canonical], sender=s, journal=str(tmp_path), now=NOW,
+                                 label="ASW", ticket_setup_only=True)
+    rows = [json.loads(line) for line in
+            (tmp_path / "ticket_delivery" / "report_lane" / "delivery_2026-10-13.jsonl").read_text().splitlines()]
+    result = rows[-1]
+    assert result["stage"] == "RESULT" and result["delivery_state"] == expected
+    if expected == "sent":
+        assert calls and "REPORT ONLY" in calls[0] and "NOT AN ORDER" in calls[0]
+        assert "decision=READY" not in calls[0]
+        assert result["telegram_message_id"] == "1"
+    else:
+        assert calls == [] and result["telegram_message_id"] is None
+        assert result["skip_reason"]
+    assert lines[0].startswith("REPORT_DELIVERY ASW")
+
+
+def test_ticket_setup_policy_accepts_ccfd_and_keeps_report_identity_dedupe(tmp_path):
+    c = priced_ticket("CANDIDATE", candidate_signal_id="ccfd-signal",
+                      strategy_id="ST_CRYPTO_CFD_SWEEP_RETEST_V1", strategy_version="1.0.0",
+                      instrument="ETHUSD", session="CRYPTO_DAY", direction="SHORT")
+    identity = report_identity(c)
+    s, calls = sender(tmp_path)
+    assert deliver_observations([c], sender=s, journal=str(tmp_path), now=NOW,
+                                label="CCFD", ticket_setup_only=True)[0].endswith("sent=1")
+    assert deliver_observations([c], sender=s, journal=str(tmp_path), now=NOW,
+                                label="CCFD", ticket_setup_only=True)[0].endswith("duplicate=1")
+    assert len(calls) == 1 and report_identity(c) == identity
+
+
+def test_report_delivery_without_host_override_fails_closed(tmp_path, monkeypatch):
+    monkeypatch.setenv("TELEGRAM_DELIVERY_ENABLED", "true")
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "token")
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "123")
+    monkeypatch.setenv("TELEGRAM_OWNER_CHAT_IDS", "123")
+    root = tmp_path / "repo"
+    root.mkdir()
+    calls = []
+    fake = lambda *args: calls.append(args) or {"ok": True, "message_id": 1, "chat_id": "123"}
+    fake.returns_telegram_receipt = True
+    s = cfd.build_sender(str(tmp_path / "journal"), root=str(root), transport=fake)
+    assert s.config.enabled is False
+    result = deliver_observations([priced_ticket(candidate_signal_id="no-override")], sender=s,
+                                  journal=str(tmp_path / "journal"), now=NOW,
+                                  ticket_setup_only=True)
+    assert result[0].endswith("disabled=1") and calls == []
 
 
 def test_daily_report_summary_counts_distinct_and_flags_no_opportunity(tmp_path):
