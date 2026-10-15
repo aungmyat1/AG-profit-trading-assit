@@ -65,3 +65,86 @@ def test_merger_never_converts_killed_or_failed_shard_to_pass(tmp_path,status,ex
     assert report['symbols']['BTCUSD']['verdict']==expected
     assert report['symbols']['BTCUSD']['qualifies_for_r3_proposal'] is False
     assert report['proposal']=='NO_QUALIFYING_SCOPE'
+
+
+def test_eurusd_d1r2_window_shards_cover_every_window_row_once():
+    info,bars=replay.inventory('EURUSD')
+    assert info['verdict']=='PASS_WITH_DECLARED_GAPS' and not info['issues']
+    layouts=[replay.layout(info,bars,s) for s in range(6)]
+    for before,after in zip(layouts,layouts[1:]):
+        assert before['core_end_row_exclusive']==after['core_start_row']
+    window=[b for b in bars['M5'] if b.time.date().isoformat() in info['days']]
+    assert sum(p['core_scans'] for p in layouts)==len(window)
+    assert layouts[0]['warmup_start_row']['M5'] < layouts[0]['core_start_row']   # real recorded warmup rows
+
+
+def test_fx_commission_requires_full_account_binding(monkeypatch):
+    import v1_tickets.manual_ticket as mt
+    prov=json.loads((replay.FX_DATASET/'EURUSD_provenance.json').read_text())
+    committed=mt.load_owner_config()
+    assert committed['commission'].get('account_login') is None            # suffix-only in the repo
+    assert replay.fx_commission_binding(prov) is None                       # -> L5 INSUFFICIENT, never PASS
+    full={**committed,'commission':{**committed['commission'],'account_login':'1234567999'}}
+    monkeypatch.setattr(mt,'load_owner_config',lambda *a,**k:full)
+    assert replay.fx_commission_binding(prov)['binding']=='FULL_ACCOUNT_LOGIN'
+    assert replay.fx_commission_binding({**prov,'login_suffix':'985'}) is None
+    assert replay.fx_commission_binding({**prov,'server':'Other'}) is None
+
+
+def test_independent_poi_age_counts_weekday_ny1700_dates():
+    import datetime as dt
+    utc=dt.timezone.utc
+    origin=dt.datetime(2026,9,7,12,tzinfo=utc)                       # Monday trading date
+    h1=[replay.A.Candle(origin+dt.timedelta(hours=h),1,1,1,1,None) for h in range(0,24*9)]
+    assert replay.independent_poi_age(origin,h1,dt.datetime(2026,9,7,20,tzinfo=utc))==0
+    assert replay.independent_poi_age(origin,h1,dt.datetime(2026,9,14,20,tzinfo=utc))==5   # weekend not counted
+    assert replay.independent_poi_age(origin,h1,dt.datetime(2026,9,14,22,tzinfo=utc))==6
+
+
+def test_l5_recompute_is_insufficient_without_full_login_and_pass_with_it(tmp_path, monkeypatch):
+    import lsmc_v113_l5_recompute as L
+
+    import v1_tickets.manual_ticket as mt
+    rows='signal_state,closed_at_utc,entry,stop\nOPPORTUNITY,2026-08-03T12:00:00+00:00,1.1000,1.0980\nWATCH,2026-08-03T12:05:00+00:00,,\n'
+    ident={k:'x' for k in L.IDENTITY_KEYS}
+    def shard(n,**over):
+        folder=tmp_path/'EURUSD'/f'shard_{n:02d}';folder.mkdir(parents=True,exist_ok=True)
+        (folder/'scans.csv').write_text(rows)
+        (folder/'audit.json').write_text(json.dumps({'verdict':'COMPLETED','completed':True,'completed_scans':2,'identity':ident,**over}))
+    for n in range(5):
+        shard(n)
+    assert L.recompute(tmp_path,'EURUSD')=={'symbol':'EURUSD','L5':'INCOMPLETE_ARTIFACTS','reason':'SHARD_05_MISSING'}
+    shard(5,identity={**ident,'runner_sha256':'y'})
+    assert L.recompute(tmp_path,'EURUSD')['reason']=='IDENTITY_MISMATCH'
+    shard(5,verdict='FAIL')
+    assert L.recompute(tmp_path,'EURUSD')['reason']=='SHARD_05_NOT_COMPLETED'
+    shard(5,completed_scans=9)
+    assert L.recompute(tmp_path,'EURUSD')['reason']=='SHARD_05_SCAN_COUNT_MISMATCH'
+    shard(5)
+    replay._COST.pop('EURUSD',None)
+    assert L.recompute(tmp_path,'EURUSD')['L5']=='INSUFFICIENT'
+    committed=mt.load_owner_config()
+    full={**committed,'commission':{**committed['commission'],'account_login':'1234567999'}}
+    monkeypatch.setattr(mt,'load_owner_config',lambda *a,**k:full)
+    replay._COST.pop('EURUSD',None)
+    out=L.recompute(tmp_path,'EURUSD')
+    replay._COST.pop('EURUSD',None)
+    assert out['L5']=='PASS' and out['priced_opportunity_rows']==6
+
+
+def test_resume_never_overwrites_a_failed_shard(tmp_path,monkeypatch):
+    for n in range(6):
+        folder=tmp_path/'EURUSD'/f'shard_{n:02d}';folder.mkdir(parents=True)
+        (folder/'audit.json').write_text(json.dumps({'verdict':'FAIL' if n==2 else 'COMPLETED'}))
+    ran=[]
+    monkeypatch.setattr(replay,'run_shard',lambda *a:ran.append(a) or 0)
+    monkeypatch.setattr(replay,'merge_shards',lambda *a:None)
+    assert replay.resume(tmp_path,tmp_path/'m.json','EURUSD')==0 and ran==[]
+
+
+def test_m5_meta_is_required_and_hash_checked(monkeypatch):
+    info,_=replay.inventory('EURUSD')
+    assert 'tests/fixtures/vt_recorded_60d_fx/EURUSD_m5_meta.csv' in info['sha256'] and not info['issues']
+    real=replay.digest
+    monkeypatch.setattr(replay,'digest',lambda p:'0'*64 if str(p).endswith('_m5_meta.csv') else real(p))
+    assert 'M5_META:HASH_MISMATCH' in replay.inventory('EURUSD')[0]['issues']

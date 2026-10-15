@@ -1,0 +1,14 @@
+{
+  "L5": "INSUFFICIENT",
+  "actionability": {},
+  "commission_binding": "NONE (no full-login OD1011 binding)",
+  "insufficient_reasons": {
+    "COMMISSION_EVIDENCE_MISSING": 914
+  },
+  "l5_status": {
+    "INSUFFICIENT": 914
+  },
+  "priced_opportunity_rows": 914,
+  "source": "VT recorded M5 spread_price of the last closed bar (<dataset>/<SYM>_m5_meta.csv) + OD1011-COMMISSION: crypto via scripts/ccfd_sweep_retest_replay.commission_binding (the accepted source of the CCFD 1.0.0 L5 PASS), FX/gold via config/owner_ticket.yaml bound to the capture server/login suffix, OD1009-D2 thresholds",
+  "symbol": "EURUSD"
+}

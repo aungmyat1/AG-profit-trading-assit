@@ -59,3 +59,33 @@ def test_universe_is_od1012_without_audusd_and_nothing_is_inferred():
     assert btc_long["registry_status"] == "UNVERIFIED" and btc_long["next_action_owner"] == "DATA_INSUFFICIENT"
     ccfd = [r for r in rows if r["family"] == "crypto_cfd" and r["evidence_path"] != "UNKNOWN"]
     assert all(r["evidence_sha256"] == r["evidence_sha256_recorded"] for r in ccfd)
+
+
+def test_divergence_tracks_current_scope_reason_and_owner_decision():
+    rows = vl.build()["rows"]
+    eur = next(r for r in rows if r["strategy"].endswith("@1.1.3"))
+    assert eur["divergence"] == "OWNER_RESOLVED:D9"
+    assert eur["gates"] == {"L1": "FAIL", **{g: "PASS" for g in vl.GATES[1:]}}
+    ccfd = [r for r in rows if r["family"] == "crypto_cfd"]
+    assert [r["divergence"] for r in ccfd] == ["-", *(["WINDOW_NOT_IN_SCOPE"] * 3)]
+    london = [r for r in rows if r["session"] == "LONDON_NEWYORK"]
+    for row in london:
+        expected = row["blocking_finding_id"] if all(v == "PASS" for v in row["gates"].values()) else "-"
+        assert row["divergence"] == expected
+    assert "Historical L1-L6 | Current scope status | Divergence" in vl.render_md(vl.build())
+
+
+def test_check_rejects_unresolved_gate_even_when_outputs_match(monkeypatch, tmp_path, capsys):
+    ledger = vl.build()
+    row = next(r for r in ledger["rows"] if r["strategy"].endswith("@1.1.3"))
+    row["divergence"] = vl.divergence("LOGIC_VERIFIED", row["gates"], "", None)
+    assert row["divergence"] == "UNRESOLVED_GATE"
+    monkeypatch.setattr(vl, "ROOT", tmp_path)
+    monkeypatch.setattr(vl, "build", lambda: ledger)
+    for rel, content in ((vl.JSON_OUT, json.dumps(ledger, indent=2, sort_keys=True) + "\n"),
+                         (vl.MD_OUT, vl.render_md(ledger))):
+        path = tmp_path / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+    assert vl.main(["--check"]) == 1
+    assert "UNRESOLVED_GATE" in capsys.readouterr().out

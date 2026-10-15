@@ -221,6 +221,28 @@ def check_freshness(ticket: Mapping[str, Any], market: Optional[MarketEvidence],
                   "quote_age_seconds": (now - observed_at).total_seconds()}
 
 
+def check_signal_freshness_at_send(ticket: Mapping[str, Any], scope: ScopePolicy, *,
+                                   now_utc: datetime) -> Optional[str]:
+    """Signal expiry/staleness judged at SEND time (D1). A scheduler catching up after downtime gets
+    TICKET_EXPIRED / SIGNAL_STALE_AT_SEND here, never a send of an old signal."""
+    now = _as_utc(now_utc)
+    ticket_close = _as_utc(ticket.get("signal_close_utc"))
+    evaluated_at = _as_utc(ticket.get("evaluated_at"))
+    raw_valid_until = ticket.get("valid_until", ticket.get("valid_until_utc"))
+    valid_until = _as_utc(raw_valid_until) if raw_valid_until is not None else None
+    if now is None or ticket_close is None or evaluated_at is None \
+            or (raw_valid_until is not None and valid_until is None):
+        return "FRESHNESS_TIMESTAMP_MISSING_OR_INVALID"
+    if valid_until is not None and now >= valid_until:
+        return "TICKET_EXPIRED"
+    if ticket_close > now or evaluated_at > now:
+        return "FRESHNESS_TIMESTAMP_IN_FUTURE"
+    ttl = timedelta(minutes=scope.signal_expiry_minutes)
+    if now - ticket_close > ttl or now - evaluated_at > ttl:
+        return "SIGNAL_STALE_AT_SEND"
+    return None
+
+
 def evaluate_pre_send_gates(
     ticket: Mapping[str, Any],
     market: Optional[MarketEvidence],

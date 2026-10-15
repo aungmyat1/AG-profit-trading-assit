@@ -8,12 +8,16 @@ review_by: 2026-11-07
 
 ## Current snapshot (2026-10-15)
 
+LSMC 1.1.3 EURUSD entry logic (2026-10-15, #233, container replay; not host-verified): full-window recorded VT 60d replay (#215), 12,094 scans in 6 resumable shards, all COMPLETED. Gates: L1/L2/L3/L4/L6 PASS, **L5 INSUFFICIENT**. The FX/gold L5 path is now implemented: OD1009-D2 thresholds plus OD1011-COMMISSION, and the commission binds only through the full login; a committed suffix alone gives INSUFFICIENT. Unit-tested only. D-LSMC-6 PASS, D-LSMC-1 PASS, 0 C11 target changes. SHORT C10 stops were NOT_EVALUATED: there is no evidenced bid/ask (869 scans). Registration draft not applied; eligibility PENDING_HOST_L5; no authority. [Draft](docs/proposals/LSMC_V113_REGISTRATION.md). Next step: host L5 recompute with the full-login binding, plus an owner decision on the SHORT C10 spread.
+
 Dated historical evidence — C24 1.1.2 (2026-10-14, #213; SUPERSEDED): interrupted
 full-window replay remains NOT_RUN_RESOURCE; static C11 target ENGINE_DEFECT and
 partial observations are retained. L5 is INSUFFICIENT (no accepted cost evidence;
 OD1011-L5), registration eligible = No. [Historical record](docs/status/AGP_C24_LSMC_V112_VERIFY_R2_2026-10-14.md).
 
 C14 dispatch (2026-10-15, fake-terminal tests only, never host-run; item 1): `src/demo_execution/dispatch.py` drives one READY ticket through the guarded sequence using semantic `check_order` / `send_order` adapter methods. The physical MT5 `order_check` and `order_send` calls remain solely in `mt5_canonical_adapter.py`. Unknown outcomes report `HALTED` only when the lifecycle confirms persisted `HALT`; failed persistence reports `HALT_FAILED`, never a false terminal claim. The first refusal stops; there is no retry. Local focused regression tests pass (121); required GitHub checks passed on code commit `492c5013362755ab74f9553f4a99936028d8f9b2`. Host checks remain pending. The dispatcher is still not host-wired. S1 remains `enabled: false`, with no standing authorization and `per_order_confirm_required: true`. No flag, READY, registry or order-shape change. [Dated remediation evidence](docs/status/AGP_C14_DISPATCH_REMEDIATION_2026-10-15.md).
+
+DEMO reconciliation + host resilience (2026-10-14, AGP-AUTODEMO-D1, fake-terminal tests only, never host-run): `src/demo_execution/position_monitor.py` reads `positions_get`/`history_deals_get`/`history_orders_get` only and reports each ticket OPEN / CLOSED (SL/TP/manual) / MISSING / UNKNOWN plus ORPHAN positions; ORPHAN, MISSING, quantity/price mismatch or a send unknown past 15 min engages a durable emergency stop (`emergency.py`, owner-cleared) and one Telegram alert, never a close/modify/resend. Unknown sends resolve to FILLED/REJECTED from broker history; restart recovery HALTs pre-ack tickets so they resume at reconcile; freshness is re-checked at send; admission/send risk evidence ids are recorded; lifecycle events (SENT, BROKER_ACK, FILLED, SEND_UNKNOWN, CHECK_REJECTED, CLOSED) are emitted for C3. No flag change.
 
 C14 risk snapshot (2026-10-14, #227, fake-terminal tests only, never host-run): `src/demo_execution/risk_snapshot.py` builds per-scope/account VT-server-day snapshots from read-only `account_info`/`history_deals_get`/`positions_get` (carried positions adverse-only, trades = distinct positions, current-equity basis); `GuardedCanonicalAdapter` rebuilds it before admission and before send, and a BLOCKED or missing build refuses `RISK_SNAPSHOT_MISSING`. Deal-time server-clock convention is a Gate 3 host check. No flag change.
 
@@ -1244,6 +1248,9 @@ scheduler 29/30 (+2 skipped). The one scheduler failure is
 `test_runner_refuses_friction_window_collision`, classified `LIVE_STATE_DEPENDENCE`: WP3A.1
 reached 5/5 complete days with the 2026-09-23 sessions, so the gate correctly stands down.
 Proven with controlled inputs: without 09-23 the gate returns `WINDOW_D_LONDON_NEWYORK`.
+The campaign's producing source is `research/edge-program-v1` at `82e6e5cc`; this
+research-branch evidence does not transfer to main's LSMC 1.1.2 candidate. The frozen
+manifest remains unchanged; see `docs/status/AGP_FRICTION_WP3A1_PROVENANCE_2026-10-15.md`.
 Frontend: typecheck and build pass, and 48/49 tests pass. The one failure is the
 pre-existing containment test on `web/server.ts` `/api/execution/manual-demo` (`74d65ea`,
 already on `main`, unchanged here). Secret scan PASS.
