@@ -306,7 +306,7 @@ def boundary(tmp_path: Path, *, enabled: bool = True, ready_on: bool = True,
     append_notice(store, ready_ticket, now)
     reader = account_read or LiveAccountRead()
     if confirm:
-        append_confirmation(store, scope, ready_ticket, consumed=consumed)
+        append_confirmation(store, scope, ready_ticket, consumed=consumed, confirmed_at=now - timedelta(minutes=1))
     guard = GuardedCanonicalAdapter(
         ticket_store=store,
         live_account_reader=reader,

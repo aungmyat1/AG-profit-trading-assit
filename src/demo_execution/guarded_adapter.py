@@ -35,7 +35,13 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Callable, Mapping, Optional
 
-from demo_execution.admission import MarketEvidence, evaluate_pre_send_gates
+from demo_execution import emergency
+from demo_execution import events as ev
+from demo_execution.admission import (
+    MarketEvidence,
+    check_signal_freshness_at_send,
+    evaluate_pre_send_gates,
+)
 from demo_execution.authority import (
     AUTHORITY_REUSED,
     AUTHORIZATION_DECISION_ID_MISMATCH,
@@ -45,6 +51,7 @@ from demo_execution.authority import (
     evidence_digest,
     evidence_id_map,
     per_order_confirm_required,
+    risk_evidence_id,
     validate_authority_binding,
     validate_authority_shape,
     validate_authorization_path,
@@ -167,6 +174,7 @@ class GuardedCanonicalAdapter:
         host_magic_registry_path: Optional[str] = None,
         authorization_path: Optional[str] = None,
         risk_snapshot_builder: Optional[Callable[[datetime], RiskSnapshotBuild]] = None,
+        event_sink: Optional[ev.EventSink] = None,
     ) -> None:
         if not isinstance(ticket_store, TicketStore):
             raise ValueError("ticket_store must be the append-only TICKET_STORE_V1 writer")
@@ -179,6 +187,8 @@ class GuardedCanonicalAdapter:
         # broker reads), called fresh immediately before admission and again before send. Without
         # it every order step is refused RISK_SNAPSHOT_MISSING; admission never sees a None snapshot.
         self._risk_builder = risk_snapshot_builder
+        # Observational only (C3 message builders); a failing sink never changes an order step.
+        self._event_sink = event_sink
         self._scope_paths: dict[str, Any] = {
             "config_path": scope_config_path,
             "repo_root": repo_root,
@@ -209,6 +219,15 @@ class GuardedCanonicalAdapter:
         except Exception:  # a broker read that raises is missing evidence, never a default
             return None
         return build.snapshot_for(scope) if isinstance(build, RiskSnapshotBuild) else None
+
+    def _emit(self, kind: str, ticket_id: str, now_utc: datetime, **fields: Any) -> None:
+        at = _as_utc(now_utc)
+        ev.emit(self._event_sink, ev.LifecycleEvent(kind, ticket_id, at.isoformat() if at else "", **fields))
+
+    def _emergency_reason(self) -> Optional[str]:
+        """No new orders while the durable emergency stop is engaged (or unreadable)."""
+        stop = emergency.status(self._store)
+        return emergency.EMERGENCY_STOP_ENGAGED if stop.engaged else None
 
     def _read_live_account(self) -> Optional[Mapping[str, Any]]:
         try:
@@ -327,6 +346,7 @@ class GuardedCanonicalAdapter:
             # The store is handed to the gates so the canonical single-use owner confirmation is
             # consumed by its own sanctioned writer, and so the gates' duplicate ledger check sees
             # the same append-only store this guard writes evidence to.
+            details["admission_risk_evidence_id"] = risk_evidence_id(fresh_risk)
             gates = evaluate_pre_send_gates(
                 ticket, market, fresh_risk, now_utc=now_utc,
                 authorization_path=authority.authorization_path, scope=scope,
@@ -387,6 +407,9 @@ class GuardedCanonicalAdapter:
             # order_check is the first broker-facing step: an existing trail means this ticket has
             # already been authorized, halted or reconciled, and is never re-authorized.
             reasons.append(LIFECYCLE_ORDER_INVALID)
+        stop = self._emergency_reason()
+        if stop:
+            reasons.append(stop)
         # Duplicate ticket id: checked against the ledger before order_check, not only before send.
         claim = self._ledger().inspect(authority.ticket_id)
         details["ledger_check"] = claim.reason_code
@@ -413,6 +436,8 @@ class GuardedCanonicalAdapter:
             "planned_volume": details.get("planned_volume"),
             "planned_risk_amount": details.get("planned_risk_amount"),
             "planned_risk_pct": details.get("planned_risk_pct"),
+            # Authority-minted risk evidence (in evidence_id_map) and the admission-time fresh build.
+            "admission_risk_evidence_id": details.get("admission_risk_evidence_id"),
             "expires_at_utc": expires_at,
         }
         recorded = self._lifecycle().append(
@@ -458,6 +483,10 @@ class GuardedCanonicalAdapter:
             require_gates=False, require_consumed_confirmation=False, details=details,
         ))
         if reasons:
+            if ORDER_CHECK_RESULT_REJECTED in reasons:
+                self._emit(ev.CHECK_REJECTED, authority.ticket_id, now_utc, reason_code=ORDER_CHECK_RESULT_REJECTED,
+                           details={"retcode": checked_order.get("retcode") if isinstance(checked_order, Mapping)
+                                    else None})
             return _refused(tuple(reasons), details, ticket_id=authority.ticket_id,
                             state=trail.current)
         assert prior is not None
@@ -516,6 +545,14 @@ class GuardedCanonicalAdapter:
         if not claim.available:
             reasons.append(claim.reason_code)
             details["prior_claim_state"] = claim.prior_state
+        stop = self._emergency_reason()
+        if stop:
+            reasons.append(stop)
+        # Freshness is judged at send time, not signal time: a catch-up run after downtime can never
+        # send an expired or stale signal.
+        stale = check_signal_freshness_at_send(ticket, scope, now_utc=now_utc)
+        if stale:
+            reasons.append(stale)
         if reasons:
             # Nothing is claimed and no account is read for a send that is already refused.
             return _refused(tuple(reasons), details, ticket_id=authority.ticket_id, state=trail.current)
@@ -528,6 +565,7 @@ class GuardedCanonicalAdapter:
         if send_risk is None:
             reasons.append(RISK_SNAPSHOT_MISSING)
         else:
+            details["send_risk_evidence_id"] = risk_evidence_id(send_risk)
             caps = evaluate_risk_caps(dict(ticket), scope, send_risk, now_utc=now_utc)
             details["send_risk_check"] = caps.reason_code
             if not caps.allowed:
@@ -554,12 +592,14 @@ class GuardedCanonicalAdapter:
                       "checked_order_sha256": checked_row.evidence.get("checked_order_sha256"),
                       "check_authorization_id": checked_row.authorization_id,
                       "account": details.get("account"),
+                      "send_risk_evidence_id": details.get("send_risk_evidence_id"),
                       "expires_at_utc": expires_at},
         )
         if not recorded.recorded:
             return _refused((recorded.reason_code,), {**details, "claim": "SENDING_PERSISTED",
                                                       "action_required": "RECONCILE"},
                             ticket_id=authority.ticket_id, state=trail.current)
+        self._emit(ev.SENT, authority.ticket_id, now_utc)
         return GuardDecision(True, "ORDER_SEND_AUTHORIZED", SENT, authority.ticket_id,
                              send_authorization_id, (),
                              {**details, "claim": reserved.reason_code, "expires_at_utc": expires_at,
@@ -604,6 +644,9 @@ class GuardedCanonicalAdapter:
                              reason_code=BROKER_SEND_NOT_ACCEPTED, now_utc=now_utc)
         evidence = {**evidence_id_map(authority),
                     "retcode": send_result.get("retcode") if isinstance(send_result, Mapping) else None,
+                    # Fill evidence the reconciliation monitor compares the broker position against.
+                    "price": send_result.get("price") if isinstance(send_result, Mapping) else None,
+                    "volume": send_result.get("volume") if isinstance(send_result, Mapping) else None,
                     "send_result_sha256": evidence_digest(dict(send_result or {}))}
         recorded = self._lifecycle().append(
             authority.ticket_id, BROKER_ACK, now_utc=now_utc, authority_id=authority.authority_id,
@@ -613,6 +656,7 @@ class GuardedCanonicalAdapter:
         if not recorded.recorded:
             return _refused((recorded.reason_code,), details, ticket_id=authority.ticket_id,
                             state=trail.current)
+        self._emit(ev.BROKER_ACK, authority.ticket_id, now_utc, broker_order_id=order_id, broker_deal_id=deal_id)
         return GuardDecision(True, "BROKER_ACK_RECORDED", BROKER_ACK, authority.ticket_id,
                              sent_row.authorization_id if sent_row else None, (),
                              {**details, "broker_order_id": order_id, "broker_deal_id": deal_id,
@@ -675,6 +719,9 @@ class GuardedCanonicalAdapter:
             broker_order_id=broker_order_id, broker_deal_id=broker_deal_id,
             broker_position_id=broker_position_id, evidence=evidence_id_map(authority),
         )
+        if state == CLOSED and recorded.recorded:
+            self._emit(ev.CLOSED, authority.ticket_id, now_utc, broker_order_id=broker_order_id,
+                       broker_deal_id=broker_deal_id)
         return self._transition_decision(recorded, details, authority.ticket_id, state, trail.current)
 
     def reconcile(
@@ -725,6 +772,9 @@ class GuardedCanonicalAdapter:
         else:
             details["claim_reconciliation"] = claim.reason_code
         details["resubmission"] = "NEVER"
+        if str(reconciliation["terminal_result"]).strip().upper() == "FILLED":
+            self._emit(ev.FILLED, authority.ticket_id, now_utc, broker_order_id=order_id, broker_deal_id=deal_id,
+                       broker_position_id=position_id)
         return GuardDecision(True, "RECONCILED", RECONCILED, authority.ticket_id, None, (),
                              {**details, "outcome_id": recorded.details.get("outcome_id"),
                               "broker_order_id": order_id, "broker_deal_id": deal_id})
@@ -771,6 +821,8 @@ class GuardedCanonicalAdapter:
         if not recorded.recorded:
             return _refused((recorded.reason_code,), details, ticket_id=resolved_ticket,
                             state=trail.current)
+        if trail.current == SENT:
+            self._emit(ev.SEND_UNKNOWN, resolved_ticket, now_utc, reason_code=reason_code.strip())
         return GuardDecision(False, HALT_UNKNOWN_RESULT, HALT, resolved_ticket, None,
                              (HALT_UNKNOWN_RESULT,),
                              {**details, "outcome_id": recorded.details.get("outcome_id")})
