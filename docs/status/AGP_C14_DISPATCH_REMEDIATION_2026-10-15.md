@@ -28,7 +28,7 @@ unknown-send and acknowledgement-fallback persistence failures.
 - Result: **121 passed**; the post-lint rerun completed in 384.41 seconds.
 - Lint: `python -m ruff check src/demo_execution/dispatch.py tests/test_demo_execution_dispatch.py` — passed.
 - `git diff --check`: passed.
-- GitHub CI for the PR update: pending at evidence capture.
+- GitHub CI was pending at initial evidence capture; required checks later passed on code commit `492c5013362755ab74f9553f4a99936028d8f9b2`.
 - Host / MT5 verification: not run. No broker operation was attempted.
 
 This remediation changes no scope, READY authority, standing authorization, execution
