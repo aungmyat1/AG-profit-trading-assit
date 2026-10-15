@@ -1242,6 +1242,9 @@ scheduler 29/30 (+2 skipped). The one scheduler failure is
 `test_runner_refuses_friction_window_collision`, classified `LIVE_STATE_DEPENDENCE`: WP3A.1
 reached 5/5 complete days with the 2026-09-23 sessions, so the gate correctly stands down.
 Proven with controlled inputs: without 09-23 the gate returns `WINDOW_D_LONDON_NEWYORK`.
+The campaign's producing source is `research/edge-program-v1` at `82e6e5cc`; this
+research-branch evidence does not transfer to main's LSMC 1.1.2 candidate. The frozen
+manifest remains unchanged; see `docs/status/AGP_FRICTION_WP3A1_PROVENANCE_2026-10-15.md`.
 Frontend: typecheck and build pass, and 48/49 tests pass. The one failure is the
 pre-existing containment test on `web/server.ts` `/api/execution/manual-demo` (`74d65ea`,
 already on `main`, unchanged here). Secret scan PASS.
