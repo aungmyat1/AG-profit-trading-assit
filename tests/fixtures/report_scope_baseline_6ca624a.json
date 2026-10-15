@@ -1,0 +1,128 @@
+[
+  {
+    "args": [
+      "ST_LARGE_SMC_V1",
+      "1.1.0",
+      "EURUSD",
+      "WATCH"
+    ],
+    "serialized": "{\"scope_family\":\"large_smc\",\"scope_verification_status\":\"UNVERIFIED\",\"scope_route\":\"REPORT_ONLY\",\"scope_reason\":\"ENTRY_LOGIC_NOT_VERIFIED\",\"verification_identity\":\"ST_LARGE_SMC_V1@1.1.0/EURUSD/DETECTION_ONLY\",\"scope_detail\":\"detection=LOGIC_VERIFIED\"}"
+  },
+  {
+    "args": [
+      "ST_LARGE_SMC_V1",
+      "1.1.0",
+      "GBPUSD",
+      "WATCH"
+    ],
+    "serialized": "{\"scope_family\":\"large_smc\",\"scope_verification_status\":\"UNVERIFIED\",\"scope_route\":\"REPORT_ONLY\",\"scope_reason\":\"ENTRY_LOGIC_NOT_VERIFIED\",\"verification_identity\":\"ST_LARGE_SMC_V1@1.1.0/EURUSD/DETECTION_ONLY\",\"scope_detail\":\"detection=NOT_VERIFIED\"}"
+  },
+  {
+    "args": [
+      "ST_LARGE_SMC_V1",
+      "1.1.0",
+      "USDJPY",
+      "WATCH"
+    ],
+    "serialized": "{\"scope_family\":\"large_smc\",\"scope_verification_status\":\"UNVERIFIED\",\"scope_route\":\"REPORT_ONLY\",\"scope_reason\":\"ENTRY_LOGIC_NOT_VERIFIED\",\"verification_identity\":\"ST_LARGE_SMC_V1@1.1.0/EURUSD/DETECTION_ONLY\",\"scope_detail\":\"detection=NOT_VERIFIED\"}"
+  },
+  {
+    "args": [
+      "ST_LARGE_SMC_V1",
+      "1.1.0",
+      "XAUUSD",
+      "WATCH"
+    ],
+    "serialized": "{\"scope_family\":\"large_smc\",\"scope_verification_status\":\"UNVERIFIED\",\"scope_route\":\"REPORT_ONLY\",\"scope_reason\":\"ENTRY_LOGIC_NOT_VERIFIED\",\"verification_identity\":\"ST_LARGE_SMC_V1@1.1.0/EURUSD/DETECTION_ONLY\",\"scope_detail\":\"detection=NOT_VERIFIED\"}"
+  },
+  {
+    "args": [
+      "ST_LARGE_SMC_V1",
+      "1.1.0",
+      "BTCUSD",
+      "WATCH"
+    ],
+    "serialized": "{\"scope_family\":\"large_smc\",\"scope_verification_status\":\"UNVERIFIED\",\"scope_route\":\"REPORT_ONLY\",\"scope_reason\":\"ENTRY_LOGIC_NOT_VERIFIED\",\"verification_identity\":\"ST_LARGE_SMC_V1@1.1.0/EURUSD/DETECTION_ONLY\",\"scope_detail\":\"detection=NOT_VERIFIED\"}"
+  },
+  {
+    "args": [
+      "ST_LARGE_SMC_V1",
+      "1.1.0",
+      "ETHUSD",
+      "WATCH"
+    ],
+    "serialized": "{\"scope_family\":\"large_smc\",\"scope_verification_status\":\"UNVERIFIED\",\"scope_route\":\"REPORT_ONLY\",\"scope_reason\":\"ENTRY_LOGIC_NOT_VERIFIED\",\"verification_identity\":\"ST_LARGE_SMC_V1@1.1.0/EURUSD/DETECTION_ONLY\",\"scope_detail\":\"detection=NOT_VERIFIED\"}"
+  },
+  {
+    "args": [
+      "ST_ASIAN_SWEEP_5R_V1",
+      "1.1.3",
+      "EURUSD",
+      "ASIAN_LONDON"
+    ],
+    "serialized": "{\"scope_family\":\"session_fx_gold\",\"scope_verification_status\":\"LOGIC_VERIFIED\",\"scope_route\":\"REPORT_ONLY\",\"scope_reason\":\"OWNER_DECISION_VERSION_MISMATCH\",\"verification_identity\":\"7e2324296ab6cb56147f6709aae5f8e1633e9c32475ee0f8b3988ea31adfedc9\",\"scope_detail\":\"branch=RANGE_SWEEP\"}"
+  },
+  {
+    "args": [
+      "ST_ASIAN_SWEEP_5R_V1",
+      "1.1.3",
+      "EURUSD",
+      "LONDON_NEWYORK"
+    ],
+    "serialized": "{\"scope_family\":\"session_fx_gold\",\"scope_verification_status\":\"LOGIC_VERIFIED\",\"scope_route\":\"REPORT_ONLY\",\"scope_reason\":\"OWNER_DECISION_VERSION_MISMATCH\",\"verification_identity\":\"7e2324296ab6cb56147f6709aae5f8e1633e9c32475ee0f8b3988ea31adfedc9\",\"scope_detail\":\"branch=RANGE_SWEEP\"}"
+  },
+  {
+    "args": [
+      "ST_ASIAN_SWEEP_5R_V1",
+      "1.1.3",
+      "GBPUSD",
+      "ASIAN_LONDON"
+    ],
+    "serialized": "{\"scope_family\":\"session_fx_gold\",\"scope_verification_status\":\"LOGIC_VERIFIED\",\"scope_route\":\"REPORT_ONLY\",\"scope_reason\":\"OWNER_DECISION_VERSION_MISMATCH\",\"verification_identity\":\"7e2324296ab6cb56147f6709aae5f8e1633e9c32475ee0f8b3988ea31adfedc9\",\"scope_detail\":\"branch=RANGE_SWEEP\"}"
+  },
+  {
+    "args": [
+      "ST_ASIAN_SWEEP_5R_V1",
+      "1.1.3",
+      "GBPUSD",
+      "LONDON_NEWYORK"
+    ],
+    "serialized": "{\"scope_family\":\"session_fx_gold\",\"scope_verification_status\":\"LOGIC_VERIFIED\",\"scope_route\":\"REPORT_ONLY\",\"scope_reason\":\"OWNER_DECISION_VERSION_MISMATCH\",\"verification_identity\":\"7e2324296ab6cb56147f6709aae5f8e1633e9c32475ee0f8b3988ea31adfedc9\",\"scope_detail\":\"branch=RANGE_SWEEP\"}"
+  },
+  {
+    "args": [
+      "ST_ASIAN_SWEEP_5R_V1",
+      "1.1.3",
+      "USDJPY",
+      "ASIAN_LONDON"
+    ],
+    "serialized": "{\"scope_family\":\"session_fx_gold\",\"scope_verification_status\":\"UNVERIFIED\",\"scope_route\":\"REPORT_ONLY\",\"scope_reason\":\"LOGIC_NOT_VERIFIED\",\"verification_identity\":\"7e2324296ab6cb56147f6709aae5f8e1633e9c32475ee0f8b3988ea31adfedc9\",\"scope_detail\":\"\"}"
+  },
+  {
+    "args": [
+      "ST_ASIAN_SWEEP_5R_V1",
+      "1.1.3",
+      "USDJPY",
+      "LONDON_NEWYORK"
+    ],
+    "serialized": "{\"scope_family\":\"session_fx_gold\",\"scope_verification_status\":\"UNVERIFIED\",\"scope_route\":\"REPORT_ONLY\",\"scope_reason\":\"LOGIC_NOT_VERIFIED\",\"verification_identity\":\"7e2324296ab6cb56147f6709aae5f8e1633e9c32475ee0f8b3988ea31adfedc9\",\"scope_detail\":\"\"}"
+  },
+  {
+    "args": [
+      "ST_ASIAN_SWEEP_5R_V1",
+      "1.1.3",
+      "XAUUSD",
+      "ASIAN_LONDON"
+    ],
+    "serialized": "{\"scope_family\":\"session_fx_gold\",\"scope_verification_status\":\"UNVERIFIED\",\"scope_route\":\"REPORT_ONLY\",\"scope_reason\":\"LOGIC_NOT_VERIFIED\",\"verification_identity\":\"7e2324296ab6cb56147f6709aae5f8e1633e9c32475ee0f8b3988ea31adfedc9\",\"scope_detail\":\"\"}"
+  },
+  {
+    "args": [
+      "ST_ASIAN_SWEEP_5R_V1",
+      "1.1.3",
+      "XAUUSD",
+      "LONDON_NEWYORK"
+    ],
+    "serialized": "{\"scope_family\":\"session_fx_gold\",\"scope_verification_status\":\"UNVERIFIED\",\"scope_route\":\"REPORT_ONLY\",\"scope_reason\":\"LOGIC_NOT_VERIFIED\",\"verification_identity\":\"7e2324296ab6cb56147f6709aae5f8e1633e9c32475ee0f8b3988ea31adfedc9\",\"scope_detail\":\"\"}"
+  }
+]

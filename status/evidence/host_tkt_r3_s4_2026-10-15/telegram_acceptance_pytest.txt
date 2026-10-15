@@ -1,0 +1,56 @@
+.................................................                        [100%]
+=================================== PASSES ====================================
+______________ test_failed_transport_is_recorded_and_not_retried ______________
+------------------------------ Captured log call ------------------------------
+ERROR    telegram_delivery.adapter:adapter.py:793 Telegram delivery ambiguous; automatic resend suppressed
+=========================== short test summary info ===========================
+PASSED tests/test_report_delivery.py::test_tracked_policy_enables_report_scopes_and_local_override_only_narrows
+PASSED tests/test_report_delivery.py::test_render_report_is_ascii_and_report_only[CANDIDATE-entry: 150.100  stop: 149.900]
+PASSED tests/test_report_delivery.py::test_render_report_is_ascii_and_report_only[BLOCKED-blocked by: C10_PIP_SIZE_NOT_EVIDENCED -- no verified pip size]
+PASSED tests/test_report_delivery.py::test_render_report_is_ascii_and_report_only[WATCH-state: REPORT_ONLY_OBSERVATION]
+PASSED tests/test_report_delivery.py::test_send_report_dedupes_and_gates_by_scope
+PASSED tests/test_report_delivery.py::test_failed_transport_is_recorded_and_not_retried
+PASSED tests/test_report_delivery.py::test_delivery_evidence_has_intent_result_and_message_id
+PASSED tests/test_report_delivery.py::test_daily_report_summary_counts_distinct_and_flags_no_opportunity
+PASSED tests/test_report_delivery.py::test_candidate_layout_matches_owner_example
+PASSED tests/test_report_lanes.py::test_non_executable_converts_every_ready_decision
+PASSED tests/test_report_lanes.py::test_observational_canonical_rejects_non_observational_class
+PASSED tests/test_report_lanes.py::test_asw_s1_is_left_to_the_canonical_path
+PASSED tests/test_report_lanes.py::test_asw_eurusd_asian_london_uses_v113_on_the_lane_only
+PASSED tests/test_report_lanes.py::test_asw_unverified_scope_reports_a_priced_non_executable_candidate
+PASSED tests/test_report_lanes.py::test_asw_missing_data_is_a_data_error[<lambda>-NO_CANDLE_DATA]
+PASSED tests/test_report_lanes.py::test_asw_missing_data_is_a_data_error[<lambda>-OSError]
+PASSED tests/test_report_lanes.py::test_asw_lane_archives_seven_scopes_outside_the_ticket_store
+PASSED tests/test_report_lanes.py::test_lsmc_near_poi_is_watch
+PASSED tests/test_report_lanes.py::test_lsmc_complete_opportunity_is_a_priced_candidate
+PASSED tests/test_report_lanes.py::test_lsmc_missing_c10_is_blocked_with_the_evidence_gap_and_no_invented_stop
+PASSED tests/test_report_lanes.py::test_lsmc_expired_is_no_opportunity
+PASSED tests/test_report_lanes.py::test_ccfd_priced_ready_is_a_non_executable_candidate
+PASSED tests/test_report_lanes.py::test_ccfd_direction_outside_the_recorded_branches_is_unverified
+PASSED tests/test_report_lanes.py::test_ccfd_row_decisions_are_preserved[BLOCKED-BLOCKED]
+PASSED tests/test_report_lanes.py::test_ccfd_row_decisions_are_preserved[NO_TRADE-NO_OPPORTUNITY]
+PASSED tests/test_report_lanes.py::test_ccfd_row_decisions_are_preserved[DATA_ERROR-DATA_ERROR]
+PASSED tests/test_report_lanes.py::test_ccfd_lane_never_omits_an_instrument
+PASSED tests/test_report_lanes.py::test_reporting_package_has_no_order_capable_imports_or_calls
+PASSED tests/test_report_lanes.py::test_identity_bound_strategy_files_are_unchanged
+PASSED tests/test_report_lanes.py::test_runner_lane_wrapper_isolates_failures_and_ccfd_feed_is_passthrough
+PASSED tests/test_s1_block_reasons.py::test_every_code_has_an_explanation
+PASSED tests/test_s1_block_reasons.py::test_evaluator_scope_not_s1
+PASSED tests/test_s1_block_reasons.py::test_evaluator_scope_identity_mismatch
+PASSED tests/test_s1_block_reasons.py::test_fx_identity_path_is_recoded_scope_identity_mismatch_for_s1
+PASSED tests/test_s1_block_reasons.py::test_fx_identity_path_is_recoded_scope_not_s1_for_other_scopes
+PASSED tests/test_s1_block_reasons.py::test_fx_branch_path_is_recoded_branch_outside_verified_scope
+PASSED tests/test_s1_block_reasons.py::test_recoding_leaves_every_other_ticket_untouched
+PASSED tests/test_s1_block_reasons.py::test_fx_py_is_byte_identical_to_the_registered_asw_v113_identity
+PASSED tests/test_s1_block_reasons.py::test_cycle_status_message_is_compact_ascii
+PASSED tests/test_s1_block_reasons.py::test_scheduled_s1_cycle_never_ends_summary_only[LIVE-<lambda>-None]
+PASSED tests/test_s1_block_reasons.py::test_scheduled_s1_cycle_never_ends_summary_only[LIVE-<lambda>-INSUFFICIENT_DATA]
+PASSED tests/test_s1_block_reasons.py::test_scheduled_s1_cycle_never_ends_summary_only[LIVE-_branch_blocked-BLOCKED]
+PASSED tests/test_s1_block_reasons.py::test_scheduled_s1_cycle_never_ends_summary_only[LIVE-_no_trade-NO_TRADE]
+PASSED tests/test_s1_block_reasons.py::test_scheduled_s1_cycle_never_ends_summary_only[REPLAY-<lambda>-None]
+PASSED tests/test_s1_block_reasons.py::test_scheduled_s1_cycle_never_ends_summary_only[REPLAY-<lambda>-INSUFFICIENT_DATA]
+PASSED tests/test_s1_block_reasons.py::test_scheduled_s1_cycle_never_ends_summary_only[REPLAY-_branch_blocked-BLOCKED]
+PASSED tests/test_s1_block_reasons.py::test_scheduled_s1_cycle_never_ends_summary_only[REPLAY-_no_trade-NO_TRADE]
+PASSED tests/test_s1_block_reasons.py::test_remap_rewrites_primary_and_block_reasons_end_to_end[<lambda>-SCOPE_IDENTITY_MISMATCH]
+PASSED tests/test_s1_block_reasons.py::test_remap_rewrites_primary_and_block_reasons_end_to_end[<lambda>-BRANCH_OUTSIDE_VERIFIED_SCOPE]
+49 passed in 124.75s (0:02:04)

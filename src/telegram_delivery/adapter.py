@@ -846,6 +846,20 @@ class Sender:
         status = f"{ticket['decision']}|{ticket.get('reason_code')}"
         return self._send("cycle", ticket["ticket_id"], status, render_cycle_status(ticket))
 
+    def send_execution_alert(self, alert):
+        """AGP-AUTODEMO-D1: one compact ASCII DEMO emergency-stop alert from the reconciliation monitor
+        (ORPHAN / MISSING / mismatch / unknown send past timeout). Deduped per (server day, reasons)."""
+        if self.config.scope_error:
+            LOG.error("Telegram scope rejected: %s", self.config.scope_error)
+            return "blocked"
+        reasons = [str(r) for r in alert.get("reasons") or []]
+        items = ", ".join(f"{a}:{b}" for a, b in (alert.get("items") or [])[:10])
+        message = (f"AG DEMO EMERGENCY STOP | {alert.get('server_day')} | {' '.join(reasons)}\n"
+                   f"items: {items}\nNo new orders. Broker action: NONE. Owner must reconcile and clear.")
+        message = message.encode("ascii", "replace").decode("ascii")
+        identity = json.dumps([alert.get("server_day"), reasons], separators=(",", ":"))
+        return self._send("exec_alert", identity, "EMERGENCY_STOP", message)
+
     def send_summary(self, tickets):
         tickets = list(tickets)
         message = render_summary(tickets, uncertain=self.list_uncertain())

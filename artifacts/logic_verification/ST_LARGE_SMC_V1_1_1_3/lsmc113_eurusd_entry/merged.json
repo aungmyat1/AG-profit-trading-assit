@@ -1,0 +1,2579 @@
+{
+  "mission": "AGP-LSMC113-EURUSD-ENTRY",
+  "proposal": "NO_QUALIFYING_SCOPE",
+  "proposal_gate_note": "A scope qualifies only with L1-L6 all PASS (OD1011-L5 cost evidence) and target stability PASS.",
+  "rule_diff": {
+    "computed": [
+      "based_on",
+      "based_on_sha256",
+      "candidate_created_local_date",
+      "candidate_provenance.rule_change_mission",
+      "candidate_provenance.source_main_commit",
+      "candidate_rule_changes.changes",
+      "candidate_rule_changes.declared_diff_paths",
+      "candidate_rule_changes.diff_scope",
+      "candidate_rule_changes.frozen_versions_untouched",
+      "candidate_rule_changes.mission",
+      "implementation",
+      "rules.targets.creation_window",
+      "rules.targets.fallback.condition",
+      "version"
+    ],
+    "declared": [
+      "based_on",
+      "based_on_sha256",
+      "candidate_created_local_date",
+      "candidate_provenance.rule_change_mission",
+      "candidate_provenance.source_main_commit",
+      "candidate_rule_changes.changes",
+      "candidate_rule_changes.declared_diff_paths",
+      "candidate_rule_changes.diff_scope",
+      "candidate_rule_changes.frozen_versions_untouched",
+      "candidate_rule_changes.mission",
+      "implementation",
+      "rules.targets.creation_window",
+      "rules.targets.fallback.condition",
+      "version"
+    ],
+    "verdict": "PASS"
+  },
+  "scope_days": 60,
+  "strategy": "ST_LARGE_SMC_V1@1.1.3",
+  "symbols": {
+    "EURUSD": {
+      "active_gate_verdicts": {
+        "L1": "PASS",
+        "L2": "PASS",
+        "L3": "PASS",
+        "L4": "PASS",
+        "L5": "INSUFFICIENT",
+        "L6": "PASS"
+      },
+      "active_history_completed_shards_only": {
+        "evaluated_checks": {
+          "L1.closed_bars_only": 12086,
+          "L1.replay_hash": 12086,
+          "L1.truncation_invariance": 12086,
+          "L2.alert_mapping": 12086,
+          "L2.c10_stop": 1783,
+          "L2.c11_creation_anchor": 1783,
+          "L2.c11_target": 1783,
+          "L2.day_boundary": 12086,
+          "L2.delivery_gate_preserves_detection": 1783,
+          "L2.direction_matches_bias": 1783,
+          "L2.entry_by_reference": 1783,
+          "L2.expiry_session_end": 1783,
+          "L2.identity": 12086,
+          "L2.instruments_vt_only": 12086,
+          "L2.near_poi_band": 12086,
+          "L2.no_authority": 12086,
+          "L2.pip_source": 1783,
+          "L2.poi_max_age": 12086,
+          "L2.point_source": 12086,
+          "L2.point_source_declared": 12086,
+          "L2.sweep_choch_window": 12086,
+          "L2.sweep_window_measured": 1783,
+          "L2.swing_k": 12086,
+          "L2.tie_tolerance": 12086,
+          "L2.timeframes": 12086,
+          "L3.entry_in_choch_bar": 1783,
+          "L3.stop_beyond_sweep": 914,
+          "L3.stop_side": 914,
+          "L3.sweep_extreme_side": 1783,
+          "L3.target_direction": 1710,
+          "L4.evaluated": 12086,
+          "L4.history": 12086,
+          "L4.m5_fresh": 12086,
+          "L4.stale_state_consistent": 12086,
+          "L6.invalid_if": 1783,
+          "L6.stale_if": 1783,
+          "L6.valid_until": 1783
+        },
+        "gate_verdicts": {
+          "L1": "PASS",
+          "L2": "PASS",
+          "L3": "PASS",
+          "L4": "PASS",
+          "L5": "INSUFFICIENT",
+          "L6": "PASS"
+        },
+        "gates": {
+          "L1": {
+            "PASS": 12086
+          },
+          "L2": {
+            "PASS": 12086
+          },
+          "L3": {
+            "PASS": 12086
+          },
+          "L4": {
+            "PASS": 12086
+          },
+          "L5": {
+            "INSUFFICIENT": 914,
+            "NOT_APPLICABLE": 11172
+          },
+          "L6": {
+            "PASS": 12086
+          }
+        },
+        "not_applicable_checks": {
+          "L2.c10_stop": 10303,
+          "L2.c11_creation_anchor": 10303,
+          "L2.c11_target": 10303,
+          "L2.direction_matches_bias": 10303,
+          "L2.entry_by_reference": 10303,
+          "L2.expiry_session_end": 10303,
+          "L2.sweep_window_measured": 10303,
+          "L3.geometry": 10303,
+          "L3.stop_geometry": 869,
+          "L3.target_direction": 73,
+          "L5.cost": 11172,
+          "L6.freshness": 10303
+        },
+        "opportunity_scans": 1783,
+        "priced_opportunity_scans": 888,
+        "qualifies_for_proposal": false,
+        "rr_eligible_scans": 305,
+        "scans": 12086,
+        "states": {
+          "DEVELOPING": 5206,
+          "IDLE": 205,
+          "NEAR_POI": 4892,
+          "OPPORTUNITY": 1783
+        },
+        "terminal_reasons": {
+          "AMBIGUOUS_TARGET": 73,
+          "D30_BADGE_ECONOMICS_NOT_EVALUATED": 1783,
+          "FAIL_CLOSED_RR_BELOW_SPEC_MINIMUM": 583,
+          "FAIL_CLOSED_RR_UNDEFINED": 895,
+          "MISSING_SPREAD": 869,
+          "NO_POI_AHEAD_OF_PRICE": 49,
+          "NO_VALID_POI": 156,
+          "REJECT_NO_STOP": 869,
+          "REJECT_NO_TARGET": 26,
+          "REJECT_STALE": 888
+        },
+        "verdict": "INSUFFICIENT",
+        "verification_status": "NOT_VERIFIED"
+      },
+      "branch_matrix_completed_shards_only": {
+        "FULL_D1|LONG|FVG|CONFIRMED_OPPOSING_H1_SWING": {
+          "evaluated_checks": {
+            "L1.closed_bars_only": 191,
+            "L1.replay_hash": 191,
+            "L1.truncation_invariance": 191,
+            "L2.alert_mapping": 191,
+            "L2.c10_stop": 191,
+            "L2.c11_creation_anchor": 191,
+            "L2.c11_target": 191,
+            "L2.day_boundary": 191,
+            "L2.delivery_gate_preserves_detection": 191,
+            "L2.direction_matches_bias": 191,
+            "L2.entry_by_reference": 191,
+            "L2.expiry_session_end": 191,
+            "L2.identity": 191,
+            "L2.instruments_vt_only": 191,
+            "L2.near_poi_band": 191,
+            "L2.no_authority": 191,
+            "L2.pip_source": 191,
+            "L2.poi_max_age": 191,
+            "L2.point_source": 191,
+            "L2.point_source_declared": 191,
+            "L2.sweep_choch_window": 191,
+            "L2.sweep_window_measured": 191,
+            "L2.swing_k": 191,
+            "L2.tie_tolerance": 191,
+            "L2.timeframes": 191,
+            "L3.entry_in_choch_bar": 191,
+            "L3.stop_beyond_sweep": 191,
+            "L3.stop_side": 191,
+            "L3.sweep_extreme_side": 191,
+            "L3.target_direction": 191,
+            "L4.evaluated": 191,
+            "L4.history": 191,
+            "L4.m5_fresh": 191,
+            "L4.stale_state_consistent": 191,
+            "L6.invalid_if": 191,
+            "L6.stale_if": 191,
+            "L6.valid_until": 191
+          },
+          "gate_verdicts": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "INSUFFICIENT",
+            "L6": "PASS"
+          },
+          "gates": {
+            "L1": {
+              "PASS": 191
+            },
+            "L2": {
+              "PASS": 191
+            },
+            "L3": {
+              "PASS": 191
+            },
+            "L4": {
+              "PASS": 191
+            },
+            "L5": {
+              "INSUFFICIENT": 191
+            },
+            "L6": {
+              "PASS": 191
+            }
+          },
+          "not_applicable_checks": {},
+          "opportunity_scans": 191,
+          "priced_opportunity_scans": 191,
+          "qualifies_for_proposal": false,
+          "rr_eligible_scans": 80,
+          "scans": 191,
+          "states": {
+            "OPPORTUNITY": 191
+          },
+          "terminal_reasons": {
+            "D30_BADGE_ECONOMICS_NOT_EVALUATED": 191,
+            "FAIL_CLOSED_RR_BELOW_SPEC_MINIMUM": 111,
+            "REJECT_STALE": 191
+          },
+          "verdict": "INSUFFICIENT",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "FULL_D1|LONG|FVG|PRIMARY_EXTERNAL_LIQUIDITY": {
+          "evaluated_checks": {
+            "L1.closed_bars_only": 30,
+            "L1.replay_hash": 30,
+            "L1.truncation_invariance": 30,
+            "L2.alert_mapping": 30,
+            "L2.c10_stop": 30,
+            "L2.c11_creation_anchor": 30,
+            "L2.c11_target": 30,
+            "L2.day_boundary": 30,
+            "L2.delivery_gate_preserves_detection": 30,
+            "L2.direction_matches_bias": 30,
+            "L2.entry_by_reference": 30,
+            "L2.expiry_session_end": 30,
+            "L2.identity": 30,
+            "L2.instruments_vt_only": 30,
+            "L2.near_poi_band": 30,
+            "L2.no_authority": 30,
+            "L2.pip_source": 30,
+            "L2.poi_max_age": 30,
+            "L2.point_source": 30,
+            "L2.point_source_declared": 30,
+            "L2.sweep_choch_window": 30,
+            "L2.sweep_window_measured": 30,
+            "L2.swing_k": 30,
+            "L2.tie_tolerance": 30,
+            "L2.timeframes": 30,
+            "L3.entry_in_choch_bar": 30,
+            "L3.stop_beyond_sweep": 30,
+            "L3.stop_side": 30,
+            "L3.sweep_extreme_side": 30,
+            "L3.target_direction": 30,
+            "L4.evaluated": 30,
+            "L4.history": 30,
+            "L4.m5_fresh": 30,
+            "L4.stale_state_consistent": 30,
+            "L6.invalid_if": 30,
+            "L6.stale_if": 30,
+            "L6.valid_until": 30
+          },
+          "gate_verdicts": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "INSUFFICIENT",
+            "L6": "PASS"
+          },
+          "gates": {
+            "L1": {
+              "PASS": 30
+            },
+            "L2": {
+              "PASS": 30
+            },
+            "L3": {
+              "PASS": 30
+            },
+            "L4": {
+              "PASS": 30
+            },
+            "L5": {
+              "INSUFFICIENT": 30
+            },
+            "L6": {
+              "PASS": 30
+            }
+          },
+          "not_applicable_checks": {},
+          "opportunity_scans": 30,
+          "priced_opportunity_scans": 30,
+          "qualifies_for_proposal": false,
+          "rr_eligible_scans": 30,
+          "scans": 30,
+          "states": {
+            "OPPORTUNITY": 30
+          },
+          "terminal_reasons": {
+            "D30_BADGE_ECONOMICS_NOT_EVALUATED": 30,
+            "REJECT_STALE": 30
+          },
+          "verdict": "INSUFFICIENT",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "FULL_D1|LONG|OB_PIVOT|CONFIRMED_OPPOSING_H1_SWING": {
+          "evaluated_checks": {
+            "L1.closed_bars_only": 49,
+            "L1.replay_hash": 49,
+            "L1.truncation_invariance": 49,
+            "L2.alert_mapping": 49,
+            "L2.c10_stop": 49,
+            "L2.c11_creation_anchor": 49,
+            "L2.c11_target": 49,
+            "L2.day_boundary": 49,
+            "L2.delivery_gate_preserves_detection": 49,
+            "L2.direction_matches_bias": 49,
+            "L2.entry_by_reference": 49,
+            "L2.expiry_session_end": 49,
+            "L2.identity": 49,
+            "L2.instruments_vt_only": 49,
+            "L2.near_poi_band": 49,
+            "L2.no_authority": 49,
+            "L2.pip_source": 49,
+            "L2.poi_max_age": 49,
+            "L2.point_source": 49,
+            "L2.point_source_declared": 49,
+            "L2.sweep_choch_window": 49,
+            "L2.sweep_window_measured": 49,
+            "L2.swing_k": 49,
+            "L2.tie_tolerance": 49,
+            "L2.timeframes": 49,
+            "L3.entry_in_choch_bar": 49,
+            "L3.stop_beyond_sweep": 49,
+            "L3.stop_side": 49,
+            "L3.sweep_extreme_side": 49,
+            "L3.target_direction": 49,
+            "L4.evaluated": 49,
+            "L4.history": 49,
+            "L4.m5_fresh": 49,
+            "L4.stale_state_consistent": 49,
+            "L6.invalid_if": 49,
+            "L6.stale_if": 49,
+            "L6.valid_until": 49
+          },
+          "gate_verdicts": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "INSUFFICIENT",
+            "L6": "PASS"
+          },
+          "gates": {
+            "L1": {
+              "PASS": 49
+            },
+            "L2": {
+              "PASS": 49
+            },
+            "L3": {
+              "PASS": 49
+            },
+            "L4": {
+              "PASS": 49
+            },
+            "L5": {
+              "INSUFFICIENT": 49
+            },
+            "L6": {
+              "PASS": 49
+            }
+          },
+          "not_applicable_checks": {},
+          "opportunity_scans": 49,
+          "priced_opportunity_scans": 49,
+          "qualifies_for_proposal": false,
+          "rr_eligible_scans": 0,
+          "scans": 49,
+          "states": {
+            "OPPORTUNITY": 49
+          },
+          "terminal_reasons": {
+            "D30_BADGE_ECONOMICS_NOT_EVALUATED": 49,
+            "FAIL_CLOSED_RR_BELOW_SPEC_MINIMUM": 49,
+            "REJECT_STALE": 49
+          },
+          "verdict": "INSUFFICIENT",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "FULL_D1|LONG|OB_PIVOT|PRIMARY_EXTERNAL_LIQUIDITY": {
+          "evaluated_checks": {
+            "L1.closed_bars_only": 38,
+            "L1.replay_hash": 38,
+            "L1.truncation_invariance": 38,
+            "L2.alert_mapping": 38,
+            "L2.c10_stop": 38,
+            "L2.c11_creation_anchor": 38,
+            "L2.c11_target": 38,
+            "L2.day_boundary": 38,
+            "L2.delivery_gate_preserves_detection": 38,
+            "L2.direction_matches_bias": 38,
+            "L2.entry_by_reference": 38,
+            "L2.expiry_session_end": 38,
+            "L2.identity": 38,
+            "L2.instruments_vt_only": 38,
+            "L2.near_poi_band": 38,
+            "L2.no_authority": 38,
+            "L2.pip_source": 38,
+            "L2.poi_max_age": 38,
+            "L2.point_source": 38,
+            "L2.point_source_declared": 38,
+            "L2.sweep_choch_window": 38,
+            "L2.sweep_window_measured": 38,
+            "L2.swing_k": 38,
+            "L2.tie_tolerance": 38,
+            "L2.timeframes": 38,
+            "L3.entry_in_choch_bar": 38,
+            "L3.stop_beyond_sweep": 38,
+            "L3.stop_side": 38,
+            "L3.sweep_extreme_side": 38,
+            "L3.target_direction": 38,
+            "L4.evaluated": 38,
+            "L4.history": 38,
+            "L4.m5_fresh": 38,
+            "L4.stale_state_consistent": 38,
+            "L6.invalid_if": 38,
+            "L6.stale_if": 38,
+            "L6.valid_until": 38
+          },
+          "gate_verdicts": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "INSUFFICIENT",
+            "L6": "PASS"
+          },
+          "gates": {
+            "L1": {
+              "PASS": 38
+            },
+            "L2": {
+              "PASS": 38
+            },
+            "L3": {
+              "PASS": 38
+            },
+            "L4": {
+              "PASS": 38
+            },
+            "L5": {
+              "INSUFFICIENT": 38
+            },
+            "L6": {
+              "PASS": 38
+            }
+          },
+          "not_applicable_checks": {},
+          "opportunity_scans": 38,
+          "priced_opportunity_scans": 38,
+          "qualifies_for_proposal": false,
+          "rr_eligible_scans": 21,
+          "scans": 38,
+          "states": {
+            "OPPORTUNITY": 38
+          },
+          "terminal_reasons": {
+            "D30_BADGE_ECONOMICS_NOT_EVALUATED": 38,
+            "FAIL_CLOSED_RR_BELOW_SPEC_MINIMUM": 17,
+            "REJECT_STALE": 38
+          },
+          "verdict": "INSUFFICIENT",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "FULL_D1|LONG|OB_SHADOW|PRIMARY_EXTERNAL_LIQUIDITY": {
+          "evaluated_checks": {
+            "L1.closed_bars_only": 19,
+            "L1.replay_hash": 19,
+            "L1.truncation_invariance": 19,
+            "L2.alert_mapping": 19,
+            "L2.c10_stop": 19,
+            "L2.c11_creation_anchor": 19,
+            "L2.c11_target": 19,
+            "L2.day_boundary": 19,
+            "L2.delivery_gate_preserves_detection": 19,
+            "L2.direction_matches_bias": 19,
+            "L2.entry_by_reference": 19,
+            "L2.expiry_session_end": 19,
+            "L2.identity": 19,
+            "L2.instruments_vt_only": 19,
+            "L2.near_poi_band": 19,
+            "L2.no_authority": 19,
+            "L2.pip_source": 19,
+            "L2.poi_max_age": 19,
+            "L2.point_source": 19,
+            "L2.point_source_declared": 19,
+            "L2.sweep_choch_window": 19,
+            "L2.sweep_window_measured": 19,
+            "L2.swing_k": 19,
+            "L2.tie_tolerance": 19,
+            "L2.timeframes": 19,
+            "L3.entry_in_choch_bar": 19,
+            "L3.stop_beyond_sweep": 19,
+            "L3.stop_side": 19,
+            "L3.sweep_extreme_side": 19,
+            "L3.target_direction": 19,
+            "L4.evaluated": 19,
+            "L4.history": 19,
+            "L4.m5_fresh": 19,
+            "L4.stale_state_consistent": 19,
+            "L6.invalid_if": 19,
+            "L6.stale_if": 19,
+            "L6.valid_until": 19
+          },
+          "gate_verdicts": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "INSUFFICIENT",
+            "L6": "PASS"
+          },
+          "gates": {
+            "L1": {
+              "PASS": 19
+            },
+            "L2": {
+              "PASS": 19
+            },
+            "L3": {
+              "PASS": 19
+            },
+            "L4": {
+              "PASS": 19
+            },
+            "L5": {
+              "INSUFFICIENT": 19
+            },
+            "L6": {
+              "PASS": 19
+            }
+          },
+          "not_applicable_checks": {},
+          "opportunity_scans": 19,
+          "priced_opportunity_scans": 19,
+          "qualifies_for_proposal": false,
+          "rr_eligible_scans": 0,
+          "scans": 19,
+          "states": {
+            "OPPORTUNITY": 19
+          },
+          "terminal_reasons": {
+            "D30_BADGE_ECONOMICS_NOT_EVALUATED": 19,
+            "FAIL_CLOSED_RR_BELOW_SPEC_MINIMUM": 19,
+            "REJECT_STALE": 19
+          },
+          "verdict": "INSUFFICIENT",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "FULL_D1|NONE|FVG|NO_TARGET_OR_NO_OPPORTUNITY": {
+          "evaluated_checks": {
+            "L1.closed_bars_only": 4049,
+            "L1.replay_hash": 4049,
+            "L1.truncation_invariance": 4049,
+            "L2.alert_mapping": 4049,
+            "L2.day_boundary": 4049,
+            "L2.identity": 4049,
+            "L2.instruments_vt_only": 4049,
+            "L2.near_poi_band": 4049,
+            "L2.no_authority": 4049,
+            "L2.poi_max_age": 4049,
+            "L2.point_source": 4049,
+            "L2.point_source_declared": 4049,
+            "L2.sweep_choch_window": 4049,
+            "L2.swing_k": 4049,
+            "L2.tie_tolerance": 4049,
+            "L2.timeframes": 4049,
+            "L4.evaluated": 4049,
+            "L4.history": 4049,
+            "L4.m5_fresh": 4049,
+            "L4.stale_state_consistent": 4049
+          },
+          "gate_verdicts": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "NOT_RUN",
+            "L6": "PASS"
+          },
+          "gates": {
+            "L1": {
+              "PASS": 4049
+            },
+            "L2": {
+              "PASS": 4049
+            },
+            "L3": {
+              "PASS": 4049
+            },
+            "L4": {
+              "PASS": 4049
+            },
+            "L5": {
+              "NOT_APPLICABLE": 4049
+            },
+            "L6": {
+              "PASS": 4049
+            }
+          },
+          "not_applicable_checks": {
+            "L2.c10_stop": 4049,
+            "L2.c11_creation_anchor": 4049,
+            "L2.c11_target": 4049,
+            "L2.direction_matches_bias": 4049,
+            "L2.entry_by_reference": 4049,
+            "L2.expiry_session_end": 4049,
+            "L2.sweep_window_measured": 4049,
+            "L3.geometry": 4049,
+            "L5.cost": 4049,
+            "L6.freshness": 4049
+          },
+          "opportunity_scans": 0,
+          "priced_opportunity_scans": 0,
+          "qualifies_for_proposal": false,
+          "rr_eligible_scans": 0,
+          "scans": 4049,
+          "states": {
+            "DEVELOPING": 2184,
+            "NEAR_POI": 1865
+          },
+          "terminal_reasons": {},
+          "verdict": "INSUFFICIENT",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "FULL_D1|NONE|NONE|NO_TARGET_OR_NO_OPPORTUNITY": {
+          "evaluated_checks": {
+            "L1.closed_bars_only": 184,
+            "L1.replay_hash": 184,
+            "L1.truncation_invariance": 184,
+            "L2.alert_mapping": 184,
+            "L2.day_boundary": 184,
+            "L2.identity": 184,
+            "L2.instruments_vt_only": 184,
+            "L2.near_poi_band": 184,
+            "L2.no_authority": 184,
+            "L2.poi_max_age": 184,
+            "L2.point_source": 184,
+            "L2.point_source_declared": 184,
+            "L2.sweep_choch_window": 184,
+            "L2.swing_k": 184,
+            "L2.tie_tolerance": 184,
+            "L2.timeframes": 184,
+            "L4.evaluated": 184,
+            "L4.history": 184,
+            "L4.m5_fresh": 184,
+            "L4.stale_state_consistent": 184
+          },
+          "gate_verdicts": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "NOT_RUN",
+            "L6": "PASS"
+          },
+          "gates": {
+            "L1": {
+              "PASS": 184
+            },
+            "L2": {
+              "PASS": 184
+            },
+            "L3": {
+              "PASS": 184
+            },
+            "L4": {
+              "PASS": 184
+            },
+            "L5": {
+              "NOT_APPLICABLE": 184
+            },
+            "L6": {
+              "PASS": 184
+            }
+          },
+          "not_applicable_checks": {
+            "L2.c10_stop": 184,
+            "L2.c11_creation_anchor": 184,
+            "L2.c11_target": 184,
+            "L2.direction_matches_bias": 184,
+            "L2.entry_by_reference": 184,
+            "L2.expiry_session_end": 184,
+            "L2.sweep_window_measured": 184,
+            "L3.geometry": 184,
+            "L5.cost": 184,
+            "L6.freshness": 184
+          },
+          "opportunity_scans": 0,
+          "priced_opportunity_scans": 0,
+          "qualifies_for_proposal": false,
+          "rr_eligible_scans": 0,
+          "scans": 184,
+          "states": {
+            "IDLE": 184
+          },
+          "terminal_reasons": {
+            "NO_POI_AHEAD_OF_PRICE": 40,
+            "NO_VALID_POI": 144
+          },
+          "verdict": "INSUFFICIENT",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "FULL_D1|NONE|OB_PIVOT|NO_TARGET_OR_NO_OPPORTUNITY": {
+          "evaluated_checks": {
+            "L1.closed_bars_only": 835,
+            "L1.replay_hash": 835,
+            "L1.truncation_invariance": 835,
+            "L2.alert_mapping": 835,
+            "L2.day_boundary": 835,
+            "L2.identity": 835,
+            "L2.instruments_vt_only": 835,
+            "L2.near_poi_band": 835,
+            "L2.no_authority": 835,
+            "L2.poi_max_age": 835,
+            "L2.point_source": 835,
+            "L2.point_source_declared": 835,
+            "L2.sweep_choch_window": 835,
+            "L2.swing_k": 835,
+            "L2.tie_tolerance": 835,
+            "L2.timeframes": 835,
+            "L4.evaluated": 835,
+            "L4.history": 835,
+            "L4.m5_fresh": 835,
+            "L4.stale_state_consistent": 835
+          },
+          "gate_verdicts": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "NOT_RUN",
+            "L6": "PASS"
+          },
+          "gates": {
+            "L1": {
+              "PASS": 835
+            },
+            "L2": {
+              "PASS": 835
+            },
+            "L3": {
+              "PASS": 835
+            },
+            "L4": {
+              "PASS": 835
+            },
+            "L5": {
+              "NOT_APPLICABLE": 835
+            },
+            "L6": {
+              "PASS": 835
+            }
+          },
+          "not_applicable_checks": {
+            "L2.c10_stop": 835,
+            "L2.c11_creation_anchor": 835,
+            "L2.c11_target": 835,
+            "L2.direction_matches_bias": 835,
+            "L2.entry_by_reference": 835,
+            "L2.expiry_session_end": 835,
+            "L2.sweep_window_measured": 835,
+            "L3.geometry": 835,
+            "L5.cost": 835,
+            "L6.freshness": 835
+          },
+          "opportunity_scans": 0,
+          "priced_opportunity_scans": 0,
+          "qualifies_for_proposal": false,
+          "rr_eligible_scans": 0,
+          "scans": 835,
+          "states": {
+            "DEVELOPING": 311,
+            "NEAR_POI": 524
+          },
+          "terminal_reasons": {},
+          "verdict": "INSUFFICIENT",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "FULL_D1|NONE|OB_SHADOW|NO_TARGET_OR_NO_OPPORTUNITY": {
+          "evaluated_checks": {
+            "L1.closed_bars_only": 616,
+            "L1.replay_hash": 616,
+            "L1.truncation_invariance": 616,
+            "L2.alert_mapping": 616,
+            "L2.day_boundary": 616,
+            "L2.identity": 616,
+            "L2.instruments_vt_only": 616,
+            "L2.near_poi_band": 616,
+            "L2.no_authority": 616,
+            "L2.poi_max_age": 616,
+            "L2.point_source": 616,
+            "L2.point_source_declared": 616,
+            "L2.sweep_choch_window": 616,
+            "L2.swing_k": 616,
+            "L2.tie_tolerance": 616,
+            "L2.timeframes": 616,
+            "L4.evaluated": 616,
+            "L4.history": 616,
+            "L4.m5_fresh": 616,
+            "L4.stale_state_consistent": 616
+          },
+          "gate_verdicts": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "NOT_RUN",
+            "L6": "PASS"
+          },
+          "gates": {
+            "L1": {
+              "PASS": 616
+            },
+            "L2": {
+              "PASS": 616
+            },
+            "L3": {
+              "PASS": 616
+            },
+            "L4": {
+              "PASS": 616
+            },
+            "L5": {
+              "NOT_APPLICABLE": 616
+            },
+            "L6": {
+              "PASS": 616
+            }
+          },
+          "not_applicable_checks": {
+            "L2.c10_stop": 616,
+            "L2.c11_creation_anchor": 616,
+            "L2.c11_target": 616,
+            "L2.direction_matches_bias": 616,
+            "L2.entry_by_reference": 616,
+            "L2.expiry_session_end": 616,
+            "L2.sweep_window_measured": 616,
+            "L3.geometry": 616,
+            "L5.cost": 616,
+            "L6.freshness": 616
+          },
+          "opportunity_scans": 0,
+          "priced_opportunity_scans": 0,
+          "qualifies_for_proposal": false,
+          "rr_eligible_scans": 0,
+          "scans": 616,
+          "states": {
+            "DEVELOPING": 348,
+            "NEAR_POI": 268
+          },
+          "terminal_reasons": {},
+          "verdict": "INSUFFICIENT",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "FULL_D1|SHORT|FVG|CONFIRMED_OPPOSING_H1_SWING": {
+          "evaluated_checks": {
+            "L1.closed_bars_only": 171,
+            "L1.replay_hash": 171,
+            "L1.truncation_invariance": 171,
+            "L2.alert_mapping": 171,
+            "L2.c10_stop": 171,
+            "L2.c11_creation_anchor": 171,
+            "L2.c11_target": 171,
+            "L2.day_boundary": 171,
+            "L2.delivery_gate_preserves_detection": 171,
+            "L2.direction_matches_bias": 171,
+            "L2.entry_by_reference": 171,
+            "L2.expiry_session_end": 171,
+            "L2.identity": 171,
+            "L2.instruments_vt_only": 171,
+            "L2.near_poi_band": 171,
+            "L2.no_authority": 171,
+            "L2.pip_source": 171,
+            "L2.poi_max_age": 171,
+            "L2.point_source": 171,
+            "L2.point_source_declared": 171,
+            "L2.sweep_choch_window": 171,
+            "L2.sweep_window_measured": 171,
+            "L2.swing_k": 171,
+            "L2.tie_tolerance": 171,
+            "L2.timeframes": 171,
+            "L3.entry_in_choch_bar": 171,
+            "L3.sweep_extreme_side": 171,
+            "L3.target_direction": 171,
+            "L4.evaluated": 171,
+            "L4.history": 171,
+            "L4.m5_fresh": 171,
+            "L4.stale_state_consistent": 171,
+            "L6.invalid_if": 171,
+            "L6.stale_if": 171,
+            "L6.valid_until": 171
+          },
+          "gate_verdicts": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "NOT_RUN",
+            "L6": "PASS"
+          },
+          "gates": {
+            "L1": {
+              "PASS": 171
+            },
+            "L2": {
+              "PASS": 171
+            },
+            "L3": {
+              "PASS": 171
+            },
+            "L4": {
+              "PASS": 171
+            },
+            "L5": {
+              "NOT_APPLICABLE": 171
+            },
+            "L6": {
+              "PASS": 171
+            }
+          },
+          "not_applicable_checks": {
+            "L3.stop_geometry": 171,
+            "L5.cost": 171
+          },
+          "opportunity_scans": 171,
+          "priced_opportunity_scans": 0,
+          "qualifies_for_proposal": false,
+          "rr_eligible_scans": 0,
+          "scans": 171,
+          "states": {
+            "OPPORTUNITY": 171
+          },
+          "terminal_reasons": {
+            "D30_BADGE_ECONOMICS_NOT_EVALUATED": 171,
+            "FAIL_CLOSED_RR_UNDEFINED": 171,
+            "MISSING_SPREAD": 171,
+            "REJECT_NO_STOP": 171
+          },
+          "verdict": "INSUFFICIENT",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "FULL_D1|SHORT|FVG|PRIMARY_EXTERNAL_LIQUIDITY": {
+          "evaluated_checks": {
+            "L1.closed_bars_only": 395,
+            "L1.replay_hash": 395,
+            "L1.truncation_invariance": 395,
+            "L2.alert_mapping": 395,
+            "L2.c10_stop": 395,
+            "L2.c11_creation_anchor": 395,
+            "L2.c11_target": 395,
+            "L2.day_boundary": 395,
+            "L2.delivery_gate_preserves_detection": 395,
+            "L2.direction_matches_bias": 395,
+            "L2.entry_by_reference": 395,
+            "L2.expiry_session_end": 395,
+            "L2.identity": 395,
+            "L2.instruments_vt_only": 395,
+            "L2.near_poi_band": 395,
+            "L2.no_authority": 395,
+            "L2.pip_source": 395,
+            "L2.poi_max_age": 395,
+            "L2.point_source": 395,
+            "L2.point_source_declared": 395,
+            "L2.sweep_choch_window": 395,
+            "L2.sweep_window_measured": 395,
+            "L2.swing_k": 395,
+            "L2.tie_tolerance": 395,
+            "L2.timeframes": 395,
+            "L3.entry_in_choch_bar": 395,
+            "L3.sweep_extreme_side": 395,
+            "L3.target_direction": 395,
+            "L4.evaluated": 395,
+            "L4.history": 395,
+            "L4.m5_fresh": 395,
+            "L4.stale_state_consistent": 395,
+            "L6.invalid_if": 395,
+            "L6.stale_if": 395,
+            "L6.valid_until": 395
+          },
+          "gate_verdicts": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "NOT_RUN",
+            "L6": "PASS"
+          },
+          "gates": {
+            "L1": {
+              "PASS": 395
+            },
+            "L2": {
+              "PASS": 395
+            },
+            "L3": {
+              "PASS": 395
+            },
+            "L4": {
+              "PASS": 395
+            },
+            "L5": {
+              "NOT_APPLICABLE": 395
+            },
+            "L6": {
+              "PASS": 395
+            }
+          },
+          "not_applicable_checks": {
+            "L3.stop_geometry": 395,
+            "L5.cost": 395
+          },
+          "opportunity_scans": 395,
+          "priced_opportunity_scans": 0,
+          "qualifies_for_proposal": false,
+          "rr_eligible_scans": 0,
+          "scans": 395,
+          "states": {
+            "OPPORTUNITY": 395
+          },
+          "terminal_reasons": {
+            "D30_BADGE_ECONOMICS_NOT_EVALUATED": 395,
+            "FAIL_CLOSED_RR_UNDEFINED": 395,
+            "MISSING_SPREAD": 395,
+            "REJECT_NO_STOP": 395
+          },
+          "verdict": "INSUFFICIENT",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "FULL_D1|SHORT|OB_SHADOW|CONFIRMED_OPPOSING_H1_SWING": {
+          "evaluated_checks": {
+            "L1.closed_bars_only": 14,
+            "L1.replay_hash": 14,
+            "L1.truncation_invariance": 14,
+            "L2.alert_mapping": 14,
+            "L2.c10_stop": 14,
+            "L2.c11_creation_anchor": 14,
+            "L2.c11_target": 14,
+            "L2.day_boundary": 14,
+            "L2.delivery_gate_preserves_detection": 14,
+            "L2.direction_matches_bias": 14,
+            "L2.entry_by_reference": 14,
+            "L2.expiry_session_end": 14,
+            "L2.identity": 14,
+            "L2.instruments_vt_only": 14,
+            "L2.near_poi_band": 14,
+            "L2.no_authority": 14,
+            "L2.pip_source": 14,
+            "L2.poi_max_age": 14,
+            "L2.point_source": 14,
+            "L2.point_source_declared": 14,
+            "L2.sweep_choch_window": 14,
+            "L2.sweep_window_measured": 14,
+            "L2.swing_k": 14,
+            "L2.tie_tolerance": 14,
+            "L2.timeframes": 14,
+            "L3.entry_in_choch_bar": 14,
+            "L3.sweep_extreme_side": 14,
+            "L3.target_direction": 14,
+            "L4.evaluated": 14,
+            "L4.history": 14,
+            "L4.m5_fresh": 14,
+            "L4.stale_state_consistent": 14,
+            "L6.invalid_if": 14,
+            "L6.stale_if": 14,
+            "L6.valid_until": 14
+          },
+          "gate_verdicts": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "NOT_RUN",
+            "L6": "PASS"
+          },
+          "gates": {
+            "L1": {
+              "PASS": 14
+            },
+            "L2": {
+              "PASS": 14
+            },
+            "L3": {
+              "PASS": 14
+            },
+            "L4": {
+              "PASS": 14
+            },
+            "L5": {
+              "NOT_APPLICABLE": 14
+            },
+            "L6": {
+              "PASS": 14
+            }
+          },
+          "not_applicable_checks": {
+            "L3.stop_geometry": 14,
+            "L5.cost": 14
+          },
+          "opportunity_scans": 14,
+          "priced_opportunity_scans": 0,
+          "qualifies_for_proposal": false,
+          "rr_eligible_scans": 0,
+          "scans": 14,
+          "states": {
+            "OPPORTUNITY": 14
+          },
+          "terminal_reasons": {
+            "D30_BADGE_ECONOMICS_NOT_EVALUATED": 14,
+            "FAIL_CLOSED_RR_UNDEFINED": 14,
+            "MISSING_SPREAD": 14,
+            "REJECT_NO_STOP": 14
+          },
+          "verdict": "INSUFFICIENT",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "FULL_D1|SHORT|OB_SHADOW|PRIMARY_EXTERNAL_LIQUIDITY": {
+          "evaluated_checks": {
+            "L1.closed_bars_only": 29,
+            "L1.replay_hash": 29,
+            "L1.truncation_invariance": 29,
+            "L2.alert_mapping": 29,
+            "L2.c10_stop": 29,
+            "L2.c11_creation_anchor": 29,
+            "L2.c11_target": 29,
+            "L2.day_boundary": 29,
+            "L2.delivery_gate_preserves_detection": 29,
+            "L2.direction_matches_bias": 29,
+            "L2.entry_by_reference": 29,
+            "L2.expiry_session_end": 29,
+            "L2.identity": 29,
+            "L2.instruments_vt_only": 29,
+            "L2.near_poi_band": 29,
+            "L2.no_authority": 29,
+            "L2.pip_source": 29,
+            "L2.poi_max_age": 29,
+            "L2.point_source": 29,
+            "L2.point_source_declared": 29,
+            "L2.sweep_choch_window": 29,
+            "L2.sweep_window_measured": 29,
+            "L2.swing_k": 29,
+            "L2.tie_tolerance": 29,
+            "L2.timeframes": 29,
+            "L3.entry_in_choch_bar": 29,
+            "L3.sweep_extreme_side": 29,
+            "L3.target_direction": 29,
+            "L4.evaluated": 29,
+            "L4.history": 29,
+            "L4.m5_fresh": 29,
+            "L4.stale_state_consistent": 29,
+            "L6.invalid_if": 29,
+            "L6.stale_if": 29,
+            "L6.valid_until": 29
+          },
+          "gate_verdicts": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "NOT_RUN",
+            "L6": "PASS"
+          },
+          "gates": {
+            "L1": {
+              "PASS": 29
+            },
+            "L2": {
+              "PASS": 29
+            },
+            "L3": {
+              "PASS": 29
+            },
+            "L4": {
+              "PASS": 29
+            },
+            "L5": {
+              "NOT_APPLICABLE": 29
+            },
+            "L6": {
+              "PASS": 29
+            }
+          },
+          "not_applicable_checks": {
+            "L3.stop_geometry": 29,
+            "L5.cost": 29
+          },
+          "opportunity_scans": 29,
+          "priced_opportunity_scans": 0,
+          "qualifies_for_proposal": false,
+          "rr_eligible_scans": 0,
+          "scans": 29,
+          "states": {
+            "OPPORTUNITY": 29
+          },
+          "terminal_reasons": {
+            "D30_BADGE_ECONOMICS_NOT_EVALUATED": 29,
+            "FAIL_CLOSED_RR_UNDEFINED": 29,
+            "MISSING_SPREAD": 29,
+            "REJECT_NO_STOP": 29
+          },
+          "verdict": "INSUFFICIENT",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "MARKET_CLOSED|NONE|NONE|NO_TARGET_OR_NO_OPPORTUNITY": {
+          "evaluated_checks": {
+            "L1.closed_bars_only": 8,
+            "L1.replay_hash": 8,
+            "L1.truncation_invariance": 8,
+            "L2.alert_mapping": 8,
+            "L2.day_boundary": 8,
+            "L2.identity": 8,
+            "L2.instruments_vt_only": 8,
+            "L2.near_poi_band": 8,
+            "L2.no_authority": 8,
+            "L2.poi_max_age": 8,
+            "L2.point_source_declared": 8,
+            "L2.sweep_choch_window": 8,
+            "L2.swing_k": 8,
+            "L2.tie_tolerance": 8,
+            "L2.timeframes": 8,
+            "L4.evaluated": 8,
+            "L4.history": 8,
+            "L4.m5_fresh": 8,
+            "L4.stale_state_consistent": 8
+          },
+          "gate_verdicts": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "FAIL",
+            "L5": "NOT_RUN",
+            "L6": "PASS"
+          },
+          "gates": {
+            "L1": {
+              "PASS": 8
+            },
+            "L2": {
+              "PASS": 8
+            },
+            "L3": {
+              "PASS": 8
+            },
+            "L4": {
+              "FAIL": 8
+            },
+            "L5": {
+              "NOT_APPLICABLE": 8
+            },
+            "L6": {
+              "PASS": 8
+            }
+          },
+          "not_applicable_checks": {
+            "L2.c10_stop": 8,
+            "L2.c11_creation_anchor": 8,
+            "L2.c11_target": 8,
+            "L2.direction_matches_bias": 8,
+            "L2.entry_by_reference": 8,
+            "L2.expiry_session_end": 8,
+            "L2.point_source": 8,
+            "L2.sweep_window_measured": 8,
+            "L3.geometry": 8,
+            "L5.cost": 8,
+            "L6.freshness": 8
+          },
+          "opportunity_scans": 0,
+          "priced_opportunity_scans": 0,
+          "qualifies_for_proposal": false,
+          "rr_eligible_scans": 0,
+          "scans": 8,
+          "states": {
+            "MARKET_CLOSED": 8
+          },
+          "terminal_reasons": {
+            "FX_WEEKEND": 8
+          },
+          "verdict": "DATA_INSUFFICIENT",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "SHORT_D1|LONG|FVG|CONFIRMED_OPPOSING_H1_SWING": {
+          "evaluated_checks": {
+            "L1.closed_bars_only": 85,
+            "L1.replay_hash": 85,
+            "L1.truncation_invariance": 85,
+            "L2.alert_mapping": 85,
+            "L2.c10_stop": 85,
+            "L2.c11_creation_anchor": 85,
+            "L2.c11_target": 85,
+            "L2.day_boundary": 85,
+            "L2.delivery_gate_preserves_detection": 85,
+            "L2.direction_matches_bias": 85,
+            "L2.entry_by_reference": 85,
+            "L2.expiry_session_end": 85,
+            "L2.identity": 85,
+            "L2.instruments_vt_only": 85,
+            "L2.near_poi_band": 85,
+            "L2.no_authority": 85,
+            "L2.pip_source": 85,
+            "L2.poi_max_age": 85,
+            "L2.point_source": 85,
+            "L2.point_source_declared": 85,
+            "L2.sweep_choch_window": 85,
+            "L2.sweep_window_measured": 85,
+            "L2.swing_k": 85,
+            "L2.tie_tolerance": 85,
+            "L2.timeframes": 85,
+            "L3.entry_in_choch_bar": 85,
+            "L3.stop_beyond_sweep": 85,
+            "L3.stop_side": 85,
+            "L3.sweep_extreme_side": 85,
+            "L3.target_direction": 85,
+            "L4.evaluated": 85,
+            "L4.history": 85,
+            "L4.m5_fresh": 85,
+            "L4.stale_state_consistent": 85,
+            "L6.invalid_if": 85,
+            "L6.stale_if": 85,
+            "L6.valid_until": 85
+          },
+          "gate_verdicts": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "INSUFFICIENT",
+            "L6": "PASS"
+          },
+          "gates": {
+            "L1": {
+              "PASS": 85
+            },
+            "L2": {
+              "PASS": 85
+            },
+            "L3": {
+              "PASS": 85
+            },
+            "L4": {
+              "PASS": 85
+            },
+            "L5": {
+              "INSUFFICIENT": 85
+            },
+            "L6": {
+              "PASS": 85
+            }
+          },
+          "not_applicable_checks": {},
+          "opportunity_scans": 85,
+          "priced_opportunity_scans": 85,
+          "qualifies_for_proposal": false,
+          "rr_eligible_scans": 67,
+          "scans": 85,
+          "states": {
+            "OPPORTUNITY": 85
+          },
+          "terminal_reasons": {
+            "D30_BADGE_ECONOMICS_NOT_EVALUATED": 85,
+            "FAIL_CLOSED_RR_BELOW_SPEC_MINIMUM": 18,
+            "REJECT_STALE": 85
+          },
+          "verdict": "INSUFFICIENT",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "SHORT_D1|LONG|FVG|NO_TARGET_OR_NO_OPPORTUNITY": {
+          "evaluated_checks": {
+            "L1.closed_bars_only": 26,
+            "L1.replay_hash": 26,
+            "L1.truncation_invariance": 26,
+            "L2.alert_mapping": 26,
+            "L2.c10_stop": 26,
+            "L2.c11_creation_anchor": 26,
+            "L2.c11_target": 26,
+            "L2.day_boundary": 26,
+            "L2.delivery_gate_preserves_detection": 26,
+            "L2.direction_matches_bias": 26,
+            "L2.entry_by_reference": 26,
+            "L2.expiry_session_end": 26,
+            "L2.identity": 26,
+            "L2.instruments_vt_only": 26,
+            "L2.near_poi_band": 26,
+            "L2.no_authority": 26,
+            "L2.pip_source": 26,
+            "L2.poi_max_age": 26,
+            "L2.point_source": 26,
+            "L2.point_source_declared": 26,
+            "L2.sweep_choch_window": 26,
+            "L2.sweep_window_measured": 26,
+            "L2.swing_k": 26,
+            "L2.tie_tolerance": 26,
+            "L2.timeframes": 26,
+            "L3.entry_in_choch_bar": 26,
+            "L3.stop_beyond_sweep": 26,
+            "L3.stop_side": 26,
+            "L3.sweep_extreme_side": 26,
+            "L4.evaluated": 26,
+            "L4.history": 26,
+            "L4.m5_fresh": 26,
+            "L4.stale_state_consistent": 26,
+            "L6.invalid_if": 26,
+            "L6.stale_if": 26,
+            "L6.valid_until": 26
+          },
+          "gate_verdicts": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "INSUFFICIENT",
+            "L6": "PASS"
+          },
+          "gates": {
+            "L1": {
+              "PASS": 26
+            },
+            "L2": {
+              "PASS": 26
+            },
+            "L3": {
+              "PASS": 26
+            },
+            "L4": {
+              "PASS": 26
+            },
+            "L5": {
+              "INSUFFICIENT": 26
+            },
+            "L6": {
+              "PASS": 26
+            }
+          },
+          "not_applicable_checks": {
+            "L3.target_direction": 26
+          },
+          "opportunity_scans": 26,
+          "priced_opportunity_scans": 0,
+          "qualifies_for_proposal": false,
+          "rr_eligible_scans": 0,
+          "scans": 26,
+          "states": {
+            "OPPORTUNITY": 26
+          },
+          "terminal_reasons": {
+            "AMBIGUOUS_TARGET": 26,
+            "D30_BADGE_ECONOMICS_NOT_EVALUATED": 26,
+            "FAIL_CLOSED_RR_UNDEFINED": 26,
+            "REJECT_NO_TARGET": 26
+          },
+          "verdict": "INSUFFICIENT",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "SHORT_D1|LONG|FVG|PRIMARY_EXTERNAL_LIQUIDITY": {
+          "evaluated_checks": {
+            "L1.closed_bars_only": 459,
+            "L1.replay_hash": 459,
+            "L1.truncation_invariance": 459,
+            "L2.alert_mapping": 459,
+            "L2.c10_stop": 459,
+            "L2.c11_creation_anchor": 459,
+            "L2.c11_target": 459,
+            "L2.day_boundary": 459,
+            "L2.delivery_gate_preserves_detection": 459,
+            "L2.direction_matches_bias": 459,
+            "L2.entry_by_reference": 459,
+            "L2.expiry_session_end": 459,
+            "L2.identity": 459,
+            "L2.instruments_vt_only": 459,
+            "L2.near_poi_band": 459,
+            "L2.no_authority": 459,
+            "L2.pip_source": 459,
+            "L2.poi_max_age": 459,
+            "L2.point_source": 459,
+            "L2.point_source_declared": 459,
+            "L2.sweep_choch_window": 459,
+            "L2.sweep_window_measured": 459,
+            "L2.swing_k": 459,
+            "L2.tie_tolerance": 459,
+            "L2.timeframes": 459,
+            "L3.entry_in_choch_bar": 459,
+            "L3.stop_beyond_sweep": 459,
+            "L3.stop_side": 459,
+            "L3.sweep_extreme_side": 459,
+            "L3.target_direction": 459,
+            "L4.evaluated": 459,
+            "L4.history": 459,
+            "L4.m5_fresh": 459,
+            "L4.stale_state_consistent": 459,
+            "L6.invalid_if": 459,
+            "L6.stale_if": 459,
+            "L6.valid_until": 459
+          },
+          "gate_verdicts": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "INSUFFICIENT",
+            "L6": "PASS"
+          },
+          "gates": {
+            "L1": {
+              "PASS": 459
+            },
+            "L2": {
+              "PASS": 459
+            },
+            "L3": {
+              "PASS": 459
+            },
+            "L4": {
+              "PASS": 459
+            },
+            "L5": {
+              "INSUFFICIENT": 459
+            },
+            "L6": {
+              "PASS": 459
+            }
+          },
+          "not_applicable_checks": {},
+          "opportunity_scans": 459,
+          "priced_opportunity_scans": 459,
+          "qualifies_for_proposal": false,
+          "rr_eligible_scans": 90,
+          "scans": 459,
+          "states": {
+            "OPPORTUNITY": 459
+          },
+          "terminal_reasons": {
+            "D30_BADGE_ECONOMICS_NOT_EVALUATED": 459,
+            "FAIL_CLOSED_RR_BELOW_SPEC_MINIMUM": 369,
+            "REJECT_STALE": 459
+          },
+          "verdict": "INSUFFICIENT",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "SHORT_D1|LONG|OB_SHADOW|PRIMARY_EXTERNAL_LIQUIDITY": {
+          "evaluated_checks": {
+            "L1.closed_bars_only": 17,
+            "L1.replay_hash": 17,
+            "L1.truncation_invariance": 17,
+            "L2.alert_mapping": 17,
+            "L2.c10_stop": 17,
+            "L2.c11_creation_anchor": 17,
+            "L2.c11_target": 17,
+            "L2.day_boundary": 17,
+            "L2.delivery_gate_preserves_detection": 17,
+            "L2.direction_matches_bias": 17,
+            "L2.entry_by_reference": 17,
+            "L2.expiry_session_end": 17,
+            "L2.identity": 17,
+            "L2.instruments_vt_only": 17,
+            "L2.near_poi_band": 17,
+            "L2.no_authority": 17,
+            "L2.pip_source": 17,
+            "L2.poi_max_age": 17,
+            "L2.point_source": 17,
+            "L2.point_source_declared": 17,
+            "L2.sweep_choch_window": 17,
+            "L2.sweep_window_measured": 17,
+            "L2.swing_k": 17,
+            "L2.tie_tolerance": 17,
+            "L2.timeframes": 17,
+            "L3.entry_in_choch_bar": 17,
+            "L3.stop_beyond_sweep": 17,
+            "L3.stop_side": 17,
+            "L3.sweep_extreme_side": 17,
+            "L3.target_direction": 17,
+            "L4.evaluated": 17,
+            "L4.history": 17,
+            "L4.m5_fresh": 17,
+            "L4.stale_state_consistent": 17,
+            "L6.invalid_if": 17,
+            "L6.stale_if": 17,
+            "L6.valid_until": 17
+          },
+          "gate_verdicts": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "INSUFFICIENT",
+            "L6": "PASS"
+          },
+          "gates": {
+            "L1": {
+              "PASS": 17
+            },
+            "L2": {
+              "PASS": 17
+            },
+            "L3": {
+              "PASS": 17
+            },
+            "L4": {
+              "PASS": 17
+            },
+            "L5": {
+              "INSUFFICIENT": 17
+            },
+            "L6": {
+              "PASS": 17
+            }
+          },
+          "not_applicable_checks": {},
+          "opportunity_scans": 17,
+          "priced_opportunity_scans": 17,
+          "qualifies_for_proposal": false,
+          "rr_eligible_scans": 17,
+          "scans": 17,
+          "states": {
+            "OPPORTUNITY": 17
+          },
+          "terminal_reasons": {
+            "D30_BADGE_ECONOMICS_NOT_EVALUATED": 17,
+            "REJECT_STALE": 17
+          },
+          "verdict": "INSUFFICIENT",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "SHORT_D1|NONE|FVG|NO_TARGET_OR_NO_OPPORTUNITY": {
+          "evaluated_checks": {
+            "L1.closed_bars_only": 2975,
+            "L1.replay_hash": 2975,
+            "L1.truncation_invariance": 2975,
+            "L2.alert_mapping": 2975,
+            "L2.day_boundary": 2975,
+            "L2.identity": 2975,
+            "L2.instruments_vt_only": 2975,
+            "L2.near_poi_band": 2975,
+            "L2.no_authority": 2975,
+            "L2.poi_max_age": 2975,
+            "L2.point_source": 2975,
+            "L2.point_source_declared": 2975,
+            "L2.sweep_choch_window": 2975,
+            "L2.swing_k": 2975,
+            "L2.tie_tolerance": 2975,
+            "L2.timeframes": 2975,
+            "L4.evaluated": 2975,
+            "L4.history": 2975,
+            "L4.m5_fresh": 2975,
+            "L4.stale_state_consistent": 2975
+          },
+          "gate_verdicts": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "NOT_RUN",
+            "L6": "PASS"
+          },
+          "gates": {
+            "L1": {
+              "PASS": 2975
+            },
+            "L2": {
+              "PASS": 2975
+            },
+            "L3": {
+              "PASS": 2975
+            },
+            "L4": {
+              "PASS": 2975
+            },
+            "L5": {
+              "NOT_APPLICABLE": 2975
+            },
+            "L6": {
+              "PASS": 2975
+            }
+          },
+          "not_applicable_checks": {
+            "L2.c10_stop": 2975,
+            "L2.c11_creation_anchor": 2975,
+            "L2.c11_target": 2975,
+            "L2.direction_matches_bias": 2975,
+            "L2.entry_by_reference": 2975,
+            "L2.expiry_session_end": 2975,
+            "L2.sweep_window_measured": 2975,
+            "L3.geometry": 2975,
+            "L5.cost": 2975,
+            "L6.freshness": 2975
+          },
+          "opportunity_scans": 0,
+          "priced_opportunity_scans": 0,
+          "qualifies_for_proposal": false,
+          "rr_eligible_scans": 0,
+          "scans": 2975,
+          "states": {
+            "DEVELOPING": 1558,
+            "NEAR_POI": 1417
+          },
+          "terminal_reasons": {},
+          "verdict": "INSUFFICIENT",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "SHORT_D1|NONE|NONE|NO_TARGET_OR_NO_OPPORTUNITY": {
+          "evaluated_checks": {
+            "L1.closed_bars_only": 21,
+            "L1.replay_hash": 21,
+            "L1.truncation_invariance": 21,
+            "L2.alert_mapping": 21,
+            "L2.day_boundary": 21,
+            "L2.identity": 21,
+            "L2.instruments_vt_only": 21,
+            "L2.near_poi_band": 21,
+            "L2.no_authority": 21,
+            "L2.poi_max_age": 21,
+            "L2.point_source": 21,
+            "L2.point_source_declared": 21,
+            "L2.sweep_choch_window": 21,
+            "L2.swing_k": 21,
+            "L2.tie_tolerance": 21,
+            "L2.timeframes": 21,
+            "L4.evaluated": 21,
+            "L4.history": 21,
+            "L4.m5_fresh": 21,
+            "L4.stale_state_consistent": 21
+          },
+          "gate_verdicts": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "NOT_RUN",
+            "L6": "PASS"
+          },
+          "gates": {
+            "L1": {
+              "PASS": 21
+            },
+            "L2": {
+              "PASS": 21
+            },
+            "L3": {
+              "PASS": 21
+            },
+            "L4": {
+              "PASS": 21
+            },
+            "L5": {
+              "NOT_APPLICABLE": 21
+            },
+            "L6": {
+              "PASS": 21
+            }
+          },
+          "not_applicable_checks": {
+            "L2.c10_stop": 21,
+            "L2.c11_creation_anchor": 21,
+            "L2.c11_target": 21,
+            "L2.direction_matches_bias": 21,
+            "L2.entry_by_reference": 21,
+            "L2.expiry_session_end": 21,
+            "L2.sweep_window_measured": 21,
+            "L3.geometry": 21,
+            "L5.cost": 21,
+            "L6.freshness": 21
+          },
+          "opportunity_scans": 0,
+          "priced_opportunity_scans": 0,
+          "qualifies_for_proposal": false,
+          "rr_eligible_scans": 0,
+          "scans": 21,
+          "states": {
+            "IDLE": 21
+          },
+          "terminal_reasons": {
+            "NO_POI_AHEAD_OF_PRICE": 9,
+            "NO_VALID_POI": 12
+          },
+          "verdict": "INSUFFICIENT",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "SHORT_D1|NONE|OB_PIVOT|NO_TARGET_OR_NO_OPPORTUNITY": {
+          "evaluated_checks": {
+            "L1.closed_bars_only": 936,
+            "L1.replay_hash": 936,
+            "L1.truncation_invariance": 936,
+            "L2.alert_mapping": 936,
+            "L2.day_boundary": 936,
+            "L2.identity": 936,
+            "L2.instruments_vt_only": 936,
+            "L2.near_poi_band": 936,
+            "L2.no_authority": 936,
+            "L2.poi_max_age": 936,
+            "L2.point_source": 936,
+            "L2.point_source_declared": 936,
+            "L2.sweep_choch_window": 936,
+            "L2.swing_k": 936,
+            "L2.tie_tolerance": 936,
+            "L2.timeframes": 936,
+            "L4.evaluated": 936,
+            "L4.history": 936,
+            "L4.m5_fresh": 936,
+            "L4.stale_state_consistent": 936
+          },
+          "gate_verdicts": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "NOT_RUN",
+            "L6": "PASS"
+          },
+          "gates": {
+            "L1": {
+              "PASS": 936
+            },
+            "L2": {
+              "PASS": 936
+            },
+            "L3": {
+              "PASS": 936
+            },
+            "L4": {
+              "PASS": 936
+            },
+            "L5": {
+              "NOT_APPLICABLE": 936
+            },
+            "L6": {
+              "PASS": 936
+            }
+          },
+          "not_applicable_checks": {
+            "L2.c10_stop": 936,
+            "L2.c11_creation_anchor": 936,
+            "L2.c11_target": 936,
+            "L2.direction_matches_bias": 936,
+            "L2.entry_by_reference": 936,
+            "L2.expiry_session_end": 936,
+            "L2.sweep_window_measured": 936,
+            "L3.geometry": 936,
+            "L5.cost": 936,
+            "L6.freshness": 936
+          },
+          "opportunity_scans": 0,
+          "priced_opportunity_scans": 0,
+          "qualifies_for_proposal": false,
+          "rr_eligible_scans": 0,
+          "scans": 936,
+          "states": {
+            "DEVELOPING": 415,
+            "NEAR_POI": 521
+          },
+          "terminal_reasons": {},
+          "verdict": "INSUFFICIENT",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "SHORT_D1|NONE|OB_SHADOW|NO_TARGET_OR_NO_OPPORTUNITY": {
+          "evaluated_checks": {
+            "L1.closed_bars_only": 687,
+            "L1.replay_hash": 687,
+            "L1.truncation_invariance": 687,
+            "L2.alert_mapping": 687,
+            "L2.day_boundary": 687,
+            "L2.identity": 687,
+            "L2.instruments_vt_only": 687,
+            "L2.near_poi_band": 687,
+            "L2.no_authority": 687,
+            "L2.poi_max_age": 687,
+            "L2.point_source": 687,
+            "L2.point_source_declared": 687,
+            "L2.sweep_choch_window": 687,
+            "L2.swing_k": 687,
+            "L2.tie_tolerance": 687,
+            "L2.timeframes": 687,
+            "L4.evaluated": 687,
+            "L4.history": 687,
+            "L4.m5_fresh": 687,
+            "L4.stale_state_consistent": 687
+          },
+          "gate_verdicts": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "NOT_RUN",
+            "L6": "PASS"
+          },
+          "gates": {
+            "L1": {
+              "PASS": 687
+            },
+            "L2": {
+              "PASS": 687
+            },
+            "L3": {
+              "PASS": 687
+            },
+            "L4": {
+              "PASS": 687
+            },
+            "L5": {
+              "NOT_APPLICABLE": 687
+            },
+            "L6": {
+              "PASS": 687
+            }
+          },
+          "not_applicable_checks": {
+            "L2.c10_stop": 687,
+            "L2.c11_creation_anchor": 687,
+            "L2.c11_target": 687,
+            "L2.direction_matches_bias": 687,
+            "L2.entry_by_reference": 687,
+            "L2.expiry_session_end": 687,
+            "L2.sweep_window_measured": 687,
+            "L3.geometry": 687,
+            "L5.cost": 687,
+            "L6.freshness": 687
+          },
+          "opportunity_scans": 0,
+          "priced_opportunity_scans": 0,
+          "qualifies_for_proposal": false,
+          "rr_eligible_scans": 0,
+          "scans": 687,
+          "states": {
+            "DEVELOPING": 390,
+            "NEAR_POI": 297
+          },
+          "terminal_reasons": {},
+          "verdict": "INSUFFICIENT",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "SHORT_D1|SHORT|FVG|CONFIRMED_OPPOSING_H1_SWING": {
+          "evaluated_checks": {
+            "L1.closed_bars_only": 133,
+            "L1.replay_hash": 133,
+            "L1.truncation_invariance": 133,
+            "L2.alert_mapping": 133,
+            "L2.c10_stop": 133,
+            "L2.c11_creation_anchor": 133,
+            "L2.c11_target": 133,
+            "L2.day_boundary": 133,
+            "L2.delivery_gate_preserves_detection": 133,
+            "L2.direction_matches_bias": 133,
+            "L2.entry_by_reference": 133,
+            "L2.expiry_session_end": 133,
+            "L2.identity": 133,
+            "L2.instruments_vt_only": 133,
+            "L2.near_poi_band": 133,
+            "L2.no_authority": 133,
+            "L2.pip_source": 133,
+            "L2.poi_max_age": 133,
+            "L2.point_source": 133,
+            "L2.point_source_declared": 133,
+            "L2.sweep_choch_window": 133,
+            "L2.sweep_window_measured": 133,
+            "L2.swing_k": 133,
+            "L2.tie_tolerance": 133,
+            "L2.timeframes": 133,
+            "L3.entry_in_choch_bar": 133,
+            "L3.sweep_extreme_side": 133,
+            "L3.target_direction": 133,
+            "L4.evaluated": 133,
+            "L4.history": 133,
+            "L4.m5_fresh": 133,
+            "L4.stale_state_consistent": 133,
+            "L6.invalid_if": 133,
+            "L6.stale_if": 133,
+            "L6.valid_until": 133
+          },
+          "gate_verdicts": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "NOT_RUN",
+            "L6": "PASS"
+          },
+          "gates": {
+            "L1": {
+              "PASS": 133
+            },
+            "L2": {
+              "PASS": 133
+            },
+            "L3": {
+              "PASS": 133
+            },
+            "L4": {
+              "PASS": 133
+            },
+            "L5": {
+              "NOT_APPLICABLE": 133
+            },
+            "L6": {
+              "PASS": 133
+            }
+          },
+          "not_applicable_checks": {
+            "L3.stop_geometry": 133,
+            "L5.cost": 133
+          },
+          "opportunity_scans": 133,
+          "priced_opportunity_scans": 0,
+          "qualifies_for_proposal": false,
+          "rr_eligible_scans": 0,
+          "scans": 133,
+          "states": {
+            "OPPORTUNITY": 133
+          },
+          "terminal_reasons": {
+            "D30_BADGE_ECONOMICS_NOT_EVALUATED": 133,
+            "FAIL_CLOSED_RR_UNDEFINED": 133,
+            "MISSING_SPREAD": 133,
+            "REJECT_NO_STOP": 133
+          },
+          "verdict": "INSUFFICIENT",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "SHORT_D1|SHORT|FVG|NO_TARGET_OR_NO_OPPORTUNITY": {
+          "evaluated_checks": {
+            "L1.closed_bars_only": 47,
+            "L1.replay_hash": 47,
+            "L1.truncation_invariance": 47,
+            "L2.alert_mapping": 47,
+            "L2.c10_stop": 47,
+            "L2.c11_creation_anchor": 47,
+            "L2.c11_target": 47,
+            "L2.day_boundary": 47,
+            "L2.delivery_gate_preserves_detection": 47,
+            "L2.direction_matches_bias": 47,
+            "L2.entry_by_reference": 47,
+            "L2.expiry_session_end": 47,
+            "L2.identity": 47,
+            "L2.instruments_vt_only": 47,
+            "L2.near_poi_band": 47,
+            "L2.no_authority": 47,
+            "L2.pip_source": 47,
+            "L2.poi_max_age": 47,
+            "L2.point_source": 47,
+            "L2.point_source_declared": 47,
+            "L2.sweep_choch_window": 47,
+            "L2.sweep_window_measured": 47,
+            "L2.swing_k": 47,
+            "L2.tie_tolerance": 47,
+            "L2.timeframes": 47,
+            "L3.entry_in_choch_bar": 47,
+            "L3.sweep_extreme_side": 47,
+            "L4.evaluated": 47,
+            "L4.history": 47,
+            "L4.m5_fresh": 47,
+            "L4.stale_state_consistent": 47,
+            "L6.invalid_if": 47,
+            "L6.stale_if": 47,
+            "L6.valid_until": 47
+          },
+          "gate_verdicts": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "NOT_RUN",
+            "L6": "PASS"
+          },
+          "gates": {
+            "L1": {
+              "PASS": 47
+            },
+            "L2": {
+              "PASS": 47
+            },
+            "L3": {
+              "PASS": 47
+            },
+            "L4": {
+              "PASS": 47
+            },
+            "L5": {
+              "NOT_APPLICABLE": 47
+            },
+            "L6": {
+              "PASS": 47
+            }
+          },
+          "not_applicable_checks": {
+            "L3.stop_geometry": 47,
+            "L3.target_direction": 47,
+            "L5.cost": 47
+          },
+          "opportunity_scans": 47,
+          "priced_opportunity_scans": 0,
+          "qualifies_for_proposal": false,
+          "rr_eligible_scans": 0,
+          "scans": 47,
+          "states": {
+            "OPPORTUNITY": 47
+          },
+          "terminal_reasons": {
+            "AMBIGUOUS_TARGET": 47,
+            "D30_BADGE_ECONOMICS_NOT_EVALUATED": 47,
+            "FAIL_CLOSED_RR_UNDEFINED": 47,
+            "MISSING_SPREAD": 47,
+            "REJECT_NO_STOP": 47
+          },
+          "verdict": "INSUFFICIENT",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "SHORT_D1|SHORT|FVG|PRIMARY_EXTERNAL_LIQUIDITY": {
+          "evaluated_checks": {
+            "L1.closed_bars_only": 23,
+            "L1.replay_hash": 23,
+            "L1.truncation_invariance": 23,
+            "L2.alert_mapping": 23,
+            "L2.c10_stop": 23,
+            "L2.c11_creation_anchor": 23,
+            "L2.c11_target": 23,
+            "L2.day_boundary": 23,
+            "L2.delivery_gate_preserves_detection": 23,
+            "L2.direction_matches_bias": 23,
+            "L2.entry_by_reference": 23,
+            "L2.expiry_session_end": 23,
+            "L2.identity": 23,
+            "L2.instruments_vt_only": 23,
+            "L2.near_poi_band": 23,
+            "L2.no_authority": 23,
+            "L2.pip_source": 23,
+            "L2.poi_max_age": 23,
+            "L2.point_source": 23,
+            "L2.point_source_declared": 23,
+            "L2.sweep_choch_window": 23,
+            "L2.sweep_window_measured": 23,
+            "L2.swing_k": 23,
+            "L2.tie_tolerance": 23,
+            "L2.timeframes": 23,
+            "L3.entry_in_choch_bar": 23,
+            "L3.sweep_extreme_side": 23,
+            "L3.target_direction": 23,
+            "L4.evaluated": 23,
+            "L4.history": 23,
+            "L4.m5_fresh": 23,
+            "L4.stale_state_consistent": 23,
+            "L6.invalid_if": 23,
+            "L6.stale_if": 23,
+            "L6.valid_until": 23
+          },
+          "gate_verdicts": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "NOT_RUN",
+            "L6": "PASS"
+          },
+          "gates": {
+            "L1": {
+              "PASS": 23
+            },
+            "L2": {
+              "PASS": 23
+            },
+            "L3": {
+              "PASS": 23
+            },
+            "L4": {
+              "PASS": 23
+            },
+            "L5": {
+              "NOT_APPLICABLE": 23
+            },
+            "L6": {
+              "PASS": 23
+            }
+          },
+          "not_applicable_checks": {
+            "L3.stop_geometry": 23,
+            "L5.cost": 23
+          },
+          "opportunity_scans": 23,
+          "priced_opportunity_scans": 0,
+          "qualifies_for_proposal": false,
+          "rr_eligible_scans": 0,
+          "scans": 23,
+          "states": {
+            "OPPORTUNITY": 23
+          },
+          "terminal_reasons": {
+            "D30_BADGE_ECONOMICS_NOT_EVALUATED": 23,
+            "FAIL_CLOSED_RR_UNDEFINED": 23,
+            "MISSING_SPREAD": 23,
+            "REJECT_NO_STOP": 23
+          },
+          "verdict": "INSUFFICIENT",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "SHORT_D1|SHORT|OB_PIVOT|CONFIRMED_OPPOSING_H1_SWING": {
+          "evaluated_checks": {
+            "L1.closed_bars_only": 41,
+            "L1.replay_hash": 41,
+            "L1.truncation_invariance": 41,
+            "L2.alert_mapping": 41,
+            "L2.c10_stop": 41,
+            "L2.c11_creation_anchor": 41,
+            "L2.c11_target": 41,
+            "L2.day_boundary": 41,
+            "L2.delivery_gate_preserves_detection": 41,
+            "L2.direction_matches_bias": 41,
+            "L2.entry_by_reference": 41,
+            "L2.expiry_session_end": 41,
+            "L2.identity": 41,
+            "L2.instruments_vt_only": 41,
+            "L2.near_poi_band": 41,
+            "L2.no_authority": 41,
+            "L2.pip_source": 41,
+            "L2.poi_max_age": 41,
+            "L2.point_source": 41,
+            "L2.point_source_declared": 41,
+            "L2.sweep_choch_window": 41,
+            "L2.sweep_window_measured": 41,
+            "L2.swing_k": 41,
+            "L2.tie_tolerance": 41,
+            "L2.timeframes": 41,
+            "L3.entry_in_choch_bar": 41,
+            "L3.sweep_extreme_side": 41,
+            "L3.target_direction": 41,
+            "L4.evaluated": 41,
+            "L4.history": 41,
+            "L4.m5_fresh": 41,
+            "L4.stale_state_consistent": 41,
+            "L6.invalid_if": 41,
+            "L6.stale_if": 41,
+            "L6.valid_until": 41
+          },
+          "gate_verdicts": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "NOT_RUN",
+            "L6": "PASS"
+          },
+          "gates": {
+            "L1": {
+              "PASS": 41
+            },
+            "L2": {
+              "PASS": 41
+            },
+            "L3": {
+              "PASS": 41
+            },
+            "L4": {
+              "PASS": 41
+            },
+            "L5": {
+              "NOT_APPLICABLE": 41
+            },
+            "L6": {
+              "PASS": 41
+            }
+          },
+          "not_applicable_checks": {
+            "L3.stop_geometry": 41,
+            "L5.cost": 41
+          },
+          "opportunity_scans": 41,
+          "priced_opportunity_scans": 0,
+          "qualifies_for_proposal": false,
+          "rr_eligible_scans": 0,
+          "scans": 41,
+          "states": {
+            "OPPORTUNITY": 41
+          },
+          "terminal_reasons": {
+            "D30_BADGE_ECONOMICS_NOT_EVALUATED": 41,
+            "FAIL_CLOSED_RR_UNDEFINED": 41,
+            "MISSING_SPREAD": 41,
+            "REJECT_NO_STOP": 41
+          },
+          "verdict": "INSUFFICIENT",
+          "verification_status": "NOT_VERIFIED"
+        },
+        "SHORT_D1|SHORT|OB_SHADOW|PRIMARY_EXTERNAL_LIQUIDITY": {
+          "evaluated_checks": {
+            "L1.closed_bars_only": 16,
+            "L1.replay_hash": 16,
+            "L1.truncation_invariance": 16,
+            "L2.alert_mapping": 16,
+            "L2.c10_stop": 16,
+            "L2.c11_creation_anchor": 16,
+            "L2.c11_target": 16,
+            "L2.day_boundary": 16,
+            "L2.delivery_gate_preserves_detection": 16,
+            "L2.direction_matches_bias": 16,
+            "L2.entry_by_reference": 16,
+            "L2.expiry_session_end": 16,
+            "L2.identity": 16,
+            "L2.instruments_vt_only": 16,
+            "L2.near_poi_band": 16,
+            "L2.no_authority": 16,
+            "L2.pip_source": 16,
+            "L2.poi_max_age": 16,
+            "L2.point_source": 16,
+            "L2.point_source_declared": 16,
+            "L2.sweep_choch_window": 16,
+            "L2.sweep_window_measured": 16,
+            "L2.swing_k": 16,
+            "L2.tie_tolerance": 16,
+            "L2.timeframes": 16,
+            "L3.entry_in_choch_bar": 16,
+            "L3.sweep_extreme_side": 16,
+            "L3.target_direction": 16,
+            "L4.evaluated": 16,
+            "L4.history": 16,
+            "L4.m5_fresh": 16,
+            "L4.stale_state_consistent": 16,
+            "L6.invalid_if": 16,
+            "L6.stale_if": 16,
+            "L6.valid_until": 16
+          },
+          "gate_verdicts": {
+            "L1": "PASS",
+            "L2": "PASS",
+            "L3": "PASS",
+            "L4": "PASS",
+            "L5": "NOT_RUN",
+            "L6": "PASS"
+          },
+          "gates": {
+            "L1": {
+              "PASS": 16
+            },
+            "L2": {
+              "PASS": 16
+            },
+            "L3": {
+              "PASS": 16
+            },
+            "L4": {
+              "PASS": 16
+            },
+            "L5": {
+              "NOT_APPLICABLE": 16
+            },
+            "L6": {
+              "PASS": 16
+            }
+          },
+          "not_applicable_checks": {
+            "L3.stop_geometry": 16,
+            "L5.cost": 16
+          },
+          "opportunity_scans": 16,
+          "priced_opportunity_scans": 0,
+          "qualifies_for_proposal": false,
+          "rr_eligible_scans": 0,
+          "scans": 16,
+          "states": {
+            "OPPORTUNITY": 16
+          },
+          "terminal_reasons": {
+            "D30_BADGE_ECONOMICS_NOT_EVALUATED": 16,
+            "FAIL_CLOSED_RR_UNDEFINED": 16,
+            "MISSING_SPREAD": 16,
+            "REJECT_NO_STOP": 16
+          },
+          "verdict": "INSUFFICIENT",
+          "verification_status": "NOT_VERIFIED"
+        }
+      },
+      "completed": true,
+      "cross_shard_engine_defects": [],
+      "dlsmc_recheck": {
+        "counts": {
+          "D-LSMC-1": {
+            "opportunity_scans": 1783,
+            "stop_none_contract_reason:MISSING_SPREAD": 869,
+            "stop_present_host_pip": 914
+          },
+          "D-LSMC-6": {
+            "active_checks": 11881,
+            "expiry_checks": 7447,
+            "expiry_unobserved_origin": 50477
+          }
+        },
+        "verdicts": {
+          "D-LSMC-1": "PASS",
+          "D-LSMC-6": "PASS"
+        }
+      },
+      "qualifies_for_r3_proposal": false,
+      "raw_all_scans_completed_shards_only": {
+        "evaluated_checks": {
+          "L1.closed_bars_only": 12094,
+          "L1.replay_hash": 12094,
+          "L1.truncation_invariance": 12094,
+          "L2.alert_mapping": 12094,
+          "L2.c10_stop": 1783,
+          "L2.c11_creation_anchor": 1783,
+          "L2.c11_target": 1783,
+          "L2.day_boundary": 12094,
+          "L2.delivery_gate_preserves_detection": 1783,
+          "L2.direction_matches_bias": 1783,
+          "L2.entry_by_reference": 1783,
+          "L2.expiry_session_end": 1783,
+          "L2.identity": 12094,
+          "L2.instruments_vt_only": 12094,
+          "L2.near_poi_band": 12094,
+          "L2.no_authority": 12094,
+          "L2.pip_source": 1783,
+          "L2.poi_max_age": 12094,
+          "L2.point_source": 12086,
+          "L2.point_source_declared": 12094,
+          "L2.sweep_choch_window": 12094,
+          "L2.sweep_window_measured": 1783,
+          "L2.swing_k": 12094,
+          "L2.tie_tolerance": 12094,
+          "L2.timeframes": 12094,
+          "L3.entry_in_choch_bar": 1783,
+          "L3.stop_beyond_sweep": 914,
+          "L3.stop_side": 914,
+          "L3.sweep_extreme_side": 1783,
+          "L3.target_direction": 1710,
+          "L4.evaluated": 12094,
+          "L4.history": 12094,
+          "L4.m5_fresh": 12094,
+          "L4.stale_state_consistent": 12094,
+          "L6.invalid_if": 1783,
+          "L6.stale_if": 1783,
+          "L6.valid_until": 1783
+        },
+        "gate_verdicts": {
+          "L1": "PASS",
+          "L2": "PASS",
+          "L3": "PASS",
+          "L4": "FAIL",
+          "L5": "INSUFFICIENT",
+          "L6": "PASS"
+        },
+        "gates": {
+          "L1": {
+            "PASS": 12094
+          },
+          "L2": {
+            "PASS": 12094
+          },
+          "L3": {
+            "PASS": 12094
+          },
+          "L4": {
+            "FAIL": 8,
+            "PASS": 12086
+          },
+          "L5": {
+            "INSUFFICIENT": 914,
+            "NOT_APPLICABLE": 11180
+          },
+          "L6": {
+            "PASS": 12094
+          }
+        },
+        "not_applicable_checks": {
+          "L2.c10_stop": 10311,
+          "L2.c11_creation_anchor": 10311,
+          "L2.c11_target": 10311,
+          "L2.direction_matches_bias": 10311,
+          "L2.entry_by_reference": 10311,
+          "L2.expiry_session_end": 10311,
+          "L2.point_source": 8,
+          "L2.sweep_window_measured": 10311,
+          "L3.geometry": 10311,
+          "L3.stop_geometry": 869,
+          "L3.target_direction": 73,
+          "L5.cost": 11180,
+          "L6.freshness": 10311
+        },
+        "opportunity_scans": 1783,
+        "priced_opportunity_scans": 888,
+        "qualifies_for_proposal": false,
+        "rr_eligible_scans": 305,
+        "scans": 12094,
+        "states": {
+          "DEVELOPING": 5206,
+          "IDLE": 205,
+          "MARKET_CLOSED": 8,
+          "NEAR_POI": 4892,
+          "OPPORTUNITY": 1783
+        },
+        "terminal_reasons": {
+          "AMBIGUOUS_TARGET": 73,
+          "D30_BADGE_ECONOMICS_NOT_EVALUATED": 1783,
+          "FAIL_CLOSED_RR_BELOW_SPEC_MINIMUM": 583,
+          "FAIL_CLOSED_RR_UNDEFINED": 895,
+          "FX_WEEKEND": 8,
+          "MISSING_SPREAD": 869,
+          "NO_POI_AHEAD_OF_PRICE": 49,
+          "NO_VALID_POI": 156,
+          "REJECT_NO_STOP": 869,
+          "REJECT_NO_TARGET": 26,
+          "REJECT_STALE": 888
+        },
+        "verdict": "FAIL",
+        "verification_status": "NOT_VERIFIED"
+      },
+      "shards": [
+        {
+          "completed": true,
+          "completed_scans": 2052,
+          "shard": 0,
+          "verdict": "COMPLETED"
+        },
+        {
+          "completed": true,
+          "completed_scans": 2266,
+          "shard": 1,
+          "verdict": "COMPLETED"
+        },
+        {
+          "completed": true,
+          "completed_scans": 2052,
+          "shard": 2,
+          "verdict": "COMPLETED"
+        },
+        {
+          "completed": true,
+          "completed_scans": 2268,
+          "shard": 3,
+          "verdict": "COMPLETED"
+        },
+        {
+          "completed": true,
+          "completed_scans": 2052,
+          "shard": 4,
+          "verdict": "COMPLETED"
+        },
+        {
+          "completed": true,
+          "completed_scans": 1404,
+          "shard": 5,
+          "verdict": "COMPLETED"
+        }
+      ],
+      "unique_opportunities_completed_shards_only": 51,
+      "verdict": "COMPLETED"
+    }
+  },
+  "verdict": "COMPLETED",
+  "verification_status": "NOT_VERIFIED"
+}

@@ -20,12 +20,19 @@ from large_smc_v113 import targets as T
 A, C, G, RG = audit.A, audit.C, audit.G, audit.RG
 ROOT = audit.ROOT
 DATASET = A.CRYPTO_DATASET
+FX_DATASET = ROOT/'tests/fixtures/vt_recorded_60d_fx'   # #215 D1-R2 recorded VT 60d FX/gold capture
+SYMBOLS = ('EURUSD', 'GBPUSD', 'USDJPY', 'XAUUSD', 'BTCUSD', 'ETHUSD')
 GATES = ('L1', 'L2', 'L3', 'L4', 'L5', 'L6')
-MISSION = 'AGP-C24-R3'
+MISSION = 'AGP-LSMC113-EURUSD-ENTRY'
+SHARDS = 6
+
+
+def dataset(symbol):
+    return DATASET if symbol in C.CRYPTO_SYMBOLS else FX_DATASET
 # OD1011-L5: L5 is PASS / INSUFFICIENT (cost-blocked = actionability outcome); no declared WARN is accepted.
-COST_SOURCE = ('VT recorded M5 spread_price of the last closed bar (tests/fixtures/ccfd_v100/recorded_60d/<SYM>_m5_meta.csv) '
-               '+ OD1011-COMMISSION binding (scripts/ccfd_sweep_retest_replay.commission_binding), the accepted source '
-               'of the CCFD 1.0.0 L5 PASS on the same recorded 60d data')
+COST_SOURCE = ('VT recorded M5 spread_price of the last closed bar (<dataset>/<SYM>_m5_meta.csv) + OD1011-COMMISSION: '
+               'crypto via scripts/ccfd_sweep_retest_replay.commission_binding (the accepted source of the CCFD 1.0.0 L5 PASS), '
+               'FX/gold via config/owner_ticket.yaml bound to the capture server/login suffix, OD1009-D2 thresholds')
 _COST = {}
 
 
@@ -33,12 +40,32 @@ def cost_source(symbol):
     """Spread by M5 bar open time + commission binding, loaded once per symbol (read-only)."""
     if symbol not in _COST:
         import ccfd_sweep_retest_replay as ccfd
-        with (DATASET/f'{symbol}_m5_meta.csv').open() as stream:
+        with (dataset(symbol)/f'{symbol}_m5_meta.csv').open() as stream:
             spread = {dt.datetime.fromisoformat(r['timestamp_utc']): float(r['spread_price']) for r in csv.DictReader(stream)}
-        provenance = json.loads((DATASET/f'{symbol}_provenance.json').read_text())
-        _COST[symbol] = {'spread': spread, 'binding': ccfd.commission_binding(provenance)}
+        provenance = json.loads((dataset(symbol)/f'{symbol}_provenance.json').read_text())
+        binding = (ccfd.commission_binding(provenance) if symbol in C.CRYPTO_SYMBOLS
+                   else fx_commission_binding(provenance))
+        _COST[symbol] = {'spread': spread, 'binding': binding}
     return _COST[symbol]
 
+
+def fx_commission_binding(provenance):
+    """OD1011-COMMISSION (FX and gold, OD1012-ACCOUNT): FULL account binding only, via the canonical
+    manual_ticket.resolve_commission. The full login lives only in gitignored config/local/owner_ticket.yaml and
+    must end with the capture's recorded login suffix on the same server; a committed suffix alone is never a
+    binding (-> None -> L5 INSUFFICIENT, never PASS)."""
+    from v1_tickets.manual_ticket import load_owner_config, resolve_commission
+    owner = load_owner_config()
+    full = (owner.get('commission') or {}).get('account_login')
+    suffix = str(provenance.get('login_suffix') or '')
+    if (full is None or not suffix or not str(full).endswith(suffix) or provenance.get('server') != 'VTMarkets-Demo'
+            or provenance.get('source') != 'MT5_VT_MARKETS_DEMO'):
+        return None
+    value = resolve_commission(owner, full)
+    if type(value) not in (int, float) or value != 0:
+        return None
+    return {'value': 0.0, 'source': 'OD1011-COMMISSION', 'policy': 'OD1009-D2', 'bound_server': 'VTMarkets-Demo',
+            'account_login_suffix': suffix, 'binding': 'FULL_ACCOUNT_LOGIN'}
 
 def digest(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
@@ -50,8 +77,10 @@ def protected_identity():
 
 
 def inventory(symbol):
-    paths = {tf: DATASET/f'{symbol}_{tf.lower()}.csv' for tf in ('D1', 'H1', 'M5')}
-    required = list(paths.values()) + [DATASET/f'{symbol}_provenance.json']
+    paths = {tf: dataset(symbol)/f'{symbol}_{tf.lower()}.csv' for tf in ('D1', 'H1', 'M5')}
+    meta = dataset(symbol)/f'{symbol}_m5_meta.csv'          # L5 spread source: required and hash-checked
+    required = list(paths.values()) + [meta, dataset(symbol)/f'{symbol}_provenance.json']
+    fx = symbol not in C.CRYPTO_SYMBOLS
     missing = [str(p.relative_to(ROOT)) for p in required if not p.is_file()]
     if missing:
         return {'verdict': 'DATA_INSUFFICIENT', 'missing_files': missing,
@@ -62,11 +91,17 @@ def inventory(symbol):
     if (provenance.get('source') != 'MT5_VT_MARKETS_DEMO' or provenance.get('server') != 'VTMarkets-Demo'
             or provenance.get('symbol') != symbol or provenance.get('recorded') is not True):
         issues.append('VT_PROVENANCE_NOT_EVIDENCED')
-    if len(provenance.get('days', [])) != 60 or provenance.get('days_kept') != 60:
-        issues.append('60_DAY_SET_NOT_EVIDENCED')
+    if fx:   # D1-R2 shape: window_start/end + per-file hashes; warmup rows precede the 60-day window
+        if provenance.get('window_days') != 60:
+            issues.append('60_DAY_SET_NOT_EVIDENCED')
+        expected_hash = {tf: (provenance.get('files') or {}).get(f'{symbol}_{tf.lower()}.csv') for tf in paths}
+    else:
+        if len(provenance.get('days', [])) != 60 or provenance.get('days_kept') != 60:
+            issues.append('60_DAY_SET_NOT_EVIDENCED')
+        expected_hash = {tf: provenance.get('sha256', {}).get(tf.lower()) for tf in paths}
     for tf, path in paths.items():
         identity[str(path.relative_to(ROOT))] = digest(path)
-        if identity[str(path.relative_to(ROOT))] != provenance.get('sha256', {}).get(tf.lower()):
+        if identity[str(path.relative_to(ROOT))] != expected_hash[tf]:
             issues.append(f'{tf}:HASH_MISMATCH')
         with path.open() as stream:
             rows = list(csv.DictReader(stream))
@@ -83,17 +118,29 @@ def inventory(symbol):
         if not bars or any(a.time >= b.time for a,b in zip(bars,bars[1:])):
             issues.append(f'{tf}:UNSORTED_OR_DUPLICATE_OR_EMPTY')
         data[tf] = bars
-    days = sorted({b.time.date().isoformat() for b in data['M5']})
-    if days != provenance.get('days'):
-        issues.append('M5_RECORDED_DAYS_DIFFER_FROM_DECLARED_60_DAYS')
+    if fx:
+        start, end = (dt.datetime.fromisoformat(provenance[k]) for k in ('window_start_utc', 'window_end_utc'))
+        days = sorted({b.time.date().isoformat() for b in data['M5'] if start <= b.time < end})
+        if (end - start).days != 60 or not days:
+            issues.append('M5_RECORDED_DAYS_DIFFER_FROM_DECLARED_60_DAYS')
+    else:
+        days = sorted({b.time.date().isoformat() for b in data['M5']})
+        if days != provenance.get('days'):
+            issues.append('M5_RECORDED_DAYS_DIFFER_FROM_DECLARED_60_DAYS')
     expected = dt.timedelta(minutes=5)
     gaps = [{'after': a.time.isoformat(), 'before': b.time.isoformat(),
              'missing_bars': int((b.time-a.time)/expected)-1}
             for a,b in zip(data['M5'], data['M5'][1:]) if b.time-a.time > expected]
     identity[str(required[-1].relative_to(ROOT))] = digest(required[-1])
+    identity[str(meta.relative_to(ROOT))] = digest(meta)
+    declared_meta = (provenance.get('files') or {}).get(meta.name) if fx else provenance.get('sha256', {}).get('m5_meta')
+    if fx and identity[str(meta.relative_to(ROOT))] != declared_meta:
+        issues.append('M5_META:HASH_MISMATCH')   # crypto capture declares no meta hash; recorded, not invented
     info = {'verdict': 'FAIL' if issues else 'PASS_WITH_DECLARED_GAPS', 'issues': sorted(set(issues)),
             'missing_files': [], 'source': provenance.get('source'), 'server': provenance.get('server'),
             'captured_at_utc': provenance.get('captured_at_utc'), 'days': days,
+            'window_policy': ('FX: recorded window_start..window_end (60 calendar days, UTC dates with M5 bars); earlier '
+                              'recorded rows are warmup only' if fx else 'crypto: 60 declared recorded days'),
             'period_start_utc': data['M5'][0].time.isoformat(),
             'period_end_utc': (data['M5'][-1].time+expected).isoformat(),
             'bars': {tf: len(v) for tf,v in data.items()}, 'sha256': identity,
@@ -107,7 +154,8 @@ def inventory(symbol):
 def branch_key(snap, case):
     signal = G.signal_snapshot(snap)
     o = signal.opportunity or {}
-    history = ('INSUFFICIENT_H1_M5' if len(G._closed(case['H1'],'H1',case['now'])) < C.MIN_H1_BARS
+    history = ('MARKET_CLOSED' if snap.state == 'MARKET_CLOSED'
+               else 'INSUFFICIENT_H1_M5' if len(G._closed(case['H1'],'H1',case['now'])) < C.MIN_H1_BARS
                or len(G._closed(case['M5'],'M5',case['now'])) < C.MIN_M5_BARS
                else 'FULL_D1' if len(case['D1']) >= A.HOST_COUNTS['D1'] else 'SHORT_D1')
     return '|'.join((history, o.get('direction') or 'NONE',
@@ -257,12 +305,100 @@ def write_report(path, report):
 
 SHARD_DAYS = 10
 BOUNDARY_BARS = 12
+INACTIVE_BRANCHES = ('INSUFFICIENT_H1_M5', 'MARKET_CLOSED')   # expected L4.evaluated/history FAILs, excluded from active
+
+
+def inactive(branch):
+    return branch.startswith(INACTIVE_BRANCHES)
+
+
+def ny_trading_date(t):
+    """Independent NY-17:00 trading date (zoneinfo), not the engine's trading_date."""
+    from zoneinfo import ZoneInfo
+    return (t.astimezone(ZoneInfo('America/New_York')) + dt.timedelta(hours=7)).date()
+
+
+def independent_poi_age(origin, h1, now):
+    """D-LSMC-6 contract unit: distinct observed closed-H1 NY-17 weekday trading dates since origin, minus one."""
+    dates = {ny_trading_date(b.time) for b in h1 if origin <= b.time and b.time + dt.timedelta(hours=1) <= now}
+    dates |= {ny_trading_date(origin), ny_trading_date(now)}
+    first, last = ny_trading_date(origin), ny_trading_date(now)
+    return max(0, len({d for d in dates if first <= d <= last and d.weekday() < 5}) - 1)
+
+
+def crypto_calendar_expiry(origin):
+    """Crypto keeps the seven-day calendar unit: expiry at the (max_age+1)-th NY-17 boundary after origin."""
+    from zoneinfo import ZoneInfo
+    ny = ZoneInfo('America/New_York')
+    local = origin.astimezone(ny)
+    boundary = local.replace(hour=17, minute=0, second=0, microsecond=0)
+    if local >= boundary:
+        boundary = (local.replace(tzinfo=None) + dt.timedelta(days=1)).replace(hour=17, minute=0, second=0, microsecond=0).replace(tzinfo=ny)
+    for _ in range(C.POI_MAX_AGE_TRADING_DAYS):
+        boundary = (boundary.replace(tzinfo=None) + dt.timedelta(days=1)).replace(tzinfo=ny)
+    return boundary.astimezone(dt.timezone.utc)
+
+
+def new_dlsmc():
+    return {'D-LSMC-6': Counter(), 'D-LSMC-1': Counter()}
+
+
+def check_dlsmc(state, symbol, case, snap, sig, origins, violations):
+    """D-LSMC-6: every observed active POI is within age; every expiry it later reports is past age.
+    D-LSMC-1: every detected OPPORTUNITY carries a C10 stop from the host-captured pip; no C10_PIP_SIZE_NOT_EVIDENCED."""
+    now, crypto = case['now'], symbol in C.CRYPTO_SYMBOLS
+    h1 = G._closed(case['H1'], 'H1', now)
+    for poi in [sig.poi] if sig.poi and sig.poi.get('origin_time') else []:
+        origin = dt.datetime.fromisoformat(poi['origin_time'])
+        origins[poi['poi_id']] = origin
+        ok = now < crypto_calendar_expiry(origin) if crypto else independent_poi_age(origin, h1, now) <= C.POI_MAX_AGE_TRADING_DAYS
+        state['D-LSMC-6']['active_checks'] += 1
+        if not ok:
+            state['D-LSMC-6']['active_violations'] += 1
+            violations.append({'defect': 'D-LSMC-6', 'kind': 'ACTIVE_PAST_AGE', 'poi_id': poi['poi_id'], 'at': now.isoformat()})
+    for poi_id in snap.expired_poi_ids:
+        if poi_id not in origins:
+            state['D-LSMC-6']['expiry_unobserved_origin'] += 1
+            continue
+        origin = origins[poi_id]
+        ok = now >= crypto_calendar_expiry(origin) if crypto else independent_poi_age(origin, h1, now) > C.POI_MAX_AGE_TRADING_DAYS
+        state['D-LSMC-6']['expiry_checks'] += 1
+        if not ok:
+            state['D-LSMC-6']['expiry_violations'] += 1
+            violations.append({'defect': 'D-LSMC-6', 'kind': 'EXPIRED_WITHIN_AGE', 'poi_id': poi_id, 'at': now.isoformat()})
+    if 'C10_PIP_SIZE_NOT_EVIDENCED' in snap.reason_codes:
+        state['D-LSMC-1']['pip_not_evidenced_scans'] += 1
+        violations.append({'defect': 'D-LSMC-1', 'kind': 'C10_PIP_SIZE_NOT_EVIDENCED', 'at': now.isoformat()})
+    o = sig.opportunity or {}
+    if sig.state == 'OPPORTUNITY' and o:
+        state['D-LSMC-1']['opportunity_scans'] += 1
+        pip, source = C.resolve_pip(symbol)
+        if o.get('stop_c10') is None and o.get('stop_reason') != 'C10_PIP_SIZE_NOT_EVIDENCED':
+            state['D-LSMC-1'][f"stop_none_contract_reason:{o.get('stop_reason')}"] += 1   # C10 evaluated, not a pip gap
+        elif o.get('stop_c10') is None:
+            state['D-LSMC-1']['stop_missing'] += 1
+            violations.append({'defect': 'D-LSMC-1', 'kind': 'STOP_MISSING', 'opp_id': o.get('opp_id'),
+                               'stop_reason': o.get('stop_reason'), 'at': now.isoformat()})
+        elif [o.get('pip_size'), o.get('pip_source')] != [pip, source]:
+            state['D-LSMC-1']['pip_source_mismatch'] += 1
+            violations.append({'defect': 'D-LSMC-1', 'kind': 'PIP_SOURCE_MISMATCH', 'opp_id': o.get('opp_id'), 'at': now.isoformat()})
+        else:
+            state['D-LSMC-1']['stop_present_host_pip'] += 1
+
+
+def dlsmc_verdicts(state):
+    six, one = state['D-LSMC-6'], state['D-LSMC-1']
+    return {'D-LSMC-6': ('FAIL' if six['active_violations'] or six['expiry_violations'] else
+                         'PASS' if six['active_checks'] and six['expiry_checks'] else 'INSUFFICIENT'),
+            'D-LSMC-1': ('FAIL' if one['stop_missing'] or one['pip_source_mismatch'] or one['pip_not_evidenced_scans'] else
+                         'PASS' if one['stop_present_host_pip'] else 'INSUFFICIENT')}
 
 
 def layout(info, bars, shard):
-    if shard not in range(6):
+    if shard not in range(SHARDS):
         raise ValueError('60 recorded days require shards 0..5')
-    days = info['days'][shard*SHARD_DAYS:(shard+1)*SHARD_DAYS]
+    size = math.ceil(len(info['days'])/SHARDS)
+    days = info['days'][shard*size:(shard+1)*size]
     indices = [i for i,b in enumerate(bars['M5']) if b.time.date().isoformat() in days]
     start, end = min(indices),max(indices)+1
     probe = max(0,start-BOUNDARY_BARS)
@@ -298,7 +434,7 @@ def make_case(symbol, bars, row, starts=None):
     return {'cost_evidence':{'spread':cost['spread'].get(last.time),
                              'spread_bar_close_utc':(last.time+dt.timedelta(minutes=5)).isoformat(),
                              'commission_binding':cost['binding']},'case_id':f'{symbol}:{now.isoformat()}','symbol':symbol,'now':now,
-            'fixture':str(DATASET.relative_to(ROOT)),'classification':'VT_RECORDED',
+            'fixture':str(dataset(symbol).relative_to(ROOT)),'classification':'VT_RECORDED',
             'target_history':history,**windows}
 
 
@@ -326,17 +462,17 @@ def boundary_reference(symbol,bars,plan):
 
 
 def run_shard(path,symbol,shard):
-    if symbol not in C.CRYPTO_SYMBOLS:
-        raise ValueError('FX stays PENDING_D1; this mission replays crypto only')
+    if symbol not in SYMBOLS:
+        raise ValueError(f'unknown symbol {symbol}')
     path=Path(path);path.parent.mkdir(parents=True,exist_ok=True)
     report={'mission':MISSION,'strategy':'ST_LARGE_SMC_V1@1.1.3','symbol':symbol,'shard':shard,
             'scope_days':60,'shard_days':SHARD_DAYS,'verdict':'NOT_RUN_RESOURCE','completed':False,
             'verification_status':'NOT_VERIFIED','resource_class':'R1','workers':1,
             'l5_cost_source':COST_SOURCE,'boundary_reference':{'verdict':'NOT_RUN'},
-            'engine_defects':[],'FX':'PENDING_D1'}
+            'engine_defects':[],'dataset':str(dataset(symbol).relative_to(ROOT))}
     write_report(path,report)
-    owner={'agent':'CODEX_LOCAL','mission':MISSION,'pid':os.getpid()};lock=RG.canonical_lock_path()
-    acquired=RG.acquire(lock,**owner,resource_class='R1',command_summary=f'C24-R3 {symbol} 10-day shard {shard}; one worker')
+    owner={'agent':'CLAUDE_CODE_WEB','mission':MISSION,'pid':os.getpid()};lock=RG.canonical_lock_path()
+    acquired=RG.acquire(lock,**owner,resource_class='R1',command_summary=f'{MISSION} {symbol} shard {shard}; one worker')
     print(json.dumps(acquired),flush=True)
     if not acquired['ACQUIRED']:
         return 2
@@ -355,6 +491,7 @@ def run_shard(path,symbol,shard):
         plan=layout(info,bars,shard);report['layout']=plan;write_report(path,report)
         evaluator=EvidenceEvaluator();total,active=new_counts(),new_counts();branches={};previous=None
         selections={};mismatch_counts=Counter();last_checkpoint=time.monotonic()
+        dlsmc,origins,dviolations=new_dlsmc(),{},[]
         with (path.parent/'signal_events.jsonl').open('w') as events,(path.parent/'mismatches.jsonl').open('w') as mismatches,(path.parent/'scans.csv').open('w',newline='') as scans:
             writer=csv.writer(scans);writer.writerow(['symbol','m5_row','closed_at_utc','branch','operational_state','signal_state',*GATES,'opp_id','entry','stop','target','pip_source','c11_source','rr','rr_block','creation_target_sha256','l5_cost_R','l5_actionability'])
             for row in range(plan['core_start_row'],plan['core_end_row_exclusive']):
@@ -362,8 +499,9 @@ def run_shard(path,symbol,shard):
                 result,snap=evaluator.evaluate(C.SPEC,case);signal=G.signal_snapshot(snap);o=signal.opportunity or {}
                 branch=branch_key(snap,case);add_result(total,result,snap)
                 add_result(branches.setdefault(branch,new_counts()),result,snap)
-                if not branch.startswith('INSUFFICIENT_H1_M5'):
+                if not inactive(branch):
                     add_result(active,result,snap)
+                check_dlsmc(dlsmc,symbol,case,snap,signal,origins,dviolations)
                 target={k:o.get(k) for k in ('target_c11','target_reason','c11_source','target_selection')}
                 target_hash=hashlib.sha256(json.dumps(target,sort_keys=True).encode()).hexdigest() if o else ''
                 if o:
@@ -379,7 +517,8 @@ def run_shard(path,symbol,shard):
                                              'snapshot':G._payload(signal)},sort_keys=True)+'\n');previous=signature
                 for gate in GATES:
                     if result['gate_status'][gate]=='FAIL':
-                        category='EXPECTED_INSUFFICIENT_HISTORY' if branch.startswith('INSUFFICIENT_H1_M5') and gate=='L4' else f'UNEXPECTED_{gate}'
+                        category=('EXPECTED_INSUFFICIENT_HISTORY' if branch.startswith('INSUFFICIENT_H1_M5') and gate=='L4'
+                                  else 'EXPECTED_MARKET_CLOSED' if branch.startswith('MARKET_CLOSED') and gate=='L4' else f'UNEXPECTED_{gate}')
                         mismatch_counts[category]+=1
                         mismatches.write(json.dumps({'category':category,'symbol':symbol,'m5_row':row,'gate':gate,'at':snap.evaluated_at,'checks':result['gates'][gate]},sort_keys=True)+'\n')
                 writer.writerow([symbol,row,snap.evaluated_at,branch,snap.state,signal.state,*[result['gate_status'][g] for g in GATES],o.get('opp_id'),o.get('entry_reference'),o.get('stop_c10'),o.get('target_c11'),o.get('pip_source'),o.get('c11_source'),o.get('reward_risk'),o.get('reward_risk_reason'),target_hash,result['gates']['L5'].get('cost_R'),result['gates']['L5'].get('actionability')])
@@ -392,11 +531,13 @@ def run_shard(path,symbol,shard):
         report['boundary_reference']=boundary_reference(symbol,bars,plan)
         report['protected_bytes_unchanged']=protected==protected_identity()
         report['raw_all_scans']=summary(total);report['active_history_scans']=summary(active)
-        report['branch_matrix']={key:summary(value,history_insufficient=key.startswith('INSUFFICIENT_H1_M5')) for key,value in sorted(branches.items())}
+        report['branch_matrix']={key:summary(value,history_insufficient=inactive(key)) for key,value in sorted(branches.items())}
+        report['dlsmc_recheck']={'counts':{k:dict(v) for k,v in dlsmc.items()},'verdicts':dlsmc_verdicts(dlsmc),
+                                 'violations':dviolations[:50],'violation_count':len(dviolations)}
         report['mismatch_categories']=dict(mismatch_counts);report['selections']=selections
         report.update(completed=True,completed_scans=plan['core_scans'],elapsed_seconds=round(time.monotonic()-started,2),evaluator=evaluator.statistics())
         failed=(not report['protected_bytes_unchanged'] or report['engine_defects'] or report['boundary_reference']['verdict']!='PASS'
-                or any(k.startswith('UNEXPECTED_') for k in mismatch_counts))
+                or any(k.startswith('UNEXPECTED_') for k in mismatch_counts) or dviolations)
         report['verdict']='FAIL' if failed else 'COMPLETED'
         write_report(path,report)
         print(json.dumps({'symbol':symbol,'shard':shard,'verdict':report['verdict'],'scans':report['completed_scans'],'seconds':report['elapsed_seconds'],'engine_defects':len(report['engine_defects'])}),flush=True)
@@ -416,12 +557,12 @@ def accumulate(counts,row):
         counts['gates'][gate].update(row['gates'][gate])
 
 
-def merge_shards(root,out):
+def merge_shards(root,out,symbols=SYMBOLS):
     root=Path(root);report={'mission':MISSION,'strategy':'ST_LARGE_SMC_V1@1.1.3','scope_days':60,
-                          'verification_status':'NOT_VERIFIED','FX':'PENDING_D1','symbols':{},'proposal':'NO_QUALIFYING_SCOPE','rule_diff':audit.rule_diff()}
-    for symbol in sorted(C.CRYPTO_SYMBOLS):
-        active=new_counts();raw=new_counts();branches={};seen={};cross=[];shards=[];identities=set()
-        for shard in range(6):
+                          'verification_status':'NOT_VERIFIED','symbols':{},'proposal':'NO_QUALIFYING_SCOPE','rule_diff':audit.rule_diff()}
+    for symbol in symbols:
+        active=new_counts();raw=new_counts();branches={};seen={};cross=[];shards=[];identities=set();dlsmc=new_dlsmc()
+        for shard in range(SHARDS):
             path=root/symbol/f'shard_{shard:02d}'/'audit.json'
             if not path.exists():
                 shards.append({'shard':shard,'verdict':'NOT_RUN'});continue
@@ -431,18 +572,21 @@ def merge_shards(root,out):
             identity=row['identity']
             identities.add(json.dumps({k:identity[k] for k in ('contract_sha256','engine_sha256','runner_sha256','frozen_file_sha256')},sort_keys=True))
             accumulate(raw,row['raw_all_scans']);accumulate(active,row['active_history_scans'])
+            for key,counts in row['dlsmc_recheck']['counts'].items():dlsmc[key].update(counts)
             for key,counts in row['branch_matrix'].items():accumulate(branches.setdefault(key,new_counts()),counts)
             for opp,value in row['selections'].items():
                 if opp in seen and seen[opp]['target_sha256']!=value['target_sha256']:
                     cross.append({'classification':'ENGINE_DEFECT','opp_id':opp,'before':seen[opp],'after':value,'file_line':'src/large_smc_v113/watch.py:264'})
                 seen[opp]=value
         complete=all(x.get('completed') and x['verdict']=='COMPLETED' for x in shards)
-        matrix={key:summary(value,history_insufficient=key.startswith('INSUFFICIENT_H1_M5')) for key,value in branches.items()}
+        matrix={key:summary(value,history_insufficient=inactive(key)) for key,value in branches.items()}
         failed_shard=any(x['verdict'].startswith('FAIL') for x in shards)
         identity_mismatch=len(identities)>1
         verdict=('FAIL_ENGINE_DEFECT' if cross else 'FAIL_SHARD' if failed_shard else 'FAIL_IDENTITY_MISMATCH' if identity_mismatch
                  else 'COMPLETED' if complete else 'PARTIAL_NOT_RUN_RESOURCE' if any(x['verdict']=='NOT_RUN_RESOURCE' for x in shards) else 'NOT_RUN')
-        report['symbols'][symbol]={'verdict':verdict,'shards':shards,'completed':complete,'raw_all_scans_completed_shards_only':summary(raw),'active_history_completed_shards_only':summary(active),'branch_matrix_completed_shards_only':matrix,'cross_shard_engine_defects':cross,'unique_opportunities_completed_shards_only':len(seen)}
+        report['symbols'][symbol]={'verdict':verdict,'shards':shards,'completed':complete,'raw_all_scans_completed_shards_only':summary(raw),'active_history_completed_shards_only':summary(active),'branch_matrix_completed_shards_only':matrix,'cross_shard_engine_defects':cross,'unique_opportunities_completed_shards_only':len(seen),
+                                   'dlsmc_recheck':{'counts':{k:dict(v) for k,v in dlsmc.items()},'verdicts':dlsmc_verdicts(dlsmc)},
+                                   'active_gate_verdicts':summary(active)['gate_verdicts']}
         # R3 explicitly asks for L1-L6 PASS; advisory WARN is never manufactured into PASS.
         eligible=complete and not cross and not failed_shard and not identity_mismatch and any(v['qualifies_for_proposal'] and all(v['gate_verdicts'][g]=='PASS' for g in GATES) for v in matrix.values())
         report['symbols'][symbol]['qualifies_for_r3_proposal']=eligible
@@ -453,12 +597,31 @@ def merge_shards(root,out):
     return report
 
 
+def resume(root,out,only=None):
+    """NOT_RUN_RESOURCE fix: a managed-environment restart killed one long process (#213). Each symbol/shard is a
+    short independent unit (one R1 lock, one worker) with its own atomic report; re-invoking skips COMPLETED shards,
+    so a restart loses at most one shard. A FAIL shard is kept as evidence and not re-run."""
+    root=Path(root);rc=0
+    for symbol in [only] if only else SYMBOLS:
+        for shard in range(SHARDS):
+            path=root/symbol/f'shard_{shard:02d}'/'audit.json'
+            verdict=json.loads(path.read_text()).get('verdict','') if path.exists() else ''
+            if verdict=='COMPLETED' or verdict.startswith('FAIL'):   # failures are evidence: never overwritten
+                continue
+            rc=max(rc,run_shard(path,symbol,shard))
+    merge_shards(root,out,[only] if only else SYMBOLS)
+    return rc
+
+
 def cli(argv=None):
     import argparse
     parser=argparse.ArgumentParser()
-    parser.add_argument('--symbol',choices=sorted(C.CRYPTO_SYMBOLS));parser.add_argument('--shard',type=int)
+    parser.add_argument('--symbol',choices=SYMBOLS);parser.add_argument('--shard',type=int)
     parser.add_argument('--out',required=True);parser.add_argument('--merge-root')
+    parser.add_argument('--resume-root',help='run every shard under ROOT/<SYM>/shard_NN/ not yet COMPLETED, then merge to --out')
     args=parser.parse_args(argv)
+    if args.resume_root:
+        return resume(args.resume_root,args.out,args.symbol)
     if args.merge_root:
         merge_shards(args.merge_root,args.out);return 0
     if args.symbol is None or args.shard is None:parser.error('--symbol and --shard required')

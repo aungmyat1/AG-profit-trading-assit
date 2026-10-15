@@ -712,3 +712,22 @@ def test_final_handoff_fails_live_account_then_pending_notification_without_brok
     assert calls == []
     assert [r for r in store.outcomes(inputs["ticket"]["ticket_id"])
             if r["outcome_kind"] != "S1_PRE_ORDER_TELEGRAM_NOTICE"] == []
+
+
+@pytest.mark.parametrize("missing_snapshot", [False, True])
+def test_c14_admission_never_accepts_a_missing_risk_snapshot(tmp_path, missing_snapshot):
+    inputs = _pre_send_inputs(tmp_path)
+    result = evaluate_pre_send_gates(
+        inputs["ticket"], inputs["market"],
+        None if missing_snapshot else inputs["risk_snapshot"],
+        now_utc=inputs["now"], authorization_path=str(inputs["auth_path"]),
+        scope=inputs["scope"], ticket_store=inputs["ticket_store"],
+    )
+    if missing_snapshot:
+        assert result.admitted is False
+        assert result.reason_code == "RISK_SNAPSHOT_MISSING"
+        assert "RISK_SNAPSHOT_MISSING" in result.block_reasons
+        assert result.details["gate_details"]["risk"]["status"] == "BLOCKED"
+    else:
+        assert result.admitted is True
+        assert result.details["gate_details"]["risk"]["status"] == "PASS"
