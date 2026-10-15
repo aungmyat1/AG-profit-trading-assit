@@ -3,6 +3,8 @@ actionability outcome, never an L5 FAIL; missing evidence never PASS."""
 import datetime as dt
 from types import SimpleNamespace
 
+import pytest
+
 from v1_tickets.lsmc_v113_logic_gate import (
     INSUFFICIENT,
     NOT_APPLICABLE,
@@ -43,3 +45,21 @@ def test_missing_evidence_is_insufficient():
 def test_no_priced_opportunity_is_not_applicable():
     assert l5_od1011(_case(), _sig(state="WATCH"))["status"] == NOT_APPLICABLE
     assert l5_od1011(_case(), _sig(stop=None))["status"] == NOT_APPLICABLE
+
+
+FX_BINDING = {"value": 0.0, "source": "OD1011-COMMISSION", "policy": "OD1009-D2", "binding": "FULL_ACCOUNT_LOGIN"}
+
+
+@pytest.mark.parametrize("spread,action", [(0.0001, "OK"), (0.0003, "WARN"), (0.0006, "BLOCK")])
+def test_fx_gold_od1009_d2_cost_gate(spread, action):
+    g = l5_od1011(_case(spread=spread, binding=FX_BINDING, symbol="EURUSD"), _sig(entry=1.1000, stop=1.0980))
+    assert g["status"] == PASS and g["actionability"] == action
+    assert g["thresholds"] == {"cost_warn_R": 0.10, "cost_block_R": 0.25}
+
+
+def test_fx_gold_without_od1009_d2_binding_stays_insufficient():
+    sig = _sig(entry=1.1000, stop=1.0980)
+    assert l5_od1011(_case(spread=0.0001, binding=BINDING, symbol="XAUUSD"), sig)["status"] == INSUFFICIENT
+    assert l5_od1011(_case(spread=None, binding=FX_BINDING, symbol="GBPUSD"), sig)["status"] == INSUFFICIENT
+    suffix_only = {**FX_BINDING, "binding": "SUFFIX_ONLY"}
+    assert l5_od1011(_case(spread=0.0001, binding=suffix_only, symbol="EURUSD"), sig)["status"] == INSUFFICIENT
