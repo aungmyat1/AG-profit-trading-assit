@@ -105,9 +105,22 @@ def test_l5_recompute_is_insufficient_without_full_login_and_pass_with_it(tmp_pa
     import lsmc_v113_l5_recompute as L
 
     import v1_tickets.manual_ticket as mt
-    shard=tmp_path/'EURUSD'/'shard_00';shard.mkdir(parents=True)
-    (shard/'scans.csv').write_text('signal_state,closed_at_utc,entry,stop\n'
-                                   'OPPORTUNITY,2026-08-03T12:00:00+00:00,1.1000,1.0980\nWATCH,2026-08-03T12:05:00+00:00,,\n')
+    rows='signal_state,closed_at_utc,entry,stop\nOPPORTUNITY,2026-08-03T12:00:00+00:00,1.1000,1.0980\nWATCH,2026-08-03T12:05:00+00:00,,\n'
+    ident={k:'x' for k in L.IDENTITY_KEYS}
+    def shard(n,**over):
+        folder=tmp_path/'EURUSD'/f'shard_{n:02d}';folder.mkdir(parents=True,exist_ok=True)
+        (folder/'scans.csv').write_text(rows)
+        (folder/'audit.json').write_text(json.dumps({'verdict':'COMPLETED','completed':True,'completed_scans':2,'identity':ident,**over}))
+    for n in range(5):
+        shard(n)
+    assert L.recompute(tmp_path,'EURUSD')=={'symbol':'EURUSD','L5':'INCOMPLETE_ARTIFACTS','reason':'SHARD_05_MISSING'}
+    shard(5,identity={**ident,'runner_sha256':'y'})
+    assert L.recompute(tmp_path,'EURUSD')['reason']=='IDENTITY_MISMATCH'
+    shard(5,verdict='FAIL')
+    assert L.recompute(tmp_path,'EURUSD')['reason']=='SHARD_05_NOT_COMPLETED'
+    shard(5,completed_scans=9)
+    assert L.recompute(tmp_path,'EURUSD')['reason']=='SHARD_05_SCAN_COUNT_MISMATCH'
+    shard(5)
     replay._COST.pop('EURUSD',None)
     assert L.recompute(tmp_path,'EURUSD')['L5']=='INSUFFICIENT'
     committed=mt.load_owner_config()
@@ -116,4 +129,22 @@ def test_l5_recompute_is_insufficient_without_full_login_and_pass_with_it(tmp_pa
     replay._COST.pop('EURUSD',None)
     out=L.recompute(tmp_path,'EURUSD')
     replay._COST.pop('EURUSD',None)
-    assert out['L5']=='PASS' and out['priced_opportunity_rows']==1
+    assert out['L5']=='PASS' and out['priced_opportunity_rows']==6
+
+
+def test_resume_never_overwrites_a_failed_shard(tmp_path,monkeypatch):
+    for n in range(6):
+        folder=tmp_path/'EURUSD'/f'shard_{n:02d}';folder.mkdir(parents=True)
+        (folder/'audit.json').write_text(json.dumps({'verdict':'FAIL' if n==2 else 'COMPLETED'}))
+    ran=[]
+    monkeypatch.setattr(replay,'run_shard',lambda *a:ran.append(a) or 0)
+    monkeypatch.setattr(replay,'merge_shards',lambda *a:None)
+    assert replay.resume(tmp_path,tmp_path/'m.json','EURUSD')==0 and ran==[]
+
+
+def test_m5_meta_is_required_and_hash_checked(monkeypatch):
+    info,_=replay.inventory('EURUSD')
+    assert 'tests/fixtures/vt_recorded_60d_fx/EURUSD_m5_meta.csv' in info['sha256'] and not info['issues']
+    real=replay.digest
+    monkeypatch.setattr(replay,'digest',lambda p:'0'*64 if str(p).endswith('_m5_meta.csv') else real(p))
+    assert 'M5_META:HASH_MISMATCH' in replay.inventory('EURUSD')[0]['issues']

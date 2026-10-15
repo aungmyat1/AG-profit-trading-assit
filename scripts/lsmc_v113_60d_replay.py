@@ -78,7 +78,8 @@ def protected_identity():
 
 def inventory(symbol):
     paths = {tf: dataset(symbol)/f'{symbol}_{tf.lower()}.csv' for tf in ('D1', 'H1', 'M5')}
-    required = list(paths.values()) + [dataset(symbol)/f'{symbol}_provenance.json']
+    meta = dataset(symbol)/f'{symbol}_m5_meta.csv'          # L5 spread source: required and hash-checked
+    required = list(paths.values()) + [meta, dataset(symbol)/f'{symbol}_provenance.json']
     fx = symbol not in C.CRYPTO_SYMBOLS
     missing = [str(p.relative_to(ROOT)) for p in required if not p.is_file()]
     if missing:
@@ -131,6 +132,10 @@ def inventory(symbol):
              'missing_bars': int((b.time-a.time)/expected)-1}
             for a,b in zip(data['M5'], data['M5'][1:]) if b.time-a.time > expected]
     identity[str(required[-1].relative_to(ROOT))] = digest(required[-1])
+    identity[str(meta.relative_to(ROOT))] = digest(meta)
+    declared_meta = (provenance.get('files') or {}).get(meta.name) if fx else provenance.get('sha256', {}).get('m5_meta')
+    if fx and identity[str(meta.relative_to(ROOT))] != declared_meta:
+        issues.append('M5_META:HASH_MISMATCH')   # crypto capture declares no meta hash; recorded, not invented
     info = {'verdict': 'FAIL' if issues else 'PASS_WITH_DECLARED_GAPS', 'issues': sorted(set(issues)),
             'missing_files': [], 'source': provenance.get('source'), 'server': provenance.get('server'),
             'captured_at_utc': provenance.get('captured_at_utc'), 'days': days,
@@ -600,7 +605,8 @@ def resume(root,out,only=None):
     for symbol in [only] if only else SYMBOLS:
         for shard in range(SHARDS):
             path=root/symbol/f'shard_{shard:02d}'/'audit.json'
-            if path.exists() and json.loads(path.read_text()).get('verdict')=='COMPLETED':
+            verdict=json.loads(path.read_text()).get('verdict','') if path.exists() else ''
+            if verdict=='COMPLETED' or verdict.startswith('FAIL'):   # failures are evidence: never overwritten
                 continue
             rc=max(rc,run_shard(path,symbol,shard))
     merge_shards(root,out,[only] if only else SYMBOLS)

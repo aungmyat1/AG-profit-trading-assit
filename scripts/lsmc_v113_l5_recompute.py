@@ -20,11 +20,37 @@ import lsmc_v113_60d_replay as R
 
 from v1_tickets.lsmc_v113_logic_gate import l5_od1011
 
+IDENTITY_KEYS = ('contract_sha256', 'engine_sha256', 'runner_sha256', 'frozen_file_sha256', 'code_sha')
+
+
+def artifact_set(root, symbol):
+    """All six shard audits COMPLETED, one identity, and scans.csv rows == completed_scans; else the reason."""
+    identities = set()
+    for shard in range(R.SHARDS):
+        folder = Path(root, symbol, f'shard_{shard:02d}')
+        audit, scans = folder/'audit.json', folder/'scans.csv'
+        if not audit.is_file() or not scans.is_file():
+            return f'SHARD_{shard:02d}_MISSING'
+        report = json.loads(audit.read_text())
+        if report.get('verdict') != 'COMPLETED' or not report.get('completed'):
+            return f'SHARD_{shard:02d}_NOT_COMPLETED'
+        with scans.open() as stream:
+            if sum(1 for _ in csv.DictReader(stream)) != report.get('completed_scans'):
+                return f'SHARD_{shard:02d}_SCAN_COUNT_MISMATCH'
+        identities.add(json.dumps({k: (report.get('identity') or {}).get(k) for k in IDENTITY_KEYS}, sort_keys=True))
+    return None if len(identities) == 1 else 'IDENTITY_MISMATCH'
+
 
 def recompute(root, symbol):
+    problem = artifact_set(root, symbol)
+    if problem:      # partial or mixed artifacts can never satisfy the host-L5 gate
+        return {'symbol': symbol, 'L5': 'INCOMPLETE_ARTIFACTS', 'reason': problem}
+    data, _bars = R.inventory(symbol)            # spread metadata + provenance hashes authenticated first
+    if data['verdict'] != 'PASS_WITH_DECLARED_GAPS':
+        return {'symbol': symbol, 'L5': 'DATA_NOT_AUTHENTICATED', 'reason': data.get('issues') or data['verdict']}
     cost = R.cost_source(symbol)
     counts, reasons, actions, rows = Counter(), Counter(), Counter(), 0
-    for scans in sorted(Path(root, symbol).glob('shard_*/scans.csv')):
+    for scans in (Path(root, symbol, f'shard_{s:02d}', 'scans.csv') for s in range(R.SHARDS)):
         with scans.open() as stream:
             for row in csv.DictReader(stream):
                 if row['signal_state'] != 'OPPORTUNITY' or not row['entry'] or not row['stop']:

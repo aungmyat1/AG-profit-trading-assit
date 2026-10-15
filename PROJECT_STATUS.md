@@ -8,6 +8,8 @@ review_by: 2026-11-07
 
 ## Current snapshot (2026-10-11)
 
+LSMC 1.1.3 EURUSD entry logic (2026-10-15, #233, container replay; not host-verified): full-window recorded VT 60d replay (#215), 12,094 scans in 6 resumable shards, all COMPLETED. Gates: L1/L2/L3/L4/L6 PASS, **L5 INSUFFICIENT**. The FX/gold L5 path is now implemented: OD1009-D2 thresholds plus OD1011-COMMISSION, and the commission binds only through the full login; a committed suffix alone gives INSUFFICIENT. Unit-tested only. D-LSMC-6 PASS, D-LSMC-1 PASS, 0 C11 target changes. SHORT C10 stops were NOT_EVALUATED: there is no evidenced bid/ask (869 scans). Registration draft not applied; eligibility PENDING_HOST_L5; no authority. [Draft](docs/proposals/LSMC_V113_REGISTRATION.md). Next step: host L5 recompute with the full-login binding, plus an owner decision on the SHORT C10 spread.
+
 Dated historical evidence — C24 1.1.2 (2026-10-14, #213; SUPERSEDED): interrupted
 full-window replay remains NOT_RUN_RESOURCE; static C11 target ENGINE_DEFECT and
 partial observations are retained. L5 is INSUFFICIENT (no accepted cost evidence;

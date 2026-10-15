@@ -17,7 +17,7 @@ Full-window replay of recorded VT data for EURUSD, 60 days (#215 D1-R2,
 used only as warmup. The replay ran 6 day-chunked shards with one R1 worker. Every shard COMPLETED, the
 boundary-reference checks passed, protected bytes were unchanged and the reference-parity check passed.
 Every shard was recorded at code `32d5c93c01bf43d818426cbfc926577e20446d08`, runner sha256 prefix `fe171028ee0b`.
-The declared rule diff against 1.1.2 is exact (PASS).
+The declared rule diff against 1.1.2 is exact (PASS). After the replay, a review follow-up added two checks. The replay script now requires and hash-checks `EURUSD_m5_meta.csv`; that later version of the script has a different sha256 from the one the shards recorded. Separately, the recompute script refuses incomplete or identity-mismatched shard sets. Checked after the run, the committed spread metadata the replay read matches the hash declared in its provenance (`46a47408…0254a`).
 
 Artifacts are in `artifacts/logic_verification/ST_LARGE_SMC_V1_1_1_3/lsmc113_eurusd_entry/`: `merged.json`,
 the per-shard `audit.json`, `scans.csv`, `signal_events.jsonl` and `mismatches.jsonl`, and `l5_recompute.json`.
