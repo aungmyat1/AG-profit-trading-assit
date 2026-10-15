@@ -1,0 +1,149 @@
+{
+  "captured_at_utc": "2026-10-14T19:11:07.614088+00:00",
+  "code_sha": "90cf1a79a7b9e1188825efb1a0175c5edac5dcb0",
+  "account": {
+    "server": "VTMarkets-Demo",
+    "login_suffix": "999",
+    "trade_mode": 0,
+    "pinned_demo": true
+  },
+  "source": "MT5_VT_MARKETS_DEMO",
+  "window": "last 5 server days, M15 bars",
+  "symbols": {
+    "USDJPY": {
+      "broker_symbol": "USDJPY-VIP",
+      "symbol_info": {
+        "digits": 3,
+        "point": 0.001,
+        "spread": 16,
+        "spread_float": true,
+        "trade_contract_size": 100000.0,
+        "trade_tick_size": 0.001,
+        "trade_tick_value": 0.632179184868159,
+        "trade_tick_value_loss": 0.6322431354201572,
+        "volume_min": 0.01,
+        "volume_step": 0.01,
+        "volume_max": 100.0,
+        "trade_stops_level": 0,
+        "trade_freeze_level": 0,
+        "trade_mode": 4,
+        "trade_calc_mode": 0,
+        "currency_base": "USD",
+        "currency_profit": "JPY",
+        "currency_margin": "USD",
+        "swap_long": 6.56,
+        "swap_short": -21.34
+      },
+      "spread_points_by_server_day": {
+        "2026-10-08": {
+          "bars": 96,
+          "min": 16,
+          "median": 16,
+          "p95": 19,
+          "max": 78
+        },
+        "2026-10-09": {
+          "bars": 96,
+          "min": 16,
+          "median": 16,
+          "p95": 17,
+          "max": 111
+        },
+        "2026-10-12": {
+          "bars": 96,
+          "min": 16,
+          "median": 16,
+          "p95": 19,
+          "max": 122
+        },
+        "2026-10-13": {
+          "bars": 96,
+          "min": 16,
+          "median": 16,
+          "p95": 19,
+          "max": 78
+        },
+        "2026-10-14": {
+          "bars": 77,
+          "min": 16,
+          "median": 16,
+          "p95": 16,
+          "max": 78
+        }
+      },
+      "status": "OK"
+    },
+    "XAUUSD": {
+      "broker_symbol": "XAUUSD-VIP",
+      "symbol_info": {
+        "digits": 2,
+        "point": 0.01,
+        "spread": 27,
+        "spread_float": true,
+        "trade_contract_size": 100.0,
+        "trade_tick_size": 0.01,
+        "trade_tick_value": 1.0,
+        "trade_tick_value_loss": 1.0,
+        "volume_min": 0.01,
+        "volume_step": 0.01,
+        "volume_max": 100.0,
+        "trade_stops_level": 20,
+        "trade_freeze_level": 0,
+        "trade_mode": 4,
+        "trade_calc_mode": 4,
+        "currency_base": "XAU",
+        "currency_profit": "USD",
+        "currency_margin": "USD",
+        "swap_long": -77.44,
+        "swap_short": 36.7
+      },
+      "spread_points_by_server_day": {
+        "2026-10-08": {
+          "bars": 92,
+          "min": 27,
+          "median": 27,
+          "p95": 27,
+          "max": 32
+        },
+        "2026-10-09": {
+          "bars": 92,
+          "min": 27,
+          "median": 27,
+          "p95": 27,
+          "max": 32
+        },
+        "2026-10-12": {
+          "bars": 92,
+          "min": 27,
+          "median": 27,
+          "p95": 27,
+          "max": 32
+        },
+        "2026-10-13": {
+          "bars": 92,
+          "min": 27,
+          "median": 27,
+          "p95": 27,
+          "max": 32
+        },
+        "2026-10-14": {
+          "bars": 73,
+          "min": 27,
+          "median": 27,
+          "p95": 27,
+          "max": 32
+        }
+      },
+      "status": "OK"
+    }
+  },
+  "mt5_calls": [
+    "account_info",
+    "copy_rates_range",
+    "initialize",
+    "last_error",
+    "symbol_info",
+    "terminal_info"
+  ],
+  "refused_calls": []
+}
