@@ -25,7 +25,8 @@ unknown-send and acknowledgement-fallback persistence failures.
 - Date: 2026-10-15.
 - Environment: Windows PowerShell, Python 3.14.0, fake terminal only.
 - Command: `python -m pytest -q tests/test_demo_execution_dispatch.py tests/test_manual_ticket_report_and_boundary.py tests/test_demo_execution_authority_boundary.py`
-- Result: **121 passed** in 230.98 seconds.
+- Result: **121 passed**; the post-lint rerun completed in 384.41 seconds.
+- Lint: `python -m ruff check src/demo_execution/dispatch.py tests/test_demo_execution_dispatch.py` — passed.
 - `git diff --check`: passed.
 - GitHub CI for the PR update: pending at evidence capture.
 - Host / MT5 verification: not run. No broker operation was attempted.

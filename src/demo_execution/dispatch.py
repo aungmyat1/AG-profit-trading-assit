@@ -22,7 +22,11 @@ from datetime import datetime, timezone
 from typing import Any, Callable, Mapping, Optional
 
 from demo_execution.admission import MarketEvidence
-from demo_execution.authority import AccountIdentity, ExecutionAuthority, build_authority
+from demo_execution.authority import (
+    AccountIdentity,
+    ExecutionAuthority,
+    build_authority,
+)
 from demo_execution.authorization import load_standing_authorization
 from demo_execution.broker_adapter import CanonicalBrokerAdapter
 from demo_execution.guarded_adapter import GuardDecision, GuardedCanonicalAdapter

@@ -3,9 +3,9 @@ from __future__ import annotations
 
 import itertools
 import sys
-from types import SimpleNamespace
 from datetime import timedelta
 from pathlib import Path
+from types import SimpleNamespace
 
 import yaml
 
@@ -24,8 +24,8 @@ from test_demo_execution_canonical_adapter import FakeMT5, _shape  # noqa: E402
 from demo_execution.dispatch import (  # noqa: E402
     AUTHORIZATION_REFUSED,
     BROKER_ACK_RECORDED,
-    HALTED,
     HALT_FAILED,
+    HALTED,
     ORDER_CHECK_REFUSED,
     SCOPE_REFUSED,
     dispatch_demo_order,
