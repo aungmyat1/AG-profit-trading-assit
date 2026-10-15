@@ -33,4 +33,6 @@ unknown-send and acknowledgement-fallback persistence failures.
 
 This remediation changes no scope, READY authority, standing authorization, execution
 flag, order shape, or live-account capability. S1 remains disabled and the host path
-remains unapproved.
+remains unapproved. The independently owner-approved `PILOT_FULL_TP1` shape remains
+analytics-excluded, with margin mode `UNKNOWN_UNTIL_HOST_VERIFIED`; that shape approval
+does not enable a scope or authorize an order.
