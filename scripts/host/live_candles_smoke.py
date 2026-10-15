@@ -738,7 +738,8 @@ def pin_mismatch_field(pin_status: str) -> Optional[str]:
     return next((w for w in words[1:] if w in PIN_FIELDS), None)
 
 
-def report_lane_lines(label: str, run, journal: Optional[str] = None, sender=None, now=None) -> List[str]:
+def report_lane_lines(label: str, run, journal: Optional[str] = None, sender=None, now=None,
+                      ticket_setup_only: bool = False) -> List[str]:
     """Run one observational (REPORT_ONLY) lane and deliver its archived observations (PR C); a lane or
     delivery fault is logged and never stops the runner."""
     try:
@@ -751,7 +752,8 @@ def report_lane_lines(label: str, run, journal: Optional[str] = None, sender=Non
         try:
             from reporting.deliver import deliver_observations
             lines += deliver_observations(observations, sender=sender or build_sender(journal, root=REPO_ROOT),
-                                          journal=journal, now=now or utcnow(), label=label)
+                                          journal=journal, now=now or utcnow(), label=label,
+                                          ticket_setup_only=ticket_setup_only)
         except Exception as exc:  # noqa: BLE001 -- delivery faults never stop the runner
             lines.append(f"REPORT_DELIVERY {label} FAILED {type(exc).__name__}")
     return lines
@@ -969,7 +971,7 @@ def _main(argv, identity: Dict[str, Any]) -> int:
                                 now, feed=CcfdFeed(fetch, host_quote_observed(mt5)),
                                 archive_root=os.path.join(journal, "ticket_delivery", "archive"),
                                 balance=report_account(pin_capture.get("account"))["balance"]),
-                                journal=journal, now=now)
+                                journal=journal, now=now, ticket_setup_only=True)
                         elif args.mode == "smoke":
                             lines = run_smoke(fetch, now, journal, crypto_config, quote)
                         elif args.mode == "fx":
@@ -990,7 +992,7 @@ def _main(argv, identity: Dict[str, Any]) -> int:
                                     now=now, day=now.date(), cycles=active_cycles(now, args.cycle),
                                     candle_provider=provider, account=report_account(pin_capture.get("account")),
                                     archive_root=os.path.join(journal, "ticket_delivery", "archive")),
-                                    journal=journal, sender=canonical_sender, now=now)
+                                    journal=journal, sender=canonical_sender, now=now, ticket_setup_only=True)
                                 summary_lines = process_due_session_summaries(
                                     now, journal=journal, sender=canonical_sender)
                                 summary_lines += process_due_daily_report_summaries(

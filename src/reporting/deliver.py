@@ -18,6 +18,31 @@ from telegram_delivery.adapter import REPORT_SCOPES, report_identity
 
 DELIVERY_SUBDIR = os.path.join("ticket_delivery", "report_lane")
 
+_NON_DELIVERABLE_TICKET_DECISIONS = frozenset({
+    "INSUFFICIENT_DATA", "MISSED", "INFO_ONLY_STALE", "INFO_ONLY_SUPPRESSED",
+    "NO_TRADE", "READY", "TICKET_READY", "WATCH_READY",
+})
+
+
+def _ticket_setup_skip_reason(canonical: Dict[str, Any]) -> str | None:
+    """Only send priced ASW/CCFD REPORT_ONLY observations; reports never confer authority."""
+    if canonical.get("scope_route") != "REPORT_ONLY":
+        return "NOT_REPORT_ONLY"
+    if canonical.get("strategy_id") not in {
+            "ST_ASIAN_SWEEP_5R_V1", "ST_CRYPTO_CFD_SWEEP_RETEST_V1"}:
+        return "FAMILY_NOT_IN_TICKET_REPORT_LANE"
+    if canonical.get("report_class") not in {"CANDIDATE", "BLOCKED"}:
+        return "REPORT_CLASS_SUMMARY_ONLY"
+    if canonical.get("decision") in _NON_DELIVERABLE_TICKET_DECISIONS:
+        return "DECISION_SUMMARY_ONLY"
+    prices = canonical.get("prices") or {}
+    if (canonical.get("direction") not in {"LONG", "SHORT"}
+            or prices.get("entry_reference_raw") is None
+            or prices.get("sl_raw") is None
+            or prices.get("tp1_raw") is None):
+        return "SETUP_INCOMPLETE"
+    return None
+
 
 def _event(path: str, row: Dict[str, Any]) -> None:
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -28,10 +53,23 @@ def _event(path: str, row: Dict[str, Any]) -> None:
 
 
 def deliver_observations(observations: Iterable[Dict[str, Any]], *, sender, journal: str,
-                         now: dt.datetime, label: str = "") -> List[str]:
+                         now: dt.datetime, label: str = "", ticket_setup_only: bool = False) -> List[str]:
     path = os.path.join(journal, DELIVERY_SUBDIR, f"delivery_{now.date().isoformat()}.jsonl")
     states: Counter = Counter()
     for c in observations:
+        if ticket_setup_only:
+            skip_reason = _ticket_setup_skip_reason(c)
+            if skip_reason is not None:
+                identity = report_identity(c)
+                base = {"identity": identity, "report_class": c.get("report_class"),
+                        "instrument": c.get("instrument"),
+                        "strategy": f"{c.get('strategy_id')}@{c.get('strategy_version')}",
+                        "execution_authorized": False}
+                _event(path, {**base, "stage": "RESULT", "recorded_at_utc": now.isoformat(),
+                              "delivery_state": "summary_only", "skip_reason": skip_reason,
+                              "telegram_message_id": None})
+                states["summary_only"] += 1
+                continue
         if c.get("report_class") not in REPORT_SCOPES:
             continue
         identity = report_identity(c)
