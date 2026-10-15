@@ -6,14 +6,14 @@ review_by: 2026-11-07
 ---
 # Project Status — AG Profit Trading
 
-## Current snapshot (2026-10-11)
+## Current snapshot (2026-10-15)
 
 Dated historical evidence — C24 1.1.2 (2026-10-14, #213; SUPERSEDED): interrupted
 full-window replay remains NOT_RUN_RESOURCE; static C11 target ENGINE_DEFECT and
 partial observations are retained. L5 is INSUFFICIENT (no accepted cost evidence;
 OD1011-L5), registration eligible = No. [Historical record](docs/status/AGP_C24_LSMC_V112_VERIFY_R2_2026-10-14.md).
 
-C14 dispatch (2026-10-15, fake-terminal tests only, never host-run; item 1): `src/demo_execution/dispatch.py` `dispatch_demo_order()` drives one READY ticket through the fixed guarded sequence (authorize_order_check -> broker.order_check -> record_order_checked -> authorize_order_send -> broker.order_send -> record_broker_ack | halt) with a fresh single-use authority per step; the first refusal stops, any non-acknowledged send HALTs, no retry. The broker is injected (`CanonicalBrokerAdapter`); the module never imports the canonical adapter, so constructing `MT5CanonicalAdapter` and calling the dispatcher from the S1 cycle remains host orchestration outside this repo. Static boundary test sanctions exactly one `order_check`/`order_send` call on the injected adapter in `dispatch.py`. Inert as committed: S1 `enabled: false`, no standing authorization, `per_order_confirm_required: true` with no Confirm channel yet (item 2). Tests: `tests/test_demo_execution_dispatch.py`. No flag, READY, registry or order-shape change.
+C14 dispatch (2026-10-15, fake-terminal tests only, never host-run; item 1): `src/demo_execution/dispatch.py` drives one READY ticket through the guarded sequence using semantic `check_order` / `send_order` adapter methods. The physical MT5 `order_check` and `order_send` calls remain solely in `mt5_canonical_adapter.py`. Unknown outcomes report `HALTED` only when the lifecycle confirms persisted `HALT`; failed persistence reports `HALT_FAILED`, never a false terminal claim. The first refusal stops; there is no retry. Local focused regression tests pass (121); GitHub CI for the PR update and all host checks remain pending. The dispatcher is still not host-wired. S1 remains `enabled: false`, with no standing authorization and `per_order_confirm_required: true`. No flag, READY, registry or order-shape change. [Dated remediation evidence](docs/status/AGP_C14_DISPATCH_REMEDIATION_2026-10-15.md).
 
 C14 risk snapshot (2026-10-14, #227, fake-terminal tests only, never host-run): `src/demo_execution/risk_snapshot.py` builds per-scope/account VT-server-day snapshots from read-only `account_info`/`history_deals_get`/`positions_get` (carried positions adverse-only, trades = distinct positions, current-equity basis); `GuardedCanonicalAdapter` rebuilds it before admission and before send, and a BLOCKED or missing build refuses `RISK_SNAPSHOT_MISSING`. Deal-time server-clock convention is a Gate 3 host check. No flag change.
 

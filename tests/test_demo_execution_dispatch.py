@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import itertools
 import sys
+from types import SimpleNamespace
 from datetime import timedelta
 from pathlib import Path
 
@@ -24,6 +25,7 @@ from demo_execution.dispatch import (  # noqa: E402
     AUTHORIZATION_REFUSED,
     BROKER_ACK_RECORDED,
     HALTED,
+    HALT_FAILED,
     ORDER_CHECK_REFUSED,
     SCOPE_REFUSED,
     dispatch_demo_order,
@@ -101,6 +103,37 @@ def test_send_that_raises_halts_and_is_not_retried(tmp_path):
     assert len(_broker_calls(mt5, "order_send")) == 1
     assert fixture["guard"].trail(fixture["ticket"]["ticket_id"]).current == "HALT"
     assert _run(fixture, mt5).stage == ORDER_CHECK_REFUSED and len(_broker_calls(mt5, "order_send")) == 1
+
+
+def test_failed_halt_persistence_is_not_reported_as_halted(tmp_path, monkeypatch):
+    fixture, mt5 = boundary(tmp_path), FakeMT5(send_raises=True)
+    guard = fixture["guard"]
+    monkeypatch.setattr(guard, "halt", lambda **kwargs: SimpleNamespace(
+        admitted=False, reason_code="HALT_WRITE_FAILED", ticket_id=fixture["ticket"]["ticket_id"],
+        reason_codes=("HALT_WRITE_FAILED",), details={}, state="SENT"))
+
+    out = _run(fixture, mt5)
+
+    assert out.stage == HALT_FAILED and out.order_send_called
+    assert out.reason_code == "HALT_WRITE_FAILED"
+    assert guard.trail(fixture["ticket"]["ticket_id"]).current == "SENT"
+
+
+def test_ack_fallback_halt_persistence_failure_is_reported(tmp_path, monkeypatch):
+    fixture, mt5 = boundary(tmp_path), FakeMT5()
+    guard = fixture["guard"]
+    monkeypatch.setattr(guard, "record_broker_ack", lambda **kwargs: SimpleNamespace(
+        admitted=False, reason_code="ACK_WRITE_FAILED", ticket_id=fixture["ticket"]["ticket_id"],
+        reason_codes=("ACK_WRITE_FAILED",), details={}, state="SENT"))
+    monkeypatch.setattr(guard, "halt", lambda **kwargs: SimpleNamespace(
+        admitted=False, reason_code="HALT_WRITE_FAILED", ticket_id=fixture["ticket"]["ticket_id"],
+        reason_codes=("HALT_WRITE_FAILED",), details={}, state="SENT"))
+
+    out = _run(fixture, mt5)
+
+    assert out.stage == HALT_FAILED and out.order_send_called
+    assert out.reason_code == "HALT_WRITE_FAILED"
+    assert guard.trail(fixture["ticket"]["ticket_id"]).current == "SENT"
 
 
 def test_account_switched_to_real_before_send_halts_without_sending(tmp_path):

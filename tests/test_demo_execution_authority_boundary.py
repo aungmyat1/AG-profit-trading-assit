@@ -1010,12 +1010,10 @@ def test_the_demo_execution_package_never_calls_a_broker_api():
     # order_check, one order_send, the live account_info re-read and the read-only reconcile lookup.
     # Every other module of the package stays broker-free; nothing imports MetaTrader5 (injected).
     # The C14 risk snapshot builder makes exactly three read-only reads (no order call of any kind).
-    # The dispatcher calls the injected CanonicalBrokerAdapter (never MT5) once per guarded step;
-    # it imports neither the adapter nor MetaTrader5 (test_demo_execution_bypass).
+    # The dispatcher calls semantic adapter methods; raw MT5 order calls remain canonical-only.
     sanctioned = {"mt5_canonical_adapter.py": {"order_check": 1, "order_send": 1, "account_info": 1,
                                                "history_deals_get": 1},
-                  "risk_snapshot.py": {"account_info": 1, "history_deals_get": 1, "positions_get": 1},
-                  "dispatch.py": {"order_check": 1, "order_send": 1}}
+                  "risk_snapshot.py": {"account_info": 1, "history_deals_get": 1, "positions_get": 1}}
     for path in sorted((REPO / "src" / "demo_execution").glob("*.py")):
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         allowed, seen = sanctioned.get(path.name, {}), {}

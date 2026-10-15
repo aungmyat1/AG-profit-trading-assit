@@ -22,7 +22,7 @@ from demo_execution.authority import ExecutionAuthority
 class CanonicalBrokerAdapter(Protocol):
     """Single interface seam for the C11 canonical execution import."""
 
-    def order_check(self, *, authority: ExecutionAuthority, authorization: Mapping[str, Any],
+    def check_order(self, *, authority: ExecutionAuthority, authorization: Mapping[str, Any],
                     ticket: Mapping[str, Any], account_mode: str) -> Mapping[str, Any]:
         """Delegate to the existing canonical order_check path; implementation lives in C11.
 
@@ -32,7 +32,7 @@ class CanonicalBrokerAdapter(Protocol):
         """
         ...
 
-    def order_send(self, *, authority: ExecutionAuthority, authorization: Mapping[str, Any],
+    def send_order(self, *, authority: ExecutionAuthority, authorization: Mapping[str, Any],
                    ticket: Mapping[str, Any], checked_order: Mapping[str, Any],
                    account_mode: str) -> Mapping[str, Any]:
         """Delegate to the existing canonical order_send path; implementation lives in C11.

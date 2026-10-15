@@ -2,8 +2,8 @@
 
 Drives the fixed guarded sequence for a single ticket and nothing else:
 
-    authorize_order_check -> broker.order_check -> record_order_checked
-    -> authorize_order_send -> broker.order_send -> record_broker_ack | halt
+    authorize_order_check -> broker.check_order -> record_order_checked
+    -> authorize_order_send -> broker.send_order -> record_broker_ack | halt
 
 The broker is injected as a :class:`demo_execution.broker_adapter.CanonicalBrokerAdapter`; this
 module never imports :mod:`demo_execution.mt5_canonical_adapter` (only the host orchestration
@@ -38,6 +38,7 @@ ORDER_CHECK_BROKER_REFUSED = "ORDER_CHECK_BROKER_REFUSED"
 ORDER_CHECK_RECORD_REFUSED = "ORDER_CHECK_RECORD_REFUSED"
 ORDER_SEND_REFUSED = "ORDER_SEND_REFUSED"
 HALTED = "HALTED"
+HALT_FAILED = "HALT_FAILED"
 BROKER_ACK_RECORDED = "BROKER_ACK_RECORDED"
 
 BROKER_CALL_RAISED = "BROKER_CALL_RAISED"
@@ -68,6 +69,11 @@ def _step_authorization(decision: GuardDecision) -> dict[str, Any]:
 def _stop(stage: str, decision: GuardDecision, *, sent: bool = False) -> DispatchResult:
     return DispatchResult(stage, decision.reason_code, decision.ticket_id, sent,
                           decision.reason_codes or (decision.reason_code,), dict(decision.details))
+
+
+def _halt_result(decision: GuardDecision, *, sent: bool) -> DispatchResult:
+    """Report HALTED only when the append-only lifecycle confirms the persisted HALT state."""
+    return _stop(HALTED if decision.state == HALT else HALT_FAILED, decision, sent=sent)
 
 
 def dispatch_demo_order(
@@ -121,7 +127,7 @@ def dispatch_demo_order(
     account_mode = (check.details.get("account") or {}).get("trade_mode")
 
     try:
-        checked = broker.order_check(authority=base, authorization=_step_authorization(check),
+        checked = broker.check_order(authority=base, authorization=_step_authorization(check),
                                      ticket=ticket, account_mode=account_mode)
     except Exception as exc:  # noqa: BLE001 -- nothing was sent; the AUTHORIZED step just expires
         return DispatchResult(ORDER_CHECK_BROKER_REFUSED, BROKER_CALL_RAISED, ticket_id,
@@ -145,8 +151,8 @@ def dispatch_demo_order(
         return _stop(ORDER_SEND_REFUSED, send)
 
     try:
-        result: Any = broker.order_send(authority=send_authority, authorization=_step_authorization(send),
-                                        ticket=ticket, checked_order=checked, account_mode=account_mode)
+        result: Any = broker.send_order(authority=send_authority, authorization=_step_authorization(send),
+                                       ticket=ticket, checked_order=checked, account_mode=account_mode)
     except Exception as exc:  # noqa: BLE001 -- outcome unknown: HALT, never resend
         result = {"unknown_outcome": True, "reason_code": BROKER_CALL_RAISED, "error_class": type(exc).__name__}
 
@@ -159,7 +165,7 @@ def dispatch_demo_order(
             if result.get("refused"):
                 reason = f"{SEND_REFUSED_AFTER_CLAIM}:{reason}"
         halted = guard.halt(authority=fresh(at), ticket_id=send_authority.ticket_id, reason_code=reason, now_utc=at)
-        return _stop(HALTED, halted, sent=not (isinstance(result, Mapping) and result.get("refused")))
+        return _halt_result(halted, sent=not (isinstance(result, Mapping) and result.get("refused")))
 
     ack = guard.record_broker_ack(authority=fresh(at), send_result=result, now_utc=at,
                                   authorization_id=send.authorization_id)
@@ -169,6 +175,6 @@ def dispatch_demo_order(
         ack = guard.halt(authority=fresh(at), ticket_id=send_authority.ticket_id,
                          reason_code=f"BROKER_ACK_NOT_RECORDED:{ack.reason_code}", now_utc=at)
     if not ack.admitted:
-        return _stop(HALTED, ack, sent=True)
+        return _halt_result(ack, sent=True)
     return DispatchResult(BROKER_ACK_RECORDED, ack.reason_code, ack.ticket_id, True, (),
                           {**dict(ack.details), "send_result": dict(result)})
