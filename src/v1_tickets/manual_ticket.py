@@ -27,7 +27,7 @@ from strategy_engine import load_strategy
 from strategy_engine.session import Candle
 from ticket_delivery.identity import logical_ticket_id
 from v1_tickets import fx
-from v1_tickets.authority import REPO_ROOT, TicketAuthority, resolve_ticket_authority
+from v1_tickets.authority import REPO_ROOT, TicketAuthority
 from v1_tickets.code_identity import code_sha
 from v1_tickets.guards import SPREAD_TOO_WIDE, STALE_AFTER, cost_at_or_above
 from v1_tickets.logic_gate import (
@@ -240,34 +240,127 @@ def _iso(t: Optional[dt.datetime]) -> Optional[str]:
     return t.isoformat() if t else None
 
 
+def _scoped_manual_ready(
+    strategy_id: str, strategy_version: str, symbol: str, session: str, branch: Optional[str],
+    direction: Optional[str], *, setup: Optional[str], contract_path: Optional[str] = None,
+) -> tuple[bool, str]:
+    """Resolve manual READY through the same owner and registry scope gates as ready_authority.
+
+    Manual tickets may add restrictions to that decision, but cannot promote a scope that its
+    config/owner/scope resolver rejects. CCFD scope is versioned and includes direction+window.
+    """
+    from v1_tickets import ready_authority as ready
+
+    supported = {"ST_ASIAN_SWEEP_5R_V1", "ST_CRYPTO_CFD_SWEEP_RETEST_V1"}
+    if strategy_id not in supported:
+        return False, "MANUAL_STRATEGY_NOT_SUPPORTED"
+    if direction not in {"LONG", "SHORT"}:
+        return False, "DIRECTION_NOT_IN_SCOPE"
+    if strategy_id == "ST_CRYPTO_CFD_SWEEP_RETEST_V1":
+        if symbol == "BTCUSD" and direction == "LONG":
+            return False, "BTCUSD_LONG_NOT_IN_SCOPE"
+        try:
+            raw = yaml.safe_load(Path(ready.REGISTRY_PATH).read_text(encoding="utf-8")) or {}
+            version = (((raw.get("strategies") or {}).get(strategy_id) or {}).get("candidate_versions") or {}).get(
+                str(strategy_version)) or {}
+        except (OSError, TypeError, ValueError, yaml.YAMLError):
+            return False, "REGISTRY_UNREADABLE"
+        symbol_rows = version.get("logic_verified_symbols")
+        verified_direction = any(
+            isinstance(row, dict) and row.get("symbol") == symbol
+            and direction in (row.get("branches") if isinstance(row.get("branches"), list) else [])
+            for row in (symbol_rows if isinstance(symbol_rows, list) else [])
+        )
+        if not verified_direction:
+            return False, "DIRECTION_NOT_IN_SCOPE"
+        scopes = version.get("logic_verified_scopes")
+        window_scope = any(
+            isinstance(row, dict) and row.get("symbol") == symbol
+            and row.get("session") == session and row.get("branch") == direction
+            and row.get("engine_setup") == direction and row.get("status") == "LOGIC_VERIFIED"
+            for row in (scopes if isinstance(scopes, list) else [])
+        )
+        if not window_scope:
+            return False, "WINDOW_NOT_IN_SCOPE"
+        setup = direction
+        branch = direction
+
+    selected_contract = contract_path
+    if selected_contract is None:
+        try:
+            raw = yaml.safe_load(Path(ready.REGISTRY_PATH).read_text(encoding="utf-8")) or {}
+            entry = ((raw.get("strategies") or {}).get(strategy_id) or {})
+            selected_contract = ((entry.get("candidate_versions") or {}).get(str(strategy_version)) or {}).get(
+                "config_source")
+        except (OSError, TypeError, ValueError, yaml.YAMLError):
+            selected_contract = None
+    if not isinstance(selected_contract, str) or not selected_contract:
+        return False, "READY_SYMBOL_NOT_VERIFIED"
+    contract_file = Path(selected_contract)
+    if not contract_file.is_absolute():
+        contract_file = Path(ready._ROOT) / contract_file
+    try:
+        contract_hash = hashlib.sha256(contract_file.read_bytes()).hexdigest()
+    except OSError:
+        return False, "READY_SYMBOL_NOT_VERIFIED"
+    allowed, reason = ready.ready_authority(
+        strategy_id, strategy_version=strategy_version, contract_sha256=contract_hash,
+        symbol=symbol, session=session,
+    )
+    if not allowed:
+        return False, reason
+    if not ready.logic_scope_verified(
+        strategy_id, strategy_version, symbol, cycle=session, setup=setup, branch=branch,
+        contract_path=str(contract_file),
+    ):
+        return False, ready.READY_SYMBOL_NOT_VERIFIED
+    return True, "READY_AUTHORITY_ON_OWNER_RECORD"
+
+
 def build_manual_ticket(
     symbol: str, cycle: str, session_date: dt.date, session: Sequence[Candle], expected_bar_count: int,
     post: Sequence[Candle], *, now: dt.datetime, data_close: Optional[dt.datetime], spread: Optional[float],
     owner: Dict[str, Any], balance: Optional[float] = None, meta: Optional[SymbolMeta] = None,
     commission_r: Optional[float] = None, data_source: str = "MT5_VT_MARKETS_DEMO",
     authority: Optional[TicketAuthority] = None, meta_provenance: Optional[Dict[str, Any]] = None,
+    strategy_path: Optional[str] = None,
 ) -> Dict[str, Any]:
-    strategy = load_strategy(fx.STRATEGY_PATH)
-    windows = fx.session_windows_utc(session_date)[cycle]
+    selected_strategy_path = strategy_path or fx.STRATEGY_PATH
+    strategy = load_strategy(selected_strategy_path)
+    windows = fx.session_windows_utc(session_date, strategy_path=selected_strategy_path)[cycle]
     pair = next(p for p in strategy.session_pairs if p.pair_id == cycle)
 
     def build() -> Dict[str, Any]:
         return fx.build_fx_ticket(symbol, cycle, session_date, session, expected_bar_count, post,
-                                  data_source=data_source, evaluated_at=now, data_close=data_close, spread=spread)
+                                  data_source=data_source, evaluated_at=now, data_close=data_close, spread=spread,
+                                  strategy_path=selected_strategy_path)
 
     base = build()
-    authority = authority or resolve_ticket_authority(base["strategy_id"], base["strategy_version"])
     state, stage, reason = classify_fx_ticket(base, now=now, window_end=windows["trade"][1])
+    scope_ready, scope_reason = _scoped_manual_ready(
+        base["strategy_id"], str(base["strategy_version"]), symbol, cycle,
+        f"{base.get('regime')}_{base.get('setup')}" if base.get("regime") and base.get("setup") else None,
+        base.get("direction"), setup=base.get("setup"), contract_path=str(strategy.source_path),
+    )
+    if authority is not None:
+        ticket_authority, economic_status = authority.ticket_authority, authority.economic_status
+    else:
+        from v1_tickets.authority import MANUAL_ONLY
+        ticket_authority, economic_status = MANUAL_ONLY, "NOT_EVALUATED"
+    from v1_tickets.authority import logic_identity
+    identity = logic_identity(base["strategy_id"], str(base["strategy_version"]))
+    logic_status = "LOGIC_VERIFIED" if scope_ready else "NOT_VERIFIED"
+    logic_identity_digest = identity.get("digest") if identity else None
     ticket: Dict[str, Any] = {
         **base,
         "ticket_id": logical_ticket_id(strategy_id=base["strategy_id"], strategy_version=base["strategy_version"],
                                        symbol=symbol, cycle=cycle, trading_date=session_date),
         "strategy": f"{base['strategy_id']}@{base['strategy_version']}",
         "session": cycle,
-        "edge_status": EDGE_STATUS, "economic_status": authority.economic_status,
-        "authority": AUTHORITY_TEXT, "ticket_authority": authority.ticket_authority,
-        "logic_status": authority.logic_status_effective,
-        "logic_identity": (authority.logic_identity or {}).get("digest"),
+        "edge_status": EDGE_STATUS, "economic_status": economic_status,
+        "authority": AUTHORITY_TEXT, "ticket_authority": ticket_authority,
+        "logic_status": logic_status,
+        "logic_identity": logic_identity_digest,
         "spread": spread,
         "data_close_utc": _iso(data_close),
         "data_freshness_s": round((now - data_close).total_seconds(), 3) if data_close is not None else None,
@@ -353,9 +446,13 @@ def build_manual_ticket(
                      "RISK" if reason == lot["status"] else "TICKET" if reason == TICKET_EXPIRED else stage)
         elif state == TICKET_READY:
             reason = None
-        if state == TICKET_READY and not authority.ticket_eligible:
+        if state == TICKET_READY and authority is not None and not authority.ticket_eligible:
             state, stage, reason = OPPORTUNITY, "AUTHORITY", authority.reason
             block_reasons = order_block_reasons([reason] + block_reasons)
+        elif state == TICKET_READY:
+            if not scope_ready:
+                state, stage, reason = TICKET_BLOCKED, "AUTHORITY", scope_reason
+                block_reasons = order_block_reasons([scope_reason] + block_reasons)
         ticket["owner_accept_allowed"] = state == TICKET_READY and now < valid_until
         ticket["ticket_status"] = ("EXPIRED" if now >= valid_until else
                                    {TICKET_READY: "READY", OPPORTUNITY: "OPPORTUNITY"}.get(state, "BLOCKED"))
@@ -611,7 +708,6 @@ def build_crypto_cfd_manual_ticket(
     import math
 
     from crypto_cfd_contract.contract import CONTRACT_ID, CONTRACT_VERSION
-    from v1_tickets.authority import load_registry, logic_identity
     from v1_tickets.crypto_cfd_policy import load_ticket_policy
 
     if result.get("contract_id") != CONTRACT_ID or result.get("contract_version") != CONTRACT_VERSION:
@@ -654,11 +750,13 @@ def build_crypto_cfd_manual_ticket(
         lot = lot_size(entry, sl, {"risk_pct": cfg["risk_pct"]}, balance, meta) if cfg["risk_pct"] else None
         if lot is not None and lot["status"] != "OK":
             reasons.append(lot["status"])
-        registry = load_registry(REPO_ROOT).get(CONTRACT_ID) or {}
-        identity = logic_identity(CONTRACT_ID, CONTRACT_VERSION)
-        verified = (identity is not None and registry.get("logic_status") == "LOGIC_VERIFIED"
-                    and registry.get("logic_verified_identity") == identity["digest"])
-        if not (verified and registry.get("active") is True and registry.get("ticket_ready") == "ACTIVE"):
+        allowed, authority_reason = _scoped_manual_ready(
+            CONTRACT_ID, CONTRACT_VERSION, symbol, window, direction=plan.get("direction"),
+            branch=plan.get("direction"), setup=plan.get("direction"),
+        )
+        if not allowed:
+            reasons.append(authority_reason)
+            # Keep the stable informational block reason for older report readers.
             reasons.append("LOGIC_STATUS_NOT_VERIFIED")
         if reasons:
             decision = "BLOCKED"

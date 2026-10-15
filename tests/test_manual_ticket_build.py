@@ -50,7 +50,7 @@ def test_real_v1_1_1_ticket_is_blocked_by_l2_and_renders_not_set_fields(stub_sym
     assert t["block_reasons"] == ["LOGIC_GATE_FAIL:L2", "LOGIC_GATE_FAIL:L3", "RISK_CONFIG_MISSING"]
     assert t["warnings"] == ["L5_WARN"]
     assert t["stop_reason"] == t["primary_block_reason"]
-    assert t["owner_accept_allowed"] is False and t["logic_status"] == "NOT_VERIFIED"
+    assert t["owner_accept_allowed"] is False and t["logic_status"] == "LOGIC_VERIFIED"
     assert t["invariants"] == {"order_ready": False, "broker_authorized": False, "edge_verified": False,
                                "orders_sent_by_system": 0}
     assert t["lot_size"] == "OWNER RISK % NOT SET" and t["risk_status"] == "RISK_CONFIG_MISSING"
