@@ -72,6 +72,19 @@ def _ccfd_gates(evidence: Optional[Dict[str, Any]], symbol: str, branch: str) ->
     return {g: str(gates.get(g, UNKNOWN)) for g in GATES}
 
 
+def divergence(status: str, gates: Dict[str, str], reason: str, decision: Any = None) -> str:
+    """Compare historical gates with current scope authority without rewriting either."""
+    all_pass = all(gates.get(g) == "PASS" for g in GATES)
+    if status == "LOGIC_VERIFIED" and not all_pass:
+        if isinstance(decision, str) and decision.strip():
+            # Registry decisions may include a decision-group prefix (e.g. OD1014-FAST D9).
+            return f"OWNER_RESOLVED:{decision.split()[-1]}"
+        return "UNRESOLVED_GATE"
+    if status == "UNVERIFIED" and all_pass:
+        return reason
+    return "-"
+
+
 def lane_version(family: str, symbol: str, session: str, default: str) -> str:
     """Contract version the report lane evaluates for this scope; S1 stays on its canonical v1.1.2 path."""
     if family != "session_fx_gold":
@@ -148,6 +161,7 @@ def build() -> Dict[str, Any]:
                         "gates": gates,
                         "gates_source": gates_source or UNKNOWN,
                         "registry_status": status,
+                        "divergence": divergence(status, gates, reason, candidate.get("registration_decision")),
                         "blocking_finding_id": None if status == "LOGIC_VERIFIED" else reason,
                         "evidence_path": evidence_path or UNKNOWN,
                         "evidence_sha256": sha256_file(evidence_path) or UNKNOWN,
@@ -170,14 +184,14 @@ def render_md(ledger: Dict[str, Any]) -> str:
            "or live authority.", "",
            f"Registry SHA256 `{ledger['registry_sha256']}`; rows {ledger['row_count']}; status counts "
            + ", ".join(f"{k}={v}" for k, v in ledger["status_counts"].items()) + ".", "",
-           "| Strategy | Symbol | Session | Branch | L1-L6 | Registry status | Blocking finding | Next action | "
+           "| Strategy | Symbol | Session | Branch | Historical L1-L6 | Current scope status | Divergence | Blocking finding | Next action | "
            "Evidence (sha256 prefix) |",
-           "|---|---|---|---|---|---|---|---|---|"]
+           "|---|---|---|---|---|---|---|---|---|---|"]
     for r in ledger["rows"]:
         gates = " ".join(f"{g}:{r['gates'][g]}" for g in GATES)
         sha = r["evidence_sha256"][:12] if r["evidence_sha256"] != UNKNOWN else UNKNOWN
         out.append(f"| {r['strategy']} | {r['symbol']} | {r['session']} | {r['branch']} | {gates} | "
-                   f"{r['registry_status']} | {r['blocking_finding_id'] or '-'} | {r['next_action_owner']} | "
+                   f"{r['registry_status']} | {r['divergence']} | {r['blocking_finding_id'] or '-'} | {r['next_action_owner']} | "
                    f"`{r['evidence_path']}` ({sha}) |")
     out += ["", "Full fields (contract and identity hashes, recorded vs current) are in "
             f"`{JSON_OUT}`.", ""]
@@ -191,6 +205,9 @@ def main(argv=None) -> int:
     ledger = build()
     outputs = {JSON_OUT: json.dumps(ledger, indent=2, sort_keys=True) + "\n", MD_OUT: render_md(ledger)}
     if args.check:
+        if any(r["divergence"] == "UNRESOLVED_GATE" for r in ledger["rows"]):
+            print("UNRESOLVED_GATE: LOGIC_VERIFIED scope has non-PASS historical gates without a registry decision")
+            return 1
         stale = [p for p, text in outputs.items()
                  if not (ROOT / p).is_file() or (ROOT / p).read_text(encoding="utf-8") != text]
         print("STALE: " + ", ".join(stale) if stale else "UP_TO_DATE")
