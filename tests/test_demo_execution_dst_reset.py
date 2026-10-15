@@ -12,20 +12,16 @@ from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from types import SimpleNamespace
-from zoneinfo import ZoneInfo
 
 import pytest
 import yaml
 
 from demo_execution.risk import RiskSnapshot, evaluate_risk_caps
+from demo_execution.server_day import derive_vt_server_day
 from mt5.symbol_resolver import SymbolMeta
 
 REPO = Path(__file__).resolve().parents[1]
 UTC = timezone.utc
-OFFSET_RULE = (
-    "SERVER_MIDNIGHT_EQUALS_NEW_YORK_1700: server_utc_offset_hours = "
-    "America/New_York UTC offset + 7"
-)
 # Independent expected UTC boundaries; the fixture below must derive these from
 # committed metadata, never from the captured (summer-only) numeric offset of 3.
 BOUNDARIES = [
@@ -39,16 +35,6 @@ CAPS = [
 ]
 
 
-def _vt_day(at: datetime, metadata: dict) -> date:
-    """Test-only snapshot adapter for the exact evidenced rule, without fallback."""
-    assert metadata["schema"] == "AG_HOST_SYMBOL_METADATA_V2"
-    assert metadata["server"] == "VTMarkets-Demo"
-    assert metadata["server_utc_offset_rule"] == OFFSET_RULE
-    ny_offset = at.astimezone(ZoneInfo("America/New_York")).utcoffset()
-    assert ny_offset is not None
-    return (at.astimezone(UTC) + ny_offset + timedelta(hours=7)).date()
-
-
 @pytest.fixture(scope="module")
 def inputs():
     config = yaml.safe_load((REPO / "config/demo_execution_s1.yaml").read_text())
@@ -56,9 +42,6 @@ def inputs():
     assert raw["daily_reset_basis"] == "VT_SERVER_DAY"
     metadata = json.loads((REPO / f"config/symbol_metadata/host_captured/{raw['symbol']}.json").read_text())
     assert metadata["canonical_symbol"] == raw["symbol"]
-    captured = datetime.fromisoformat(metadata["captured_at_utc"])
-    captured_offset = captured.astimezone(ZoneInfo("America/New_York")).utcoffset()
-    assert captured_offset + timedelta(hours=7) == timedelta(hours=metadata["server_utc_offset_hours"])
     # Only the fields consumed by pure risk evaluation; no test admission or READY
     # override. There are no positions, so the synthetic magic cannot grant anything.
     scope = SimpleNamespace(
@@ -78,9 +61,12 @@ def inputs():
 
 
 def _snapshot(inputs, at, **metrics):
-    scope, metadata, meta = inputs
+    scope, _, meta = inputs
+    day = derive_vt_server_day(at, canonical_symbol=scope.symbol)
+    assert day.status == "DERIVED_NOT_OBSERVED"
+    assert day.server_day is not None
     snapshot = RiskSnapshot(
-        observed_at_utc=at, server_day=_vt_day(at, metadata), demo_equity=10000.0,
+        observed_at_utc=at, server_day=day.server_day, demo_equity=10000.0,
         strategy_daily_loss_pct=0.0, account_daily_loss_pct=0.0,
         strategy_trades_today=0, open_positions=(), positions_complete=True,
         daily_metrics_complete=True, symbol_meta=meta, daily_reset_basis=scope.daily_reset_basis,
@@ -95,13 +81,13 @@ def _assess(inputs, at, snapshot):
 
 
 def test_committed_rule_produces_a_25_hour_vt_day_at_us_dst_end(inputs):
-    _, metadata, _ = inputs
+    scope, _, _ = inputs
     before, after = (row[0] for row in BOUNDARIES)
     assert after - before == timedelta(hours=25)
     for boundary, old_day, new_day in BOUNDARIES:
-        assert _vt_day(boundary - timedelta(microseconds=1), metadata) == old_day
-        assert _vt_day(boundary, metadata) == new_day
-        assert _vt_day(boundary + timedelta(microseconds=1), metadata) == new_day
+        assert derive_vt_server_day(boundary - timedelta(microseconds=1), canonical_symbol=scope.symbol).server_day == old_day
+        assert derive_vt_server_day(boundary, canonical_symbol=scope.symbol).server_day == new_day
+        assert derive_vt_server_day(boundary + timedelta(microseconds=1), canonical_symbol=scope.symbol).server_day == new_day
 
 
 @pytest.mark.parametrize("boundary,old_day,new_day", BOUNDARIES)
