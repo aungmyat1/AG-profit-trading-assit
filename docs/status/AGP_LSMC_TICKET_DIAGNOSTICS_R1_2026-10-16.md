@@ -83,6 +83,42 @@ indicator or trading logic; no external package required.
 
 ## Verification
 
-Pending focused R1 tests. Fake transport only; live Telegram and host validation
+2026-10-16, Linux cloud, resource class R1: 84 passed in 1.49s.
+Command: PYTHONPATH="$PWD/src" /workspace/AG-profit-trading-assit/.venv/bin/python -m pytest -q tests/test_lsmc_ticket_diagnostics_r1.py tests/test_v1_large_smc_110_watch.py tests/test_lsmc_alert_dedup.py tests/test_telegram_message_format.py tests/test_ticket_delivery_identity_and_archive.py tests/test_ticket_delivery_execution_boundary.py.
+Resource guard acquired/released; one worker; no heavy process left running.
+Default Python lacked pytest; repository venv used successfully. Ruff unavailable
+in that venv; lint NOT_RUN. git diff --check passed.
+Fake transport only; live Telegram and host validation
 remain NOT_EVALUATED. Missing original observations, partial M5 stage evidence,
 current quotes/costs and per-reference terminal lifecycles remain blockers.
+
+## Verified metadata conventions (historical captures)
+
+| Symbol | Point | Trade tick | Digits | Display pip | C10 pip authority |
+|---|---:|---:|---:|---|---|
+| EURUSD | 0.00001 | 0.00001 | 5 | 0.0001 | 0.0001 |
+| GBPUSD | 0.00001 | 0.00001 | 5 | 0.0001 | 0.0001 |
+| USDJPY | 0.001 | 0.001 | 3 | 0.01 | NOT_EVIDENCED |
+| XAUUSD | 0.01 | 0.01 | 2 | price units | NOT_EVIDENCED |
+| BTCUSD | 0.01 | 0.01 | 2 | price units | NOT_EVIDENCED |
+| ETHUSD | 0.01 | 0.01 | 2 | price units | NOT_EVIDENCED |
+
+Source: config/symbol_metadata/host_captured/*.json. No current spread inference.
+
+## ASCII Telegram diagnostic example (missing M5 evidence)
+
+```text
+M5 DIAGNOSTICS -- READ ONLY -- NO EXECUTION AUTHORITY
+liquidity sweep time: NOT_AVAILABLE
+CHoCH time: NOT_AVAILABLE; BOS: NOT_AVAILABLE
+displacement evidence: NOT_AVAILABLE
+entry candidate: NOT_AVAILABLE; stop candidate: NOT_AVAILABLE; target candidate: NOT_AVAILABLE
+gross R:R candidate: NOT_AVAILABLE; net R:R: NOT_AVAILABLE
+spread: NOT_AVAILABLE; total cost: NOT_AVAILABLE
+freshness: NOT_AVAILABLE; expires_at: NOT_AVAILABLE
+explicit rejection reason: NOT_AVAILABLE
+```
+
+Freshness describes the archived evaluation time only, never current delivery-time
+eligibility. Explicitly rejected events pass through their recorded rejection code;
+no opportunity is not evidence of any particular failed stage.

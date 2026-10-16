@@ -777,3 +777,5 @@ authoritative machine-readable source.
 - [C23 registry apply (2026-10-14)](status/C23_REGISTRY_APPLY_2026-10-14.md) — OD1014-FAST D8 CCFD identity re-record, D9 ASW v1.1.3 candidate registration; identity-set proof and ledger.
 - [C25 OSS differential verification (2026-10-14)](status/C25_OSS_DIFFERENTIAL_2026-10-14.md) — backtesting.py / pandas-ta / smartmoneyconcepts oracles and L3 fuzz on 60 recorded days; evidence only.
 - [C25 harness change log (2026-10-14)](status/C25_HARNESS_CHANGE_LOG.md) — first-run divergences and every later harness change with before/after counts.
+
+- [LSMC ticket diagnostics R1 audit (2026-10-16)](status/AGP_LSMC_TICKET_DIAGNOSTICS_R1_2026-10-16.md): reporting evidence and unresolved host observations.

@@ -315,7 +315,7 @@ def _lsmc_status_line(symbol: str) -> str:
     except Exception:  # noqa: BLE001 -- an unknown symbol or registry fault never blocks the alert text
         status, reason, detail = "UNVERIFIED", "REGISTRY_ENTRY_MISSING", ""
     return (f"STATUS: {status} ({reason}{'; ' + detail if detail else ''}) "
-            "· REPORT ONLY — NOT AN ENTRY")
+            "-- REPORT ONLY -- NOT AN ENTRY")
 
 
 def format_alert(e: Dict[str, Any], price: Optional[float] = None) -> str:
@@ -378,6 +378,8 @@ def format_alert(e: Dict[str, Any], price: Optional[float] = None) -> str:
     if snap is None:
         lines.append(f"prices {UNNORMALIZED}")
     lines.append(f"expires_at: {_ts(opportunity.get('expires_at') or payload.get('expires_at'))}")
+    from host_delivery.lsmc_diagnostics import diagnostic_lines
+    lines.extend(diagnostic_lines({**e, "payload": payload}))
     return "\n".join(lines)
 
 
