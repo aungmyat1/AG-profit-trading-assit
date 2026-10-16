@@ -164,6 +164,6 @@ def test_lsmc_alert_carries_status_stamp():
              "strategy_version": "1.1.0", "reference_id": "ref-1", "payload": {}}
     text = tg.format_alert(alert)
     assert ("STATUS: UNVERIFIED (ENTRY_LOGIC_NOT_VERIFIED; detection=LOGIC_VERIFIED) "
-            "· REPORT ONLY — NOT AN ENTRY") in text
+            "-- REPORT ONLY -- NOT AN ENTRY") in text
     unknown = tg.format_alert({**alert, "symbol": "AUDUSD"})
     assert "STATUS: UNVERIFIED (REGISTRY_ENTRY_MISSING)" in unknown
