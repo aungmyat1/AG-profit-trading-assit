@@ -315,12 +315,22 @@ def _lsmc_status_line(symbol: str) -> str:
     except Exception:  # noqa: BLE001 -- an unknown symbol or registry fault never blocks the alert text
         status, reason, detail = "UNVERIFIED", "REGISTRY_ENTRY_MISSING", ""
     return (f"STATUS: {status} ({reason}{'; ' + detail if detail else ''}) "
-            "· REPORT ONLY — NOT AN ENTRY")
+            "-- REPORT ONLY -- NOT AN ENTRY")
 
 
 def format_alert(e: Dict[str, Any], price: Optional[float] = None) -> str:
     """Render eligible alerts unchanged; label ineligible raw events as rejections."""
-    payload = e.get("payload") or {}
+    from host_delivery.lsmc_diagnostics import (
+        MAX_ALERT_UNITS,
+        _number,
+        alert_units,
+        diagnostic_lines,
+        report_event,
+    )
+
+    e = report_event(e)
+    price = price if _number(price) else None
+    payload = e["payload"]
     poi, opportunity = payload.get("poi") or {}, payload.get("opportunity") or {}
     if e.get("to_state") == "OPPORTUNITY":
         from large_smc_watch.watch import opportunity_rejection
@@ -360,7 +370,8 @@ def format_alert(e: Dict[str, Any], price: Optional[float] = None) -> str:
     elif low is not None and high is not None:
         far_edge = low if direction == "LONG" else high
         lines.append(f"invalidation: close beyond POI far edge {display(far_edge, stop_mode)}")
-    if opportunity:
+    if any(opportunity.get(key) is not None for key in
+           ("entry_reference", "stop_c10", "target_c11", "target_reason")):
         target_price = opportunity.get("target_c11")
         lines.append(f"liquidity target: {display(target_price, target_mode)}" if target_price is not None
                      else f"liquidity target: none ({opportunity.get('target_reason')})")
@@ -378,7 +389,12 @@ def format_alert(e: Dict[str, Any], price: Optional[float] = None) -> str:
     if snap is None:
         lines.append(f"prices {UNNORMALIZED}")
     lines.append(f"expires_at: {_ts(opportunity.get('expires_at') or payload.get('expires_at'))}")
-    return "\n".join(lines)
+    lines.extend(diagnostic_lines({**e, "payload": payload}))
+    text = "\n".join(lines)
+    if alert_units(text) > MAX_ALERT_UNITS:
+        # Refuse locally rather than let the shared transport slice off safety lines.
+        raise TelegramSendError("LSMC alert exceeds message budget", delivery_state="BLOCKED")
+    return text
 
 
 def validation_proposal(now: Optional[dt.datetime] = None) -> Dict[str, Any]:

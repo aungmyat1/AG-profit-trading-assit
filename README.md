@@ -427,3 +427,5 @@ Large-SMC REPORT_ONLY candidate selection: OD1014-FAST D7 sets `config/lsmc_repo
 the append-only engine stamps observations `NOT_VERIFIED`. Missing/unknown version configuration
 produces `BLOCKED`, with no silent fallback. Canonical selection is unchanged. See
 [the C21 registration proposal](docs/proposals/C21_LSMC_V112_REGISTRATION.md) for fixture scope.
+
+Large-SMC informational alerts include read-only M5 candidate diagnostics; missing stage, cost and freshness evidence is explicit. See the [diagnostics audit](docs/status/AGP_LSMC_TICKET_DIAGNOSTICS_R1_2026-10-16.md).

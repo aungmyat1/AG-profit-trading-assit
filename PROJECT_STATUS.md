@@ -6,7 +6,10 @@ review_by: 2026-11-07
 ---
 # Project Status — AG Profit Trading
 
-## Current snapshot (2026-10-15)
+## Current snapshot (2026-10-16)
+
+LSMC ticket diagnostics R2: reporting now validates malformed payloads, finite directional candidates, ASCII rejection codes and UTC signal chronology. Oversize alerts fail closed before transport truncation. Frozen strategy, authority, archive records and S1 behavior unchanged. [R2 evidence](docs/status/AGP_LSMC_TICKET_DIAGNOSTICS_R2_2026-10-16.md). Original six alerts and independent FVG lifecycle tracking remain unresolved; [R1 audit](docs/status/AGP_LSMC_TICKET_DIAGNOSTICS_R1_2026-10-16.md).
+
 
 LSMC 1.1.3 EURUSD entry logic (2026-10-15, #233, container replay; not host-verified): full-window recorded VT 60d replay (#215), 12,094 scans in 6 resumable shards, all COMPLETED. Gates: L1/L2/L3/L4/L6 PASS, **L5 INSUFFICIENT**. The FX/gold L5 path is now implemented: OD1009-D2 thresholds plus OD1011-COMMISSION, and the commission binds only through the full login; a committed suffix alone gives INSUFFICIENT. Unit-tested only. D-LSMC-6 PASS, D-LSMC-1 PASS, 0 C11 target changes. SHORT C10 stops were NOT_EVALUATED: there is no evidenced bid/ask (869 scans). Registration draft not applied; eligibility PENDING_HOST_L5; no authority. [Draft](docs/proposals/LSMC_V113_REGISTRATION.md). Next step: host L5 recompute with the full-login binding, plus an owner decision on the SHORT C10 spread.
 
